@@ -1,0 +1,29 @@
+/* Revo design system – global styles */
+body {
+  font-family: "Oxanium", sans-serif !important;
+  margin: 0 !important;
+}
+
+/* Shared signup/login primary button */
+.submit-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: #3b4ce2;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #2f3ecf;
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,289 @@
+<section class="dashboard-section">
+  <div class="section-header">
+    <div class="header-left">
+      <h2 class="section-title">Form Preview</h2>
+      <p class="section-subtitle">Preview and test your form before publishing.</p>
+    </div>
+    <div class="header-right">
+      <a routerLink="/builder/{{encoded_product_id}}" class="back-link">
+        ← Back to Builder
+      </a>
+    </div>
+  </div>
+
+  <main class="preview-main" *ngIf="formDef$ | async as form">
+    <div class="preview-card">
+      <h1 class="preview-title">{{ form.title }}</h1>
+
+      <form class="preview-form" (submit)="$event.preventDefault(); onSubmit()">
+        <ng-container *ngFor="let el of form.elements">
+          <ng-container [ngSwitch]="el.type">
+            <ng-container *ngSwitchCase="'heading'">
+              <h2
+                class="heading"
+                [ngStyle]="{
+                  'font-size.px': el.styles?.fontSize,
+                  color: el.styles?.color,
+                  'text-align': el.styles?.textAlign
+                }"
+              >
+                {{ el.label }}
+              </h2>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'divider'">
+              <hr />
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'image'">
+              <img
+                [src]="$any(el).src || ''"
+                [alt]="$any(el).alt || ''"
+                class="preview-image"
+              />
+            </ng-container>
+
+            <!-- Button elements are hidden - fixed button shown at bottom -->
+            <ng-container *ngSwitchCase="'button'"></ng-container>
+
+            <ng-container *ngSwitchCase="'text'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="text"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'email'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="email"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'number'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="number"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'textarea'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <textarea
+                class="field-textarea"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              ></textarea>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'dropdown'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <select
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [value]="getFieldValue(el.id).value || ''"
+                (change)="setFieldValue(el.id, $any($event.target).value || ''); onFieldBlur(el.id)"
+                (blur)="onFieldBlur(el.id)"
+              >
+                <option [value]="''">
+                  {{ el.placeholder || 'Select...' }}
+                </option>
+                <option
+                  *ngFor="let opt of $any(el).options"
+                  [value]="opt"
+                >
+                  {{ opt }}
+                </option>
+              </select>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'radio'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <div
+                class="choice-row"
+                *ngFor="let opt of $any(el).options"
+              >
+                <input
+                  type="radio"
+                  [name]="el.id"
+                  [value]="opt"
+                  [checked]="getFieldValue(el.id).value === opt"
+                  (change)="setFieldValue(el.id, opt); onFieldBlur(el.id)"
+                  (blur)="onFieldBlur(el.id)"
+                />
+                {{ opt }}
+              </div>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'checkbox'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <div
+                class="choice-row"
+                *ngFor="let opt of $any(el).options; let i = index"
+              >
+                <input
+                  type="checkbox"
+                  [value]="opt"
+                  [checked]="getFieldValue(el.id + '_' + i).value"
+                  (change)="setFieldValue(el.id + '_' + i, $any($event.target).checked); updateCheckboxGroup(el.id, opt, $any($event.target).checked)"
+                  (blur)="onFieldBlur(el.id)"
+                />
+                {{ opt }}
+              </div>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'date'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="date"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [value]="getFieldValue(el.id).value"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'file'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="file"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                (change)="setFieldValue(el.id, $any($event.target).files?.length ? 'file_selected' : ''); onFieldBlur(el.id)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'image_upload'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <div
+                class="image-upload-field"
+                [class.image-upload-field--uploaded]="isImageUploaded(el.id)"
+              >
+                <input
+                  type="file"
+                  class="field-input"
+                  accept="image/*"
+                  [class.error]="hasErrors(el.id)"
+                  [disabled]="isImageUploading(el.id)"
+                  (change)="onImageUploadSelected(el.id, $event)"
+                  (blur)="onFieldBlur(el.id)"
+                />
+                <span class="image-upload-status" *ngIf="isImageUploading(el.id)">
+                  Uploading…
+                </span>
+                <span class="image-upload-status image-upload-status--ok" *ngIf="isImageUploaded(el.id)">
+                  ✓ Uploaded
+                </span>
+                <span class="image-upload-status image-upload-status--error" *ngIf="getImageUploadError(el.id) as uploadErr">
+                  {{ uploadErr }}
+                </span>
+                <div class="image-upload-preview-wrap" *ngIf="imageUploadPreviews()[el.id] as preview">
+                  <img
+                    [src]="preview"
+                    alt="Selected image preview"
+                    class="image-upload-preview"
+                  />
+                </div>
+              </div>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </form>
+
+      <!-- Submit Button - Fixed below form elements -->
+      <div class="submit-button-container">
+        <button
+          type="button"
+          class="submit-button primary"
+          (click)="onSubmit()"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </main>
+</section>
+

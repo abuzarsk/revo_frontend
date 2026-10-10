@@ -1,0 +1,276 @@
+<div class="brands-page">
+  <ng-template #brandsPaginationNav let-p="p">
+    <nav
+      class="brands-pagination-bar"
+      *ngIf="!p.loading && p.total > 0"
+      aria-label="Brands pagination"
+    >
+      <div class="pagination-summary">
+        Showing {{ p.showingFrom }}–{{ p.showingTo }} of {{ p.total }}
+        {{ p.itemLabel }}
+        <span *ngIf="p.perPage"> · {{ p.perPage }} per page</span>
+      </div>
+
+      <div class="pagination-controls">
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage <= 1"
+          (click)="p.goToPage(1)"
+        >
+          First
+        </button>
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage <= 1"
+          (click)="p.goToPage(p.currentPage - 1)"
+        >
+          Previous
+        </button>
+
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--page"
+          *ngIf="p.pageNumbers[0] > 1"
+          (click)="p.goToPage(1)"
+        >
+          1
+        </button>
+        <span class="pagination-ellipsis" *ngIf="p.pageNumbers[0] > 2">…</span>
+
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--page"
+          *ngFor="let pageNum of p.pageNumbers"
+          [class.pagination-btn--active]="pageNum === p.currentPage"
+          (click)="p.goToPage(pageNum)"
+          [attr.aria-current]="pageNum === p.currentPage ? 'page' : null"
+        >
+          {{ pageNum }}
+        </button>
+
+        <span
+          class="pagination-ellipsis"
+          *ngIf="p.pageNumbers[p.pageNumbers.length - 1] < p.lastPage - 1"
+        >
+          …
+        </span>
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--page"
+          *ngIf="p.pageNumbers[p.pageNumbers.length - 1] < p.lastPage"
+          (click)="p.goToPage(p.lastPage)"
+        >
+          {{ p.lastPage }}
+        </button>
+
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage >= p.lastPage"
+          (click)="p.goToPage(p.currentPage + 1)"
+        >
+          Next
+        </button>
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage >= p.lastPage"
+          (click)="p.goToPage(p.lastPage)"
+        >
+          Last
+        </button>
+      </div>
+
+      <div class="pagination-page-indicator">
+        Page {{ p.currentPage }} of {{ p.lastPage }}
+      </div>
+    </nav>
+  </ng-template>
+
+  <section class="brands-hero">
+    <div class="brands-hero__glow" aria-hidden="true"></div>
+    <div class="brands-hero__content">
+      <span class="brands-hero__badge">BRAND MANAGEMENT</span>
+      <h1 class="brands-hero__title">Brands</h1>
+      <p class="brands-hero__subtitle">Organize your product catalog under clear, recognizable brand identities.</p>
+    </div>
+    <button type="button" class="brands-hero__cta" (click)="addBrand()">
+      <i class="fa fa-plus" aria-hidden="true"></i>
+      Add brand
+    </button>
+  </section>
+
+  <section class="brands-stats" aria-label="Brand statistics">
+    <article class="brands-stat">
+      <span class="brands-stat__icon brands-stat__icon--blue">
+        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+      </span>
+      <div>
+        <p class="brands-stat__label">Total brands</p>
+        <p class="brands-stat__value">{{ totalBrands }}</p>
+      </div>
+    </article>
+    <article class="brands-stat">
+      <span class="brands-stat__icon brands-stat__icon--purple">
+        <i class="fa fa-list" aria-hidden="true"></i>
+      </span>
+      <div>
+        <p class="brands-stat__label">On this page</p>
+        <p class="brands-stat__value">{{ brands.length }}</p>
+      </div>
+    </article>
+    <article class="brands-stat">
+      <span class="brands-stat__icon brands-stat__icon--green">
+        <i class="fa fa-file-text-o" aria-hidden="true"></i>
+      </span>
+      <div>
+        <p class="brands-stat__label">Current page</p>
+        <p class="brands-stat__value">{{ currentPage }} / {{ lastPage || 1 }}</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="brands-panel">
+    <div class="brands-panel__header">
+      <h2 class="brands-panel__title">ALL BRANDS</h2>
+      <div class="brands-panel__actions">
+        <div class="brands-view-toggle" role="group" aria-label="Brands view">
+          <button
+            type="button"
+            class="view-toggle-btn"
+            [class.view-toggle-btn--active]="viewMode === 'cards'"
+            (click)="setViewMode('cards')"
+          >
+            <i class="fa fa-th-large" aria-hidden="true"></i>
+            Cards
+          </button>
+          <button
+            type="button"
+            class="view-toggle-btn"
+            [class.view-toggle-btn--active]="viewMode === 'list'"
+            (click)="setViewMode('list')"
+          >
+            <i class="fa fa-list" aria-hidden="true"></i>
+            List
+          </button>
+        </div>
+        <button type="button" class="brands-panel__add" (click)="addBrand()">
+          <i class="fa fa-plus" aria-hidden="true"></i>
+          New brand
+        </button>
+      </div>
+    </div>
+
+    <div class="brands-loading" *ngIf="brandsLoading">
+      <span class="brands-loading__spinner" aria-hidden="true"></span>
+      Loading brands…
+    </div>
+
+    <div class="brands-grid" *ngIf="!brandsLoading && brands.length && viewMode === 'cards'">
+      <article class="brand-card" *ngFor="let brand of brands">
+        <div class="brand-card__top">
+          <div class="brand-card__avatar">
+            <span>{{ brand.brand_name?.charAt(0) | uppercase }}</span>
+          </div>
+          <div class="brand-card__info">
+            <h3 class="brand-card__name">{{ brand.brand_name }}</h3>
+            <p class="brand-card__meta">
+              <i class="fa fa-calendar-o" aria-hidden="true"></i>
+              Created {{ brand.created_on || '—' }}
+            </p>
+          </div>
+        </div>
+        <div class="brand-card__actions">
+          <button type="button" class="btn btn--ghost" (click)="editBrand(brand.id)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            Edit
+          </button>
+          <button type="button" class="btn btn--danger" (click)="deleteBrand(brand.id)">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+            Delete
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <div class="brands-list" *ngIf="!brandsLoading && brands.length && viewMode === 'list'">
+      <article class="brand-row" *ngFor="let brand of brands; let i = index">
+        <div class="brand-row__index">{{ brandPaginator.showingFrom + i }}</div>
+        <div class="brand-row__avatar">
+          <span>{{ brand.brand_name?.charAt(0) | uppercase }}</span>
+        </div>
+        <div class="brand-row__info">
+          <h3 class="brand-row__name">{{ brand.brand_name }}</h3>
+          <p class="brand-row__meta">
+            <i class="fa fa-calendar-o" aria-hidden="true"></i>
+            Created {{ brand.created_on || '—' }}
+          </p>
+        </div>
+        <div class="brand-row__actions">
+          <button type="button" class="btn btn--ghost btn--sm" (click)="editBrand(brand.id)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            Edit
+          </button>
+          <button type="button" class="btn btn--danger btn--sm" (click)="deleteBrand(brand.id)">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+            Delete
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <ng-container
+      *ngTemplateOutlet="brandsPaginationNav; context: { p: brandPaginator }"
+    ></ng-container>
+
+    <div class="brands-empty" *ngIf="!brandsLoading && !brands.length">
+      <span class="brands-empty__icon">
+        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+      </span>
+      <h3 class="brands-empty__title">No brands yet</h3>
+      <p class="brands-empty__text">Create your first brand to start organizing products.</p>
+      <button type="button" class="btn btn--primary" (click)="addBrand()">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+        Add brand
+      </button>
+    </div>
+  </section>
+
+  <div class="brands-overlay" *ngIf="showForm">
+    <div class="brands-overlay-backdrop" (click)="closeForm()"></div>
+    <div class="brands-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="brands-modal-header">
+        <div>
+          <span class="brands-modal-badge">{{ editBrandId ? 'EDIT' : 'NEW' }}</span>
+          <h2 class="brands-modal-title">{{ editBrandId ? 'Edit brand' : 'Add brand' }}</h2>
+        </div>
+        <button type="button" class="brands-modal-close" (click)="closeForm()" aria-label="Close">&times;</button>
+      </div>
+      <div class="brands-modal-body">
+        <form class="brands-form" [formGroup]="brandForm">
+          <div class="form-row" [class.form-row--invalid]="brandForm.get('name')?.invalid && brandForm.get('name')?.touched">
+            <label for="brand-name">Brand name</label>
+            <input
+              id="brand-name"
+              type="text"
+              formControlName="name"
+              class="form-control"
+              placeholder="Enter brand name"
+            />
+            <span class="form-error" *ngIf="brandForm.get('name')?.invalid && brandForm.get('name')?.touched">
+              Brand name is required.
+            </span>
+          </div>
+        </form>
+      </div>
+      <div class="brands-modal-footer">
+        <button type="button" class="btn btn--ghost" (click)="closeForm()">Cancel</button>
+        <button type="button" class="btn btn--primary" (click)="saveBrand()">
+          {{ editBrandId ? 'Save changes' : 'Create brand' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

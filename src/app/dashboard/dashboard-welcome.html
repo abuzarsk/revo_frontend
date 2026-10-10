@@ -1,0 +1,91 @@
+<div class="welcome-page">
+  <section class="hero-card">
+    <div class="hero-card__content">
+      <span class="hero-card__badge">{{ portalBadge }}</span>
+      <h1 class="hero-card__title">Hi, {{ userName }}</h1>
+      <p class="hero-card__meta">{{ todayLabel }} • {{ welcomeMessage }}</p>
+    </div>
+
+    <div class="hero-card__stats">
+      <article class="hero-stat">
+        <span class="hero-stat__icon"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
+        <div>
+          <p class="hero-stat__label">Products</p>
+          <p class="hero-stat__value">{{ totalProducts }}</p>
+        </div>
+      </article>
+      <!-- <article class="hero-stat">
+        <span class="hero-stat__icon"><i class="fa fa-inr" aria-hidden="true"></i></span>
+        <div>
+          <p class="hero-stat__label">Earned</p>
+          <p class="hero-stat__value">₹{{ earnedAmount }}</p>
+        </div>
+      </article> -->
+    </div>
+  </section>
+
+  <!--<section class="quick-actions">
+    @if (isLoading) {
+      <p class="welcome-loading">Loading dashboard...</p>
+    } @else if (!quickActions.length) {
+      <p class="welcome-empty">No quick actions available.</p>
+    }
+    @for (action of quickActions; track action.title) {
+      @if (action.route) {
+        <a class="quick-action" [routerLink]="action.route">
+          <span class="quick-action__icon quick-action__icon--{{ action.tone }}">
+            <i class="fa {{ action.icon }}" aria-hidden="true"></i>
+          </span>
+          <div>
+            <h2 class="quick-action__title">{{ action.title }}</h2>
+            <p class="quick-action__subtitle">{{ action.subtitle }}</p>
+          </div>
+        </a>
+      } @else {
+        <button type="button" class="quick-action">
+          <span class="quick-action__icon quick-action__icon--{{ action.tone }}">
+            <i class="fa {{ action.icon }}" aria-hidden="true"></i>
+          </span>
+          <div>
+            <h2 class="quick-action__title">{{ action.title }}</h2>
+            <p class="quick-action__subtitle">{{ action.subtitle }}</p>
+          </div>
+        </button>
+      }
+    }
+  </section>-->
+
+  <section class="status-section">
+    <div class="status-section__header">
+      <h2 class="status-section__title"> STATUSES</h2>
+      <button type="button" class="status-section__filter" (click)="selectedStatusKey = null">
+        <!-- <i class="fa fa-filter" aria-hidden="true"></i>
+        Tap to filter
+        <i class="fa fa-long-arrow-right" aria-hidden="true"></i> -->
+      </button>
+    </div>
+
+    <div class="status-grid">
+      @if (!isLoading && !orderStatuses.length) {
+        <p class="welcome-empty">No status data available.</p>
+      }
+      @for (status of orderStatuses; track status.key) {
+        <button
+          type="button"
+          class="status-card"
+          [class.status-card--active]="selectedStatusKey === status.key"
+          (click)="toggleStatusFilter(status.key)"
+        >
+          @if (status.badge) {
+            <span class="status-card__badge">{{ status.badge }}</span>
+          }
+          <span class="status-card__icon status-card__icon--{{ status.tone }}">
+            <i class="fa {{ status.icon }}" aria-hidden="true"></i>
+          </span>
+          <p class="status-card__count">{{ status.count }}</p>
+          <p class="status-card__label">{{ status.label }}</p>
+        </button>
+      }
+    </div>
+  </section>
+</div>

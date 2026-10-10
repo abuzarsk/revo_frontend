@@ -1,0 +1,143 @@
+<div class="mediators-page" *ngIf="role == ENTITY_TYPE_IDS.ADMIN">
+  <div *ngIf="loading" class="loading">Loading mediators…</div>
+  <div *ngIf="!loading && mediatorsList.length === 0" class="empty">No mediators found.</div>
+  <div *ngIf="!loading && mediatorsList.length > 0" class="table-wrap">
+    <table class="data-table data-table--wide">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Profile</th>
+          <th>Alias</th>
+          <th>Size</th>
+          <th>Group link</th>
+          <th>Slots / month</th>
+          <th>Description</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Default role</th>
+          <th>Created source</th>
+          <th>User created on</th>
+          <th>Updated on</th>
+          <th>Created on</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of mediatorsList; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td class="cell-logo">
+            <img *ngIf="getLogoUrl(row.profile_pic)" [src]="getLogoUrl(row.profile_pic)" alt="Profile" class="logo-img" />
+            <span *ngIf="!getLogoUrl(row.profile_pic)">—</span>
+          </td>
+          <td>{{ row.alias ?? '—' }}</td>
+          <td>{{ row.size ?? '—' }}</td>
+          <td class="cell-link">
+            <a *ngIf="row.group_link" [href]="row.group_link" target="_blank" rel="noopener">
+                {{ row.group_link }}
+            </a>
+            <span *ngIf="!row.group_link">—</span>
+          </td>
+          <td>{{ row.slot_in_a_month ?? '—' }}</td>
+          <td>{{ row.description ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_name ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_email ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_phone ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_default_role ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_created_source ?? '—' }}</td>
+          <td>{{ row.user?.created_on ?? '—' }}</td>
+          <td>{{ row.updated_on ?? '—' }}</td>
+          <td>{{ row.created_on ?? '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mediators-page mediators-page--company" *ngIf="role != ENTITY_TYPE_IDS.ADMIN">
+  <div class="tabs-container">
+    <div class="tabs">
+      <button
+        type="button"
+        class="tab"
+        [class.active]="activeMediatorTab === 'mediators'"
+        (click)="setMediatorTab('mediators')">
+        Mediators
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="activeMediatorTab === 'requested'"
+        (click)="setMediatorTab('requested')">
+        Requested Mediators
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="activeMediatorTab === 'rejected'"
+        (click)="setMediatorTab('rejected')">
+        Rejected Mediators
+      </button>
+    </div>
+  </div>
+
+  <div class="tab-content">
+    <div *ngIf="activeMediatorTab === 'mediators'" class="panel">
+      <div *ngIf="loadingCompanyMediators" class="loading">Loading mediators…</div>
+      <div *ngIf="!loadingCompanyMediators && companyMediatorsList.length === 0" class="empty">No mediators yet.</div>
+      <div *ngFor="let m of companyMediatorsList" class="mediator-card">
+        <div class="mediator-card-main">
+          <div class="mediator-card-logo" *ngIf="m.mediator_profile_pic">
+            <img [src]="getLogoUrl(m.mediator_profile_pic)" alt="" />
+          </div>
+          <div class="mediator-card-text">
+            <div class="mediator-card-name">{{ m.user?.mediator_alias || m.mediator_alias || '—' }}</div>
+            <div class="mediator-card-meta">{{ m.mediator_description || 'No description' }}</div>
+            <span class="badge-mediator badge-mediator--connected">Connected</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeMediatorTab === 'requested'" class="panel">
+      <div *ngIf="loadingCompanyMediators" class="loading">Loading…</div>
+      <div *ngIf="!loadingCompanyMediators && requestedMediatorsList.length === 0" class="empty">No requested mediators.</div>
+      <div *ngFor="let m of requestedMediatorsList" class="mediator-card mediator-card--with-actions">
+        <div class="mediator-card-main">
+          <div class="mediator-card-logo" *ngIf="m.mediator_profile_pic">
+            <img [src]="getLogoUrl(m.mediator_profile_pic)" alt="" />
+          </div>
+          <div class="mediator-card-text">
+            <div class="mediator-card-name">{{ m.user?.mediator_alias || m.mediator_alias || '—' }}</div>
+            <div class="mediator-card-meta">{{ m.description || '—' }}</div>
+            <span class="badge-mediator badge-mediator--requested">Requested</span>
+          </div>
+        </div>
+        <div class="mediator-card-actions">
+          <button type="button" class="btn-reject-request" (click)="rejectMediatorRequest(m)">
+            Reject request
+          </button>
+          <button type="button" class="btn-accept-request" (click)="acceptMediatorRequest(m)">
+            Accept request
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeMediatorTab === 'rejected'" class="panel">
+      <div *ngIf="loadingCompanyMediators" class="loading">Loading…</div>
+      <div *ngIf="!loadingCompanyMediators && rejectedMediatorsList.length === 0" class="empty">No rejected mediators.</div>
+      <div *ngFor="let m of rejectedMediatorsList" class="mediator-card">
+        <div class="mediator-card-main">
+          <div class="mediator-card-logo" *ngIf="m.mediator_profile_pic">
+            <img [src]="getLogoUrl(m.mediator_profile_pic)" alt="" />
+          </div>
+          <div class="mediator-card-text">
+            <div class="mediator-card-name">{{ m.user?.mediator_alias || m.mediator_alias || '—' }}</div>
+            <div class="mediator-card-meta">{{ m.description || '—' }}</div>
+            <span class="badge-mediator badge-mediator--rejected">Rejected</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

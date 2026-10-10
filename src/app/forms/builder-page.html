@@ -1,0 +1,76 @@
+<section class="dashboard-section">
+  <div class="section-header">
+    <div class="header-left">
+      <div style="display: flex; align-items: center; gap: 10px;">
+      <button type="button" class="back-btn" (click)="goToProductPage()" title="Back to Products">
+        ← 
+      </button>
+      <ng-container *ngIf="formDef$ | async as form">
+        <h2 *ngIf="form.title && form.title !== 'Untitled Form'" class="section-title">{{ formType==1 ? 'Product' : 'Refund' }}  Form Name - {{ form.title }}</h2>
+        <h2 *ngIf="!form.title || form.title === 'Untitled Form'" class="section-title">{{ formType==1 ? 'Product' : 'Refund' }} Form Builder</h2>
+        <!-- <p class="section-subtitle" *ngIf="form.title && form.title !== 'Untitled Form'">
+          Design and customize your form elements.
+        </p>
+        <p class="section-subtitle" *ngIf="!form.title || form.title === 'Untitled Form'">
+          Design and customize your form elements.
+        </p> -->
+      </ng-container>
+      </div>
+      <ng-container *ngIf="!(formDef$ | async)">
+        <h2 class="section-title">Form Builder</h2>
+        <p class="section-subtitle">
+          Design and customize your form elements.
+        </p>
+      </ng-container>
+    </div>
+    <div class="header-right">
+      <div class="form-status" *ngIf="formStatus">
+        <span class="status-label">Status:</span>
+        <span class="status-badge" [class.status-active]="formStatus === '1' || formStatus === 'active' || formStatus === 'published'"
+              [class.status-draft]="formStatus === '0' || formStatus === 'draft'"
+              [class.status-inactive]="formStatus === '2' || formStatus === 'inactive' || formStatus === 'unpublished'">
+          {{ getStatusDisplay(formStatus) }}
+        </span>
+      </div>
+
+      <button 
+        *ngIf="!isPublished() && formId" 
+        type="button" 
+        class="publish-btn"
+        [disabled]="isPublishing"
+        (click)="publishForm()">
+        <span *ngIf="!isPublishing">Publish</span>
+        <span *ngIf="isPublishing">Publishing...</span>
+      </button>
+      <button 
+        *ngIf="isPublished() && formId" 
+        type="button" 
+        class="unpublish-btn"
+        [disabled]="isUnpublishing"
+        (click)="unpublishForm()">
+        <span *ngIf="!isUnpublishing">Unpublish</span>
+        <span *ngIf="isUnpublishing">Unpublishing...</span>
+      </button>
+      <nav class="header-nav">
+        <a routerLink="/preview/{{form_id}}" routerLinkActive="active" class="nav-link">
+          Preview
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="app-main">
+    <section class="left-panel" *ngIf="formStatus !== '1'">
+      <app-form-elements-panel></app-form-elements-panel>
+    </section>
+
+    <section class="center-panel" [class.full-width]="formStatus === '1'">
+      <app-form-canvas [form_json_data]="form_json_data" [formStatus]="formStatus"></app-form-canvas>
+    </section>
+
+    <section class="right-panel" *ngIf="formStatus !== '1'">
+      <app-properties-panel></app-properties-panel>
+    </section>
+  </main>
+</section>
+

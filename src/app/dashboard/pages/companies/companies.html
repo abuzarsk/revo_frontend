@@ -1,0 +1,310 @@
+<div class="companies-page" *ngIf="role == ENTITY_TYPE_IDS.ADMIN">
+  <div class="tabs">
+    <button
+      type="button"
+      class="tab"
+      [class.active]="activeTab === 'companies'"
+      (click)="setTab('companies')">
+      Companies
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="activeTab === 'requests'"
+      (click)="setTab('requests')">
+      Company Requests
+    </button>
+  </div>
+
+  <div class="tab-content">
+    <!-- Companies tab -->
+    <div *ngIf="activeTab === 'companies'" class="panel">
+      <div *ngIf="loadingCompanies" class="loading">Loading companies…</div>
+      <div *ngIf="!loadingCompanies && companiesList.length === 0" class="empty">No companies found.</div>
+      <div *ngIf="!loadingCompanies && companiesList.length > 0" class="table-wrap">
+        <table class="data-table data-table--wide">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Logo</th>
+              <th>Alias</th>
+              <th>Description</th>
+              <th>Group link</th>
+              <th>Company size</th>
+              <th>Slots / month</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Created source</th>
+              <th>User created on</th>
+              <th>Company Verified on</th>
+              <th>Company updated on</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of companiesList; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td class="cell-logo">
+                <img *ngIf="getLogoUrl(row.logo)" [src]="getLogoUrl(row.logo)" alt="Logo" class="logo-img" />
+                <span *ngIf="!getLogoUrl(row.logo)">—</span>
+              </td>
+              <td>{{ row.alias ?? '—' }}</td>
+              <td>{{ row.description ?? '—' }}</td>
+              <td class="cell-link">
+                <a *ngIf="row.group_link" [href]="row.group_link" target="_blank" rel="noopener">Link</a>
+                <span *ngIf="!row.group_link">—</span>
+              </td>
+              <td>{{ row.company_size ?? '—' }}</td>
+              <td>{{ row.slot_in_a_month ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_name ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_email ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_phone ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_created_source ?? '—' }}</td>
+              <td>{{ row.user?.created_on ?? '—' }}</td>
+              <td>{{ row.created_on ?? '—' }}</td>
+              <td>{{ row.updated_on ?? '—' }}</td>
+              <td>{{ getStatusLabel(row.status) }}</td>
+              <td>
+                <div class="actions-cell">
+                  <button type="button" class="button button--warning" *ngIf="row.status === 1 && row.status != 5" (click)="pauseCompanyRequest(row)">Pause</button>
+                  <button type="button" class="button button--success" *ngIf="row.status === 3 && row.status != 5" (click)="resumeCompanyRequest(row)">Resume</button>
+                  <button type="button" class="button button--secondary" *ngIf="(row.status === 1 || row.status==3) && row.status != 5"   (click)="cancelCompanyRequest(row)">Cancel</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Company Requests tab -->
+    <div *ngIf="activeTab === 'requests'" class="panel">
+      <div *ngIf="loadingRequests" class="loading">Loading company requests…</div>
+      <div *ngIf="!loadingRequests && companyRequestsList.length === 0" class="empty">No company requests found.</div>
+      <div *ngIf="!loadingRequests && companyRequestsList.length > 0" class="table-wrap">
+        <table class="data-table data-table--wide">
+          <thead>
+            <tr>
+              <th>#</th>
+
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Created source</th>
+              <th>Logo</th>
+              <th>Alias</th>
+              <th>Description</th>
+              <th>Group link</th>
+              <th>Company size</th>
+              <th>Slots / month</th>
+              <th>User created on</th>
+              <th>Company created on</th>
+              <th>Requested on</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of companyRequestsList; let i = index">
+              <td>{{ i + 1 }}</td>
+              
+              <td>{{ row.user?.revo_user_name ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_email ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_phone ?? '—' }}</td>
+              <td>{{ row.user?.revo_user_created_source ?? '—' }}</td>
+              <td class="cell-logo">
+                <img *ngIf="getLogoUrl(row.company?.[0]?.logo)" [src]="getLogoUrl(row.company?.[0]?.logo)" alt="Logo" class="logo-img" />
+                <span *ngIf="!getLogoUrl(row.company?.[0]?.logo)">—</span>
+              </td>
+              <td>{{ row.company?.[0]?.alias ?? '—' }}</td>
+              <td>{{ row.company?.[0]?.description ?? '—' }}</td>
+              <td class="cell-link">
+                <a *ngIf="row.company?.[0]?.group_link" [href]="row.company[0].group_link" target="_blank" rel="noopener">{{row.company?.[0]?.group_link}}</a>
+                <span *ngIf="!row.company?.[0]?.group_link">—</span>
+              </td>
+              <td>{{ row.company?.[0]?.company_size ?? '—' }}</td>
+              <td>{{ row.company?.[0]?.slot_in_a_month ?? '—' }}</td>
+              <td>{{ row.user?.created_on ?? '—' }}</td>
+              <td>{{ row.company?.[0]?.created_on ?? '—' }}</td>
+              <td>{{ row.created_on ?? '—' }}</td>
+              <td>{{ getStatusLabel(row.status) }}</td>
+              <td>
+                <div class="actions-cell">
+                  <button type="button" class="button button--primary"  (click)="approveCompanyRequest(row)">Approve</button>
+                  <button type="button" class="button button--secondary" (click)="rejectCompanyRequest(row)">Reject</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="companies-page" *ngIf="role == ENTITY_TYPE_IDS.MEDIATOR">
+  <div class="tabs-container">
+    <div class="tabs">
+
+
+    <button
+      type="button"
+      class="tab"
+      [class.active]="activeTab === 'companies'"
+      (click)="setTab('companies')">
+      Companies
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="activeTab === 'requests'"
+      (click)="setTab('requests')">
+      Requested Companies
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="activeTab === 'rejected'"
+      (click)="setTab('rejected')">
+      Rejected By Companies
+    </button>
+  </div>
+    <div>
+      <button type="button" class="button button--primary" (click)="openConnectOverlay()">
+        Connect
+      </button>
+    </div>
+
+  </div>
+
+  <div class="tab-content">
+    <div *ngIf="activeTab === 'companies'" class="panel">
+      <h1>Companies</h1>
+      <div *ngFor="let c of mediatorConnectedCompanies">
+        <div class="connect-result-item">
+          <div class="connect-result-main">
+            <div class="connect-result-logo" *ngIf="c.logo">
+              <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" />
+            </div>
+            <div class="connect-result-text">
+              <div class="connect-result-name">{{ c.company_alias || '—' }}</div>
+              <div class="connect-result-meta">
+                {{ c.company_description || 'No description' }}
+              </div>
+              <div class="connect-result-updated">
+                Connected on: {{ c.updated_on ? (c.updated_on | date:'medium') : '—' }}
+                <span class="badge-connected badge-connected--connected">Connected</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="activeTab === 'requests'" class="panel">
+      <h1>Requested Companies</h1>
+      <div *ngFor="let c of mediatorRequestedCompanies">
+        <div class="connect-result-item">
+          <div class="connect-result-main">
+            <div class="connect-result-logo" *ngIf="c.logo">
+              <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" />
+            </div>
+            <div class="connect-result-text">
+              <div class="connect-result-name">{{ c.company_alias || '—' }}</div>
+              <div class="connect-result-meta">
+                {{ c.company_description || 'No description' }}
+              </div>
+              <div class="connect-result-updated">
+                Requested on: {{ c.updated_on ? (c.updated_on | date:'medium') : '—' }}
+                <span class="badge-connected badge-connected--requested">Requested</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div *ngIf="activeTab === 'rejected'" class="panel">
+      <h1>Rejected By Companies</h1>
+      <div *ngFor="let c of mediatorRejectedCompanies">
+        <div class="connect-result-item">
+          <div class="connect-result-main">
+            <div class="connect-result-logo" *ngIf="c.logo">
+              <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" />
+            </div>
+            <div class="connect-result-text">
+              <div class="connect-result-name">{{ c.company_alias || '—' }}</div>
+              <div class="connect-result-meta">
+                {{ c.company_description || 'No description' }}
+              </div>
+              <div class="connect-result-updated">
+                Rejected on: {{ c.updated_on ? (c.updated_on | date:'medium') : '—' }}
+                <span class="badge-connected badge-connected--rejected">Rejected</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  
+  </div>
+
+  <!-- Connect overlay -->
+  <div class="connect-overlay" *ngIf="showConnectOverlay">
+    <div class="connect-overlay-backdrop" (click)="closeConnectOverlay()"></div>
+    <div class="connect-modal" (click)="$event.stopPropagation()">
+      <div class="connect-modal-header">
+        <h2>Connect to Company</h2>
+        <button type="button" class="connect-modal-close" (click)="closeConnectOverlay()">&times;</button>
+      </div>
+      <div class="connect-modal-body">
+        <div class="form-row">
+          <label>Search companies</label>
+          <input
+            type="text"
+            [(ngModel)]="connectSearch"
+            (ngModelChange)="searchCompanies()"
+            placeholder="Type company alias or description" />
+        </div>
+        <div class="connect-results">
+          <div *ngIf="!connectResults.length && connectSearch">
+            No matching companies.
+          </div>
+          <div class="connect-result-item" *ngFor="let c of connectResults">
+            <div class="connect-result-main">
+              <div class="connect-result-logo">
+                <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" class="logo-img" />
+                <span *ngIf="!c.logo"></span>
+              </div>
+              <div class="connect-result-name">{{ c.alias || '—' }}</div>
+              <!-- <div class="connect-result-meta">
+                {{ c.description || 'No description' }}
+              </div> -->
+            </div>
+            <div class="connect-result-actions">
+              <button
+                type="button"
+                class="button button--primary"
+                *ngIf="canShowConnectButton(c)"
+                [disabled]="isConnectProcessing(c)"
+                [class.button--loading]="isConnectProcessing(c)"
+                (click)="revoConnect(c)"
+              >
+                {{ getConnectButtonLabel(c) }}
+              </button>
+
+              <div *ngIf="isConnectRequested(c)" class="status-requested">Requested</div>
+              <div *ngIf="isConnectConnected(c)" class="status-connected">Connected</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

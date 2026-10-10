@@ -1,0 +1,85 @@
+<div class="usercompanies-page">
+  <div class="usercompanies-header">
+    <h1 class="usercompanies-title">User companies</h1>
+    <button type="button" class="button button--primary" (click)="openConnect()">
+      Connect
+    </button>
+
+   
+  </div>
+  
+  <section class="userconnections-section" *ngIf="userConnections.length > 0">
+    <div class="userconnections-section-header">
+      <h2 class="userconnections-section-title">Connected companies</h2>
+      <span class="userconnections-count">{{ userConnections.length }}</span>
+    </div>
+
+    <div class="userconnections-list">
+      <article class="userconnections-item" *ngFor="let c of userConnections">
+        <div class="userconnections-item-main">
+          <div class="userconnections-item-logo">
+            <img [src]="getCompanyLogoSrc(c)" alt="" class="logo-img" />
+          </div>
+          <div class="userconnections-item-name">
+            {{ c.alias || '—' }}
+          </div>
+        </div>
+        <div class="userconnections-item-actions">
+          <button type="button" class="button button--danger" (click)="disconnect(c)">
+            Disconnect
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="usercompanies-overlay" *ngIf="showConnectOverlay">
+    <div class="usercompanies-overlay-backdrop" (click)="closeConnect()"></div>
+    <div class="usercompanies-modal usercompanies-modal--wide" (click)="$event.stopPropagation()">
+      <div class="usercompanies-modal-header">
+        <h2 class="usercompanies-modal-title">Connect</h2>
+        <button type="button" class="usercompanies-modal-close" (click)="closeConnect()">&times;</button>
+      </div>
+      <div class="usercompanies-modal-body">
+        <div class="form-row">
+          <label for="usercompanies-connect-search">Search companies</label>
+          <input
+            id="usercompanies-connect-search"
+            type="text"
+            [(ngModel)]="connectSearch"
+            (ngModelChange)="searchCompanies()"
+            placeholder="Type company alias or description" />
+        </div>
+        <div class="connect-results">
+          <div *ngIf="!connectResults.length && connectSearch.trim()">
+            No matching companies.
+          </div>
+          <div class="connect-result-item" *ngFor="let c of connectResults">
+            <div class="connect-result-main">
+              <div class="connect-result-logo">
+                <img *ngIf="c.logo" [src]="getCompanyLogoSrc(c)" alt="" class="logo-img" />
+                <span *ngIf="!c.logo" class="connect-result-logo-placeholder"></span>
+              </div>
+              <div class="connect-result-name">{{ c.alias || '—' }}</div>
+            </div>
+            <div class="connect-result-actions">
+              <button
+                type="button"
+                class="button button--primary"
+                *ngIf="!c.connected || c.connected === 0 || c.connected == 2"
+                (click)="revoConnect(c)">
+                Connect
+              </button>
+              <div *ngIf="c.connected != null && c.connected == 1" class="status-connected">
+                Connected
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="usercompanies-modal-footer">
+        <button type="button" class="button button--secondary" (click)="closeConnect()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

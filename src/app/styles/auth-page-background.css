@@ -1,0 +1,34 @@
+:host {
+  position: relative;
+  isolation: isolate;
+}
+
+:host::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: url('/images/auth-background.jpg') center / cover no-repeat;
+  filter: blur(22px);
+  transform: scale(1.1);
+  pointer-events: none;
+}
+
+:host::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.82) 0%,
+    rgba(238, 242, 255, 0.78) 45%,
+    rgba(245, 243, 255, 0.8) 100%
+  );
+  pointer-events: none;
+}
+
+:host > *:not(.success-overlay) {
+  position: relative;
+  z-index: 1;
+}
