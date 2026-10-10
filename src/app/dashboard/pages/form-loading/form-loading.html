@@ -1,0 +1,656 @@
+<div class="form-page">
+  <header class="page-header">
+    <div class="page-header__inner">
+      <a class="brand" (click)="goHome()" role="link" tabindex="0">
+        <span class="brand__mark" aria-hidden="true">R</span>
+        <span class="brand__text">Revo</span>
+      </a>
+      <div class="page-header__actions">
+        <a href="mailto:support@revo.app" class="header-link">Support</a>
+        <a *ngIf="!isLoggedIn" routerLink="/login" class="header-btn">Sign In</a>
+        <a *ngIf="isLoggedIn" routerLink="/" class="header-btn">Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+
+  <main class="page-main">
+    <section class="dashboard-section">
+      <div class="section-header">
+        <div class="header-left">
+          <div class="header-titles">
+            <h2 class="section-title">{{ isRefundForm ? 'Refund' : 'Product' }} form</h2>
+            <p class="section-subtitle" *ngIf="showGuestSteps">
+              {{ guestStep() === 1 ? 'Step 1 · Fill product details' : 'Step 2 · Enter your email' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="step-nav" *ngIf="showGuestSteps" aria-label="Form steps">
+        <button
+          type="button"
+          class="step-nav__item"
+          [class.step-nav__item--active]="guestStep() === 1"
+          [class.step-nav__item--done]="guestStep() > 1"
+          (click)="goToGuestStep1()"
+        >
+          <span class="step-nav__index">1</span>
+          <span class="step-nav__text">
+            <span class="step-nav__title">Details</span>
+            <span class="step-nav__desc">Product & form</span>
+          </span>
+        </button>
+
+        <div class="step-nav__connector" [class.step-nav__connector--active]="guestStep() === 2"></div>
+
+        <div
+          class="step-nav__item"
+          [class.step-nav__item--active]="guestStep() === 2"
+          [class.step-nav__item--locked]="guestStep() === 1"
+        >
+          <span class="step-nav__index">2</span>
+          <span class="step-nav__text">
+            <span class="step-nav__title">Personal details</span>
+            <span class="step-nav__desc">Continue account</span>
+          </span>
+        </div>
+      </nav>
+
+      <ng-container *ngIf="showStep1Content">
+      <div *ngIf="productLoading()" class="loading-container">
+        <span class="status-dot" aria-hidden="true"></span>
+        <p>Loading product details…</p>
+      </div>
+
+  <div class="product-summary-card" *ngIf="!productLoading() && hasSummaryDetails">
+    <div class="summary-media">
+      <div class="summary-media-block">
+        <span class="meta-label">Product photo</span>
+        <img
+          *ngIf="productPhotoUrl"
+          [src]="productPhotoUrl"
+          [alt]="productDisplayName"
+          class="product-photo"
+        />
+        <div class="product-photo-placeholder" *ngIf="!productPhotoUrl" aria-hidden="true">
+          <span>{{ productDisplayName.charAt(0) | uppercase }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-meta">
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">Name</span>
+          <span class="meta-value">{{ productDisplayName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Brand name</span>
+          <span class="meta-value">{{ productBrandName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Is multiple submission by one</span>
+          <span class="meta-value">{{ isMultipleSubmissionByOne }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Max submission by one</span>
+          <span class="meta-value">{{ maxSubmissionByOne }}</span>
+        </div>
+        <div class="meta-item meta-item--company">
+          <span class="meta-label">Company name</span>
+          <div class="company-name-row">
+            <img
+              *ngIf="companyLogoUrl"
+              [src]="companyLogoUrl"
+              [alt]="companyDisplayName"
+              class="company-logo-inline"
+            />
+            <div
+              class="company-logo-inline company-logo-inline--placeholder"
+              *ngIf="!companyLogoUrl"
+              aria-hidden="true"
+            >
+              {{ companyDisplayName.charAt(0) | uppercase }}
+            </div>
+            <span class="meta-value">{{ companyDisplayName }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading() && !formLoaded()" class="loading-container">
+    <p>Loading form...</p>
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading() &&
+      !formLoaded() &&
+      !maxlimitreached() &&
+      !errorMessage() &&
+      (form_json()?.length ?? 0) === 0
+    "
+    class="error-container"
+  >
+    <p>Form not found or could not be loaded.</p>
+  </div>
+
+  <div *ngIf="errorMessage()" class="error-container">
+    <p>{{ errorMessage() }}</p>
+  </div>
+
+  <div class="preview-main" *ngIf="!isLoading() && formLoaded() && !maxlimitreached()">
+    <ng-container *ngIf="formDef$ | async as form">
+      <div class="preview-card">
+        <!-- <h1 class="preview-title" >{{ form.title }}</h1> -->
+
+        <form class="preview-form" (submit)="$event.preventDefault(); onSubmit()">
+          <ng-container *ngFor="let el of form.elements">
+          <ng-container [ngSwitch]="el.type">
+            <ng-container *ngSwitchCase="'heading'">
+              <h2
+                class="heading"
+                [ngStyle]="{
+                  'font-size.px': el.styles?.fontSize,
+                  color: el.styles?.color,
+                  'text-align': el.styles?.textAlign
+                }"
+              >
+                {{ el.label }}
+              </h2>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'divider'">
+              <hr />
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'image'">
+              <img
+                [src]="$any(el).src || ''"
+                [alt]="$any(el).alt || ''"
+                class="preview-image"
+              />
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'button'"></ng-container>
+
+            <ng-container *ngSwitchCase="'text'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="text"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                [disabled]="hasSubmission()"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'email'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="email"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                [disabled]="hasSubmission()"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'number'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="number"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                [disabled]="hasSubmission()"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'textarea'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <textarea
+                class="field-textarea"
+                [class.error]="hasErrors(el.id)"
+                [placeholder]="el.placeholder"
+                [value]="getFieldValue(el.id).value"
+                [disabled]="hasSubmission()"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              ></textarea>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'dropdown'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <select
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [value]="getFieldValue(el.id).value || ''"
+                [disabled]="hasSubmission()"
+                (change)="setFieldValue(el.id, $any($event.target).value || ''); onFieldBlur(el.id)"
+                (blur)="onFieldBlur(el.id)"
+              >
+                <option [value]="''">
+                  {{ el.placeholder || 'Select...' }}
+                </option>
+                <option
+                  *ngFor="let opt of $any(el).options"
+                  [value]="opt"
+                >
+                  {{ opt }}
+                </option>
+              </select>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'radio'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <div
+                class="choice-row"
+                *ngFor="let opt of $any(el).options"
+              >
+                <input
+                  type="radio"
+                  [name]="el.id"
+                  [value]="opt"
+                  [checked]="getFieldValue(el.id).value === opt"
+                  [disabled]="hasSubmission()"
+                  (change)="setFieldValue(el.id, opt); onFieldBlur(el.id)"
+                  (blur)="onFieldBlur(el.id)"
+                />
+                {{ opt }}
+              </div>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'checkbox'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <div
+                class="choice-row"
+                *ngFor="let opt of $any(el).options; let i = index"
+              >
+                <input
+                  type="checkbox"
+                  [value]="opt"
+                  [checked]="getFieldValue(el.id + '_' + i).value"
+                  [disabled]="hasSubmission()"
+                  (change)="setFieldValue(el.id + '_' + i, $any($event.target).checked); updateCheckboxGroup(el.id, opt, $any($event.target).checked)"
+                  (blur)="onFieldBlur(el.id)"
+                />
+                {{ opt }}
+              </div>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'date'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="date"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [value]="getFieldValue(el.id).value"
+                [disabled]="hasSubmission()"
+                (input)="setFieldValue(el.id, $any($event.target).value)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'file'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <input
+                type="file"
+                class="field-input"
+                [class.error]="hasErrors(el.id)"
+                [disabled]="hasSubmission()"
+                (change)="setFieldValue(el.id, $any($event.target).files?.length ? 'file_selected' : ''); onFieldBlur(el.id)"
+                (blur)="onFieldBlur(el.id)"
+              />
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'image_upload'">
+              <label class="field-label">
+                {{ el.label }}
+                <span *ngIf="el.required" class="required">*</span>
+              </label>
+              <div
+                class="image-upload-field"
+                [class.image-upload-field--uploaded]="isImageUploaded(el.id)"
+                [class.image-upload-field--error]="hasErrors(el.id) || getImageUploadError(el.id)"
+              >
+                <input
+                  type="file"
+                  class="field-input"
+                  accept="image/*"
+                  [class.error]="hasErrors(el.id)"
+                  [disabled]="hasSubmission() || isImageUploading(el.id)"
+                  (change)="onImageUploadSelected(el.id, $event)"
+                  (blur)="onFieldBlur(el.id)"
+                />
+                <span class="image-upload-status" *ngIf="isImageUploading(el.id)">
+                  <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+                  Uploading…
+                </span>
+                <span class="image-upload-status image-upload-status--ok" *ngIf="isImageUploaded(el.id)">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
+                  Uploaded
+                </span>
+                <span class="image-upload-status image-upload-status--error" *ngIf="getImageUploadError(el.id) as uploadErr">
+                  <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                  {{ uploadErr }}
+                </span>
+                <div class="image-upload-preview-wrap" *ngIf="imageUploadPreviews()[el.id] as preview">
+                  <img
+                    [src]="preview"
+                    alt="Selected image preview"
+                    class="image-upload-preview"
+                  />
+                </div>
+              </div>
+              <p class="error-text" *ngFor="let error of getErrors(el.id)">
+                {{ error }}
+              </p>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </form>
+
+        <div class="submit-button-container" *ngIf="this.token_obj?.token">
+          <div *ngIf="submitError" class="error-message" style="color: red; margin-bottom: 10px;">
+            {{ submitError }}
+          </div>
+          <div *ngIf="submitSuccess" class="success-message" style="color: green; margin-bottom: 10px;">
+            Form submitted successfully!
+          </div>
+          <button
+            *ngIf="!hasSubmission()"
+            type="button"
+            class="submit-button primary"
+            (click)="onSubmit()"
+            [disabled]="isSubmitting()"
+          >
+            <span *ngIf="!isSubmitting()">Submit</span>
+            <span *ngIf="isSubmitting()">Submitting...</span>
+          </button>
+        </div>
+
+        <div class="submit-button-container" *ngIf="!token_obj?.token">
+          <button
+            type="button"
+            class="submit-button primary"
+            (click)="onNextStep()"
+          >
+            Next step
+          </button>
+        </div>
+
+
+      </div>
+    </ng-container>
+  </div>
+      </ng-container>
+
+      <!-- Step 2: Email / auth (logged out) -->
+      <div class="email-step" *ngIf="showGuestEmailStep">
+        <div class="email-form" [class.email-form--wide]="showGuestSignupFields">
+          <div class="email-form__icon" aria-hidden="true">
+            <i
+              class="fa"
+              [class.fa-envelope-o]="emailCheckStatus() == null"
+              [class.fa-lock]="emailCheckStatus() === 1"
+              [class.fa-user-plus]="emailCheckStatus() === 2"
+            ></i>
+          </div>
+          <h2 class="email-form__title">{{ guestStep2Title }}</h2>
+          <p class="email-form__subtitle">{{ guestStep2Subtitle }}</p>
+
+          <label class="field-label" for="guest-email">Email address</label>
+          <input
+            id="guest-email"
+            type="email"
+            class="field-input email-form__input"
+            [class.error]="guestEmailTouched && guestEmailError"
+            [value]="guestEmail"
+            [readonly]="emailCheckStatus() != null"
+            placeholder="name@example.com"
+            autocomplete="email"
+            (input)="onGuestEmailInput($any($event.target).value)"
+            (blur)="onGuestEmailBlur()"
+            (keydown.enter)="continueWithGuestEmail()"
+          />
+          <p class="error-text" *ngIf="guestEmailTouched && guestEmailError">{{ guestEmailError }}</p>
+
+          <!-- Existing user: password only -->
+          <ng-container *ngIf="showGuestPasswordFields">
+            <label class="field-label" for="guest-password">Password</label>
+            <div class="password-wrap">
+              <input
+                id="guest-password"
+                class="field-input email-form__input"
+                [type]="guestHidePassword ? 'password' : 'text'"
+                [class.error]="guestPasswordTouched && guestPasswordError"
+                [value]="guestPassword"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                (input)="guestPassword = $any($event.target).value; guestPasswordError = ''"
+                (blur)="guestPasswordTouched = true; guestPasswordError = guestPassword.trim() ? '' : 'Password is required.'"
+                (keydown.enter)="continueWithGuestEmail()"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="toggleGuestPasswordVisibility()"
+                [attr.aria-label]="guestHidePassword ? 'Show password' : 'Hide password'"
+              >
+                <i
+                  class="fa"
+                  [class.fa-eye]="guestHidePassword"
+                  [class.fa-eye-slash]="!guestHidePassword"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </div>
+            <p class="error-text" *ngIf="guestPasswordTouched && guestPasswordError">{{ guestPasswordError }}</p>
+          </ng-container>
+
+          <!-- New user: signup fields -->
+          <ng-container *ngIf="showGuestSignupFields">
+            <label class="field-label" for="guest-name">Name</label>
+            <input
+              id="guest-name"
+              type="text"
+              class="field-input email-form__input"
+              [class.error]="guestSignupTouched.name && guestSignupErrors['name']"
+              [value]="guestSignup.name"
+              placeholder="Your name"
+              autocomplete="name"
+              (input)="guestSignup.name = $any($event.target).value"
+              (blur)="guestSignupTouched.name = true"
+            />
+            <p class="error-text" *ngIf="guestSignupTouched.name && guestSignupErrors['name']">
+              {{ guestSignupErrors['name'] }}
+            </p>
+
+            <label class="field-label" for="guest-phone">Phone</label>
+            <input
+              id="guest-phone"
+              type="tel"
+              class="field-input email-form__input"
+              [class.error]="guestSignupTouched.phone && guestSignupErrors['phone']"
+              [value]="guestSignup.phone"
+              placeholder="1234567890"
+              autocomplete="tel"
+              (input)="guestSignup.phone = $any($event.target).value"
+              (blur)="guestSignupTouched.phone = true"
+            />
+            <p class="error-text" *ngIf="guestSignupTouched.phone && guestSignupErrors['phone']">
+              {{ guestSignupErrors['phone'] }}
+            </p>
+
+            <label class="field-label" for="guest-signup-password">Password</label>
+            <div class="password-wrap">
+              <input
+                id="guest-signup-password"
+                class="field-input email-form__input"
+                [type]="guestHidePassword ? 'password' : 'text'"
+                [class.error]="guestSignupTouched.password && guestSignupErrors['password']"
+                [value]="guestSignup.password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                (input)="guestSignup.password = $any($event.target).value"
+                (blur)="guestSignupTouched.password = true"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="toggleGuestPasswordVisibility()"
+                [attr.aria-label]="guestHidePassword ? 'Show password' : 'Hide password'"
+              >
+                <i
+                  class="fa"
+                  [class.fa-eye]="guestHidePassword"
+                  [class.fa-eye-slash]="!guestHidePassword"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </div>
+            <p class="error-text" *ngIf="guestSignupTouched.password && guestSignupErrors['password']">
+              {{ guestSignupErrors['password'] }}
+            </p>
+
+            <label class="field-label" for="guest-confirm-password">Confirm password</label>
+            <div class="password-wrap">
+              <input
+                id="guest-confirm-password"
+                class="field-input email-form__input"
+                [type]="guestHideConfirmPassword ? 'password' : 'text'"
+                [class.error]="guestSignupTouched.confirmPassword && guestSignupErrors['confirmPassword']"
+                [value]="guestSignup.confirmPassword"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                (input)="guestSignup.confirmPassword = $any($event.target).value"
+                (blur)="guestSignupTouched.confirmPassword = true"
+                (keydown.enter)="continueWithGuestEmail()"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="toggleGuestConfirmPasswordVisibility()"
+                [attr.aria-label]="guestHideConfirmPassword ? 'Show password' : 'Hide password'"
+              >
+                <i
+                  class="fa"
+                  [class.fa-eye]="guestHideConfirmPassword"
+                  [class.fa-eye-slash]="!guestHideConfirmPassword"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </div>
+            <p class="error-text" *ngIf="guestSignupTouched.confirmPassword && guestSignupErrors['confirmPassword']">
+              {{ guestSignupErrors['confirmPassword'] }}
+            </p>
+          </ng-container>
+
+          <p class="error-text email-form__auth-error" *ngIf="guestAuthError">{{ guestAuthError }}</p>
+
+          <div class="email-form__actions">
+            <button type="button" class="submit-button secondary" (click)="goToGuestStep1()">
+              Back
+            </button>
+            <button
+              type="button"
+              class="submit-button primary"
+              (click)="continueWithGuestEmail()"
+              [disabled]="isCheckingEmail() || isGuestAuthSubmitting()"
+            >
+              {{ guestPrimaryActionLabel }}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="email-form__change-email"
+            *ngIf="emailCheckStatus() != null"
+            (click)="changeGuestEmail()"
+          >
+            Use a different email
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="page-footer__inner">
+      <p class="page-footer__copy">Revo Technologies &copy; {{ year }}. All rights reserved.</p>
+      <nav class="page-footer__links" aria-label="Footer links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Security</a>
+        <a href="#">Status</a>
+      </nav>
+    </div>
+  </footer>
+</div>
+

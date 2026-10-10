@@ -1,0 +1,250 @@
+<div class="submission-page">
+  <ng-template #submissionPaginationNav let-p="p">
+    <nav
+      class="submission-pagination-bar"
+      *ngIf="!p.loading && p.total > 0"
+      aria-label="Submissions pagination"
+    >
+      <div class="pagination-summary">
+        Showing {{ p.showingFrom }}–{{ p.showingTo }} of {{ p.total }}
+        {{ p.itemLabel }}
+        <span *ngIf="p.perPage"> · {{ p.perPage }} per page</span>
+      </div>
+
+      <div class="pagination-controls">
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage <= 1"
+          (click)="p.goToPage(1)"
+        >
+          First
+        </button>
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage <= 1"
+          (click)="p.goToPage(p.currentPage - 1)"
+        >
+          Previous
+        </button>
+
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--page"
+          *ngIf="p.pageNumbers[0] > 1"
+          (click)="p.goToPage(1)"
+        >
+          1
+        </button>
+        <span class="pagination-ellipsis" *ngIf="p.pageNumbers[0] > 2">…</span>
+
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--page"
+          *ngFor="let pageNum of p.pageNumbers"
+          [class.pagination-btn--active]="pageNum === p.currentPage"
+          (click)="p.goToPage(pageNum)"
+          [attr.aria-current]="pageNum === p.currentPage ? 'page' : null"
+        >
+          {{ pageNum }}
+        </button>
+
+        <span
+          class="pagination-ellipsis"
+          *ngIf="p.pageNumbers[p.pageNumbers.length - 1] < p.lastPage - 1"
+        >
+          …
+        </span>
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--page"
+          *ngIf="p.pageNumbers[p.pageNumbers.length - 1] < p.lastPage"
+          (click)="p.goToPage(p.lastPage)"
+        >
+          {{ p.lastPage }}
+        </button>
+
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage >= p.lastPage"
+          (click)="p.goToPage(p.currentPage + 1)"
+        >
+          Next
+        </button>
+        <button
+          type="button"
+          class="pagination-btn pagination-btn--label"
+          [disabled]="p.currentPage >= p.lastPage"
+          (click)="p.goToPage(p.lastPage)"
+        >
+          Last
+        </button>
+      </div>
+
+      <div class="pagination-page-indicator">
+        Page {{ p.currentPage }} of {{ p.lastPage }}
+      </div>
+    </nav>
+  </ng-template>
+
+  <section class="dashboard-section">
+    <header class="section-header">
+      <div class="header-left">
+        <button
+          type="button"
+          class="back-button"
+          (click)="goBackToProducts()"
+          title="Back to Products"
+        >
+          <i class="fa fa-arrow-left" aria-hidden="true"></i>
+          Back to Products
+        </button>
+        <div class="header-titles">
+          <p class="section-overline">
+            {{ isRefundSubmission ? 'Refund form' : 'Product form' }}
+          </p>
+          <h1 class="section-title">{{ pageTitle }}</h1>
+          <p class="section-subtitle" *ngIf="!loading">
+            {{
+              isRefundSubmission
+                ? 'Review refund requests submitted for this product.'
+                : 'Review all submissions received for this product.'
+            }}
+          </p>
+        </div>
+      </div>
+      <div class="header-right" *ngIf="!loading && totalSubmissions">
+        <span class="submission-count-pill">
+          {{ totalSubmissions }}
+          {{ totalSubmissions === 1 ? 'submission' : 'submissions' }}
+        </span>
+      </div>
+    </header>
+
+    <div *ngIf="loading" class="loading-container">
+      <p>Loading submissions…</p>
+    </div>
+
+    <div *ngIf="!loading && loadError" class="error-container">
+      <p>{{ loadError }}</p>
+    </div>
+
+    <div class="section-body" *ngIf="!loading && !loadError">
+      <div
+        class="submission-accordion"
+        *ngIf="submissions.length; else noSubmissions"
+      >
+        <article
+          *ngFor="let s of submissions; index as i"
+          class="submission-item"
+          [class.submission-item--expanded]="isExpanded(s, i)"
+        >
+          <div class="submission-item__header">
+            <button
+              type="button"
+              class="submission-item__toggle"
+              (click)="toggleExpanded(s, i)"
+              [attr.aria-expanded]="isExpanded(s, i)"
+              [attr.aria-controls]="'submission-panel-' + i"
+            >
+              <span class="submission-item__index">{{ rowNumber(i) }}</span>
+              <div class="submission-item__summary">
+                <span class="submitter-name">{{
+                  s.revo_user_name || s.user?.name || 'N/A'
+                }}</span>
+                <span class="submission-item__date">{{
+                  (s.created_on || s.updated_at || s.submitted_at) | date: 'medium'
+                }}</span>
+              </div>
+              <span class="submission-item__meta">
+                {{ getFieldCount(s) }}
+                {{ getFieldCount(s) === 1 ? 'field' : 'fields' }}
+              </span>
+              <i
+                class="fa submission-item__chevron"
+                [class.fa-chevron-up]="isExpanded(s, i)"
+                [class.fa-chevron-down]="!isExpanded(s, i)"
+                aria-hidden="true"
+              ></i>
+            </button>
+            <div class="submission-item__header-actions" *ngIf="showActionsColumn">
+              <button
+                type="button"
+                class="button button--secondary button--sm"
+                *ngIf="canRequestRefund(s)"
+                (click)="refundSubmission(s)"
+              >
+                Refund
+              </button>
+              <button
+                type="button"
+                class="button button--secondary button--sm"
+                *ngIf="canViewRefund(s)"
+                (click)="viewRefundSubmission(s)"
+              >
+                View refund
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="submission-item__body"
+            *ngIf="isExpanded(s, i)"
+            [id]="'submission-panel-' + i"
+            role="region"
+          >
+            <div
+              class="submission-fields"
+              *ngIf="$any(s.submission) | keyvalue as fields"
+            >
+              <div class="submission-field" *ngFor="let field of fields">
+                <span class="submission-field__label">
+                  {{ $any(field.value)?.label || field.key }}
+                </span>
+                <span class="submission-field__value">
+                  <ng-container
+                    *ngIf="
+                      $any(field.value)?.value !== undefined;
+                      else rawValue
+                    "
+                  >
+                    {{ formatValue($any(field.value).value) }}
+                  </ng-container>
+                  <ng-template #rawValue>
+                    {{ formatValue(field.value) }}
+                  </ng-template>
+                </span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <ng-container
+        *ngTemplateOutlet="submissionPaginationNav; context: { p: submissionPaginator }"
+      ></ng-container>
+
+      <ng-template #noSubmissions>
+        <div class="empty-state">
+          <p class="empty-state__title">No submissions yet</p>
+          <p class="empty-state__text">
+            {{
+              isRefundSubmission
+                ? 'No refund submissions have been recorded for this product.'
+                : 'No form submissions have been recorded for this product yet.'
+            }}
+          </p>
+          <button
+            type="button"
+            class="button button--secondary"
+            (click)="goBackToProducts()"
+          >
+            Back to Products
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </section>
+</div>

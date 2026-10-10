@@ -1,0 +1,583 @@
+<div class="join-page">
+  <aside class="join-aside">
+    <div class="join-aside__glow join-aside__glow--primary" aria-hidden="true"></div>
+    <div class="join-aside__glow join-aside__glow--cyan" aria-hidden="true"></div>
+
+    <a routerLink="/login" class="join-logo">
+      <span class="join-logo__mark" aria-hidden="true">R</span>
+      revo.
+    </a>
+
+    <div class="join-aside__copy">
+      <p class="join-badge">
+        <i class="fa fa-handshake-o" aria-hidden="true"></i>
+        Marketplace partnerships
+      </p>
+      <h1>Better outcomes, built together.</h1>
+      <p class="join-aside__lead">
+        Meet the people, products, and partners making trusted product experiences easier to discover.
+      </p>
+      <div class="join-points">
+        <p><i class="fa fa-users" aria-hidden="true"></i> Build relationships with a growing community</p>
+        <p><i class="fa fa-building-o" aria-hidden="true"></i> Bring your brand or partner network to Revo</p>
+        <p><i class="fa fa-check-circle" aria-hidden="true"></i> A team member will follow up with next steps</p>
+      </div>
+    </div>
+
+    <p class="join-aside__foot">Revo · Partnerships</p>
+  </aside>
+
+  <main class="join-main" [attr.aria-hidden]="showSuccessOverlay">
+    <header class="join-top">
+      <a routerLink="/login" class="join-logo join-logo--mobile">
+        <span class="join-logo__mark" aria-hidden="true">R</span>
+        revo.
+      </a>
+      <a routerLink="/login" class="join-back">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        Back to sign in
+      </a>
+    </header>
+
+    <div class="join-body">
+      <div class="join-intro">
+        <p class="join-kicker">{{ roleLabel }}</p>
+        <h2>{{ title }}</h2>
+        <p>{{ subtitle }}</p>
+      </div>
+
+      <form class="join-form" [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        @if (type === 'company') {
+          <div class="form-section">
+            <h2 class="form-section__title">Account details</h2>
+          <div class="field" [class.field--invalid]="showError('name')">
+            <label for="name">Company Name <em>*</em></label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Company Name"
+              autocomplete="organization"
+            />
+            @if (name?.invalid && (name?.dirty || name?.touched || submitted)) {
+              <span class="error">
+                @if (name?.errors?.['required']) { Company name is required. }
+                @if (name?.errors?.['minlength']) { Name must be at least 2 characters. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('email')">
+            <label for="email">Email <em>*</em></label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="company@example.com"
+              autocomplete="email"
+            />
+            @if (email?.invalid && (email?.dirty || email?.touched || submitted)) {
+              <span class="error">
+                @if (email?.errors?.['required']) { Email is required. }
+                @if (email?.errors?.['email']) { Please enter a valid email. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('phone')">
+            <label for="phone">Phone <em>*</em></label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="1234567890"
+              autocomplete="tel"
+            />
+            @if (phone?.invalid && (phone?.dirty || phone?.touched || submitted)) {
+              <span class="error">
+                @if (phone?.errors?.['required']) { Phone is required. }
+                @if (phone?.errors?.['pattern']) { Enter a valid phone number. }
+              </span>
+            }
+          </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section__title">Security</h2>
+            <div class="field-grid">
+          <div class="field" [class.field--invalid]="showError('password')">
+            <label for="password">Password <em>*</em></label>
+            <div class="password-wrap">
+              <input
+                id="password"
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+              >
+                <i class="fa" [class.fa-eye]="hidePassword" [class.fa-eye-slash]="!hidePassword" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (password?.invalid && (password?.dirty || password?.touched || submitted)) {
+              <span class="error">
+                @if (password?.errors?.['required']) { Password is required. }
+                @if (password?.errors?.['minlength']) { Password must be at least 6 characters. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('confirmPassword')">
+            <label for="confirmPassword">Confirm password <em>*</em></label>
+            <div class="password-wrap">
+              <input
+                id="confirmPassword"
+                [type]="hideConfirmPassword ? 'password' : 'text'"
+                formControlName="confirmPassword"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="toggleConfirmPasswordVisibility()"
+                [attr.aria-label]="hideConfirmPassword ? 'Show password' : 'Hide password'"
+              >
+                <i class="fa" [class.fa-eye]="hideConfirmPassword" [class.fa-eye-slash]="!hideConfirmPassword" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched || submitted)) {
+              <span class="error">
+                @if (confirmPassword?.errors?.['required']) { Please confirm your password. }
+                @if (confirmPassword?.errors?.['passwordMismatch']) { Passwords do not match. }
+              </span>
+            }
+          </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section__title">Company profile</h2>
+          <div class="field">
+            <label for="logo">Logo <span class="label-optional">(optional)</span></label>
+            <div class="logo-upload">
+              <input id="logo" type="file" class="file-drop__input" accept="image/*" (change)="onLogoSelected($event)" />
+              @if (logoPreview) {
+                <div class="logo-chosen">
+                  <span class="logo-chosen-label">Chosen logo</span>
+                  <div class="logo-preview-wrap">
+                    <img [src]="logoPreview" alt="Chosen logo" class="logo-preview" />
+                    <button type="button" class="logo-remove" (click)="clearLogo()">Remove</button>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="file-drop" (click)="triggerFileInput('logo')">
+                  <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                  <span class="file-drop__title">Upload company logo</span>
+                  <span class="file-drop__hint">PNG or JPG recommended</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="alias">Alias <span class="label-optional">(optional)</span></label>
+              <input id="alias" type="text" formControlName="alias" placeholder="company" />
+            </div>
+            <div class="field">
+              <label for="size">Size <span class="label-optional">(optional)</span></label>
+              <input id="size" type="text" formControlName="size" placeholder="100" />
+            </div>
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('group_link')">
+            <label for="group_link">Group link <span class="label-optional">(optional)</span></label>
+            <input
+              id="group_link"
+              type="url"
+              formControlName="group_link"
+              placeholder="https://example.com/group"
+            />
+            @if (group_link?.invalid && (group_link?.dirty || group_link?.touched || submitted)) {
+              <span class="error">Please enter a valid URL.</span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="slot_in_a_month">Slots per month <span class="label-optional">(optional)</span></label>
+            <input id="slot_in_a_month" type="text" formControlName="slot_in_a_month" placeholder="10" />
+          </div>
+
+          <div class="field">
+            <label for="description">Description <span class="label-optional">(optional)</span></label>
+            <textarea
+              id="description"
+              formControlName="description"
+              placeholder="This is a company"
+              rows="4"
+            ></textarea>
+          </div>
+          </div>
+        } @else if (type === 'mediator') {
+          <div class="field">
+            <label for="name">Name <em>*</em></label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Your name"
+              autocomplete="name"
+            />
+            @if (name?.invalid && (name?.dirty || name?.touched || submitted)) {
+              <span class="error">
+                @if (name?.errors?.['required']) { Name is required. }
+                @if (name?.errors?.['minlength']) { Name must be at least 2 characters. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('email')">
+            <label for="email">Email <em>*</em></label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="mediator@example.com"
+              autocomplete="email"
+            />
+            @if (email?.invalid && (email?.dirty || email?.touched || submitted)) {
+              <span class="error">
+                @if (email?.errors?.['required']) { Email is required. }
+                @if (email?.errors?.['email']) { Please enter a valid email. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('phone')">
+            <label for="phone">Phone <em>*</em></label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="1234567890"
+              autocomplete="tel"
+            />
+            @if (phone?.invalid && (phone?.dirty || phone?.touched || submitted)) {
+              <span class="error">
+                @if (phone?.errors?.['required']) { Phone is required. }
+                @if (phone?.errors?.['pattern']) { Enter a valid phone number. }
+              </span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="password">Password <em>*</em></label>
+            <div class="password-wrap">
+              <input
+                id="password"
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+              >
+                <i class="fa" [class.fa-eye]="hidePassword" [class.fa-eye-slash]="!hidePassword" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (password?.invalid && (password?.dirty || password?.touched || submitted)) {
+              <span class="error">
+                @if (password?.errors?.['required']) { Password is required. }
+                @if (password?.errors?.['minlength']) { Password must be at least 6 characters. }
+              </span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">Confirm password <em>*</em></label>
+            <div class="password-wrap">
+              <input
+                id="confirmPassword"
+                [type]="hideConfirmPassword ? 'password' : 'text'"
+                formControlName="confirmPassword"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="toggleConfirmPasswordVisibility()"
+                [attr.aria-label]="hideConfirmPassword ? 'Show password' : 'Hide password'"
+              >
+                <i class="fa" [class.fa-eye]="hideConfirmPassword" [class.fa-eye-slash]="!hideConfirmPassword" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched || submitted)) {
+              <span class="error">
+                @if (confirmPassword?.errors?.['required']) { Please confirm your password. }
+                @if (confirmPassword?.errors?.['passwordMismatch']) { Passwords do not match. }
+              </span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="profile_picture">Profile picture <span class="label-optional">(optional)</span></label>
+            <div class="logo-upload">
+              <input id="profile_picture" type="file" class="file-drop__input" accept="image/*" (change)="onProfileSelected($event)" />
+              @if (profilePreview) {
+                <div class="logo-chosen">
+                  <span class="logo-chosen-label">Chosen profile picture</span>
+                  <div class="logo-preview-wrap">
+                    <img [src]="profilePreview" alt="Chosen profile picture" class="logo-preview" />
+                    <button type="button" class="logo-remove" (click)="clearProfile()">Remove</button>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="file-drop" (click)="triggerFileInput('profile_picture')">
+                  <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                  <span class="file-drop__title">Upload profile picture</span>
+                  <span class="file-drop__hint">PNG or JPG recommended</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="alias">Alias</label>
+              <input id="alias" type="text" formControlName="alias" placeholder="mediator" />
+            </div>
+            <div class="field">
+              <label for="size">Size</label>
+              <input id="size" type="text" formControlName="size" placeholder="100" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="group_link">Group link</label>
+            <input
+              id="group_link"
+              type="url"
+              formControlName="group_link"
+              placeholder="https://example.com/group"
+            />
+            @if (group_link?.invalid && (group_link?.dirty || group_link?.touched || submitted)) {
+              <span class="error">Please enter a valid URL.</span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="slot_in_a_month">Slots per month</label>
+            <input id="slot_in_a_month" type="text" formControlName="slot_in_a_month" placeholder="10" />
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              placeholder="This is a mediator"
+              rows="4"
+            ></textarea>
+          </div>
+        } @else {
+          <div class="form-section">
+            <h2 class="form-section__title">Account details</h2>
+          <div class="field" [class.field--invalid]="showError('name')">
+            <label for="name">Name <em>*</em></label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Your name"
+              autocomplete="name"
+            />
+            @if (name?.invalid && (name?.dirty || name?.touched || submitted)) {
+              <span class="error">
+                @if (name?.errors?.['required']) { Name is required. }
+                @if (name?.errors?.['minlength']) { Name must be at least 2 characters. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('email')">
+            <label for="email">Email <em>*</em></label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="name@company.com"
+              autocomplete="email"
+            />
+            @if (email?.invalid && (email?.dirty || email?.touched || submitted)) {
+              <span class="error">
+                @if (email?.errors?.['required']) { Email is required. }
+                @if (email?.errors?.['email']) { Please enter a valid email. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('phone')">
+            <label for="phone">Phone <em>*</em></label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="1234567890"
+              autocomplete="tel"
+            />
+            @if (phone?.invalid && (phone?.dirty || phone?.touched || submitted)) {
+              <span class="error">
+                @if (phone?.errors?.['required']) { Phone is required. }
+                @if (phone?.errors?.['pattern']) { Enter a valid phone number. }
+              </span>
+            }
+          </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section__title">Security</h2>
+            <div class="field-grid">
+          <div class="field" [class.field--invalid]="showError('password')">
+            <label for="password">Password <em>*</em></label>
+            <div class="password-wrap">
+              <input
+                id="password"
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+              >
+                <i class="fa" [class.fa-eye]="hidePassword" [class.fa-eye-slash]="!hidePassword" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (password?.invalid && (password?.dirty || password?.touched || submitted)) {
+              <span class="error">
+                @if (password?.errors?.['required']) { Password is required. }
+                @if (password?.errors?.['minlength']) { Password must be at least 6 characters. }
+              </span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="showError('confirmPassword')">
+            <label for="confirmPassword">Confirm password <em>*</em></label>
+            <div class="password-wrap">
+              <input
+                id="confirmPassword"
+                [type]="hideConfirmPassword ? 'password' : 'text'"
+                formControlName="confirmPassword"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd"
+                (click)="toggleConfirmPasswordVisibility()"
+                [attr.aria-label]="hideConfirmPassword ? 'Show password' : 'Hide password'"
+              >
+                <i class="fa" [class.fa-eye]="hideConfirmPassword" [class.fa-eye-slash]="!hideConfirmPassword" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched || submitted)) {
+              <span class="error">
+                @if (confirmPassword?.errors?.['required']) { Please confirm your password. }
+                @if (confirmPassword?.errors?.['passwordMismatch']) { Passwords do not match. }
+              </span>
+            }
+          </div>
+            </div>
+          </div>
+        }
+
+        @if (submitError) {
+          <span class="error error--block">{{ submitError }}</span>
+        }
+
+        <button type="submit" class="submit-btn" [disabled]="signupForm.pending || isSubmitting">
+          @if (isSubmitting) {
+            Creating account...
+          } @else {
+            {{ submitLabel }}
+          }
+        </button>
+      </form>
+
+      <p class="join-switch">
+        Already have an account?
+        <a routerLink="/login">Sign in</a>
+      </p>
+      <div class="join-links">
+        @if (type === 'user') {
+          <span aria-current="page">User</span>
+        } @else {
+          <a routerLink="/signup/user">User</a>
+        }
+        @if (type === 'company') {
+          <span aria-current="page">Company</span>
+        } @else {
+          <a routerLink="/signup/company">Company</a>
+        }
+        @if (type === 'mediator') {
+          <span aria-current="page">Mediator</span>
+        } @else {
+          <a routerLink="/signup/mediator">Mediator</a>
+        }
+      </div>
+    </div>
+  </main>
+</div>
+
+@if (showSuccessOverlay) {
+  <div
+    class="success-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="signup-success-title"
+  >
+    <div class="success-overlay-backdrop" (click)="completeSignupFlow()"></div>
+    <div class="success-overlay-card" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="success-overlay-close"
+        (click)="completeSignupFlow()"
+        aria-label="Close"
+      >
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+
+      <div
+        class="success-overlay-icon"
+        [class.success-overlay-icon--pending]="isCompanyPendingOverlay"
+      >
+        @if (isCompanyPendingOverlay) {
+          <i class="fa fa-hourglass-half" aria-hidden="true"></i>
+        } @else {
+          <span aria-hidden="true">✓</span>
+        }
+      </div>
+
+      <h2 id="signup-success-title" class="success-overlay-title">{{ overlayTitle }}</h2>
+      <p class="success-overlay-text">{{ overlayMessage }}</p>
+
+      <button type="button" class="submit-btn success-overlay-btn" (click)="completeSignupFlow()">
+        {{ overlayPrimaryActionLabel }}
+      </button>
+    </div>
+  </div>
+}

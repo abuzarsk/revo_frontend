@@ -1,0 +1,72 @@
+<div class="join-intro">
+  <p class="join-kicker">Welcome back</p>
+  <h2>Sign in</h2>
+  <p>Access your customer dashboard.</p>
+</div>
+
+<form class="join-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <label class="join-field" for="emailorphone">
+    <span class="join-field__label">Email or mobile <em>*</em></span>
+    <input
+      id="emailorphone"
+      type="text"
+      formControlName="value"
+      placeholder="name@company.com"
+      autocomplete="username"
+    />
+  </label>
+  @if (loginForm.get('value')?.invalid && (loginForm.get('value')?.dirty || loginForm.get('value')?.touched || submitted)) {
+    <span class="join-error">Email or mobile is required.</span>
+  }
+
+  <label class="join-field" for="password">
+    <span class="join-field__label">Password <em>*</em></span>
+    <span class="password-wrap">
+      <input
+        id="password"
+        [type]="hidePassword ? 'password' : 'text'"
+        formControlName="password"
+        placeholder="••••••••"
+        autocomplete="current-password"
+      />
+      <button
+        type="button"
+        class="toggle-pwd"
+        (click)="togglePasswordVisibility()"
+        [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+      >
+        <i class="fa" [class.fa-eye]="hidePassword" [class.fa-eye-slash]="!hidePassword" aria-hidden="true"></i>
+      </button>
+    </span>
+  </label>
+  @if (password?.invalid && (password?.dirty || password?.touched || submitted)) {
+    <span class="join-error">
+      @if (password?.errors?.['required']) { Password is required. }
+      @if (password?.errors?.['minlength']) { Password must be at least 6 characters. }
+    </span>
+  }
+
+  @if (error) {
+    <p class="join-error" role="alert">{{ error }}</p>
+  }
+
+  <button type="submit" class="join-submit" [disabled]="loginForm.pending">
+    Sign in
+    <i class="fa fa-arrow-right" aria-hidden="true"></i>
+  </button>
+
+  <div class="join-or"><span>or</span></div>
+  <div class="google-btn-wrap">
+    <div id="googleBtn"></div>
+  </div>
+</form>
+
+<p class="join-switch">
+  Don't have an account?
+  <a routerLink="/signup/user">Sign up</a>
+</p>
+<div class="join-links">
+  <a routerLink="/signup/mediator">Mediator signup</a>
+  <a routerLink="/signup/company">Company signup</a>
+  <a routerLink="/signup/user">Sign up as user</a>
+</div>
