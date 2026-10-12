@@ -1,0 +1,163 @@
+<div class="cp-page">
+  <header class="cp-intro">
+    <div>
+      <p class="cp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Analytics</span>
+      </p>
+      <h1 class="cp-title">Analytics</h1>
+      <p class="cp-lede">Analytics in Brand Center</p>
+    </div>
+    <span class="cp-status"><span class="cp-status__dot" aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <section class="cp-panel cp-toolbar">
+    <div>
+      <p class="cp-kicker">Business performance</p>
+      <h2 class="cp-section-title cp-section-title--lg">Company analytics</h2>
+      <p class="cp-hint">Preview figures for Brand Center until analytics is connected.</p>
+    </div>
+    <div class="cp-toolbar">
+      <select class="cp-select" [(ngModel)]="period" aria-label="Analytics date range">
+        @for (item of periods; track item.value) {
+          <option [value]="item.value">{{ item.label }}</option>
+        }
+      </select>
+      <button type="button" class="cp-export" (click)="exportReport()">
+        <i class="fa fa-download" aria-hidden="true"></i>
+        Export report
+      </button>
+    </div>
+  </section>
+
+  <div class="cp-stats">
+    @for (stat of stats; track stat.label) {
+      <article class="cp-stat">
+        <div class="cp-stat__top">
+          <p class="cp-label">{{ stat.label }}</p>
+          <span class="cp-icon" aria-hidden="true"><i class="fa {{ stat.icon }}"></i></span>
+        </div>
+        <p class="cp-value">{{ stat.value }}</p>
+        <p class="cp-note">{{ stat.note }}</p>
+      </article>
+    }
+  </div>
+
+  <div class="cp-split">
+    <div>
+      <div class="cp-toolbar" style="margin-bottom: 0.75rem">
+        <h3 class="cp-section-title" style="margin: 0">
+          <i class="fa fa-bar-chart" aria-hidden="true"></i>
+          Performance trend
+        </h3>
+        <div class="cp-pills" role="group" aria-label="Analytics trend metric">
+          @for (item of metrics; track item.value) {
+            <button type="button" class="cp-pill" [class.is-active]="metric === item.value" (click)="metric = item.value">
+              {{ item.label }}
+            </button>
+          }
+        </div>
+      </div>
+      <section class="cp-panel">
+        <div class="cp-chart-head">
+          <div>
+            <h2 class="cp-section-title" style="margin: 0">{{ chartTitle }} trend</h2>
+            <p class="cp-hint">{{ chartNote }}</p>
+          </div>
+          <div>
+            <p class="cp-hint" style="text-align: right">Chart total</p>
+            <p class="cp-chart-total">{{ chartTotal }}</p>
+          </div>
+        </div>
+        <div class="cp-bars-wrap">
+          <div class="cp-bars" [style.grid-template-columns]="'repeat(' + buckets.length + ', minmax(0, 1fr))'" role="img" [attr.aria-label]="chartTitle + ' trend chart'">
+            @for (bucket of buckets; track $index) {
+              <div class="cp-bar">
+                <span class="cp-bar__value">{{ bucketLabel(bucket.value) }}</span>
+                <div class="cp-bar__track">
+                  <div class="cp-bar__fill" [style.height.%]="barHeight(bucket.value)"></div>
+                </div>
+                <span class="cp-bar__label">{{ bucket.label }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="cp-panel">
+      <div class="cp-stat__top">
+        <div>
+          <h3 class="cp-section-title" style="margin: 0">Submission status</h3>
+          <p class="cp-hint">{{ submissionTotal }} records in range</p>
+        </div>
+        <span class="cp-icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
+      </div>
+      <div class="cp-mix" role="img" aria-label="Submission status distribution">
+        @for (row of statuses; track row.key) {
+          <div class="cp-mix__seg" [ngClass]="'cp-mix__seg--' + row.key" [style.width.%]="share(row.count)"></div>
+        }
+      </div>
+      <div class="cp-mix-list">
+        @for (row of statuses; track row.key) {
+          <div class="cp-mix-row">
+            <span class="cp-mix-row__name">
+              <span class="cp-dot" [ngClass]="'cp-dot--' + row.key"></span>
+              {{ row.label }}
+            </span>
+            <span>
+              <strong>{{ row.count }}</strong>
+              <span class="cp-hint">{{ share(row.count) }}%</span>
+            </span>
+          </div>
+        }
+      </div>
+      <div class="cp-queue">
+        <p class="cp-section-title" style="margin: 0; font-size: 12px">Review queue</p>
+        <p>{{ pendingReview }} submitted or under-review records are still open.</p>
+      </div>
+    </section>
+  </div>
+
+  <section class="cp-panel">
+    <div class="cp-toolbar">
+      <div>
+        <h3 class="cp-section-title" style="margin: 0">Product performance</h3>
+        <p class="cp-hint">Ranked by submissions, then order value.</p>
+      </div>
+      <span class="cp-hint">{{ products.length }} products tracked</span>
+    </div>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Listing</th>
+            <th>Submissions</th>
+            <th>Approval rate</th>
+            <th class="is-right">Order value</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of products; track row.name) {
+            <tr>
+              <td>
+                <span class="cp-product">{{ row.name }}</span>
+                <span class="cp-brand">{{ row.brand }}</span>
+              </td>
+              <td>
+                <span class="cp-badge" [ngClass]="row.listing === 'active' ? 'cp-badge--active' : 'cp-badge--muted'">
+                  {{ row.listing }}
+                </span>
+              </td>
+              <td>{{ row.submissions }}</td>
+              <td>{{ row.rate }}%</td>
+              <td class="is-right">{{ inr(row.value) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

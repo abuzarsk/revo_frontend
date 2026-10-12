@@ -234,6 +234,17 @@ export class BuilderPageComponent {
            this.formStatus === 'published' || this.formStatus === 'active';
   }
 
+  get pageTitle(): string {
+    if (this.formType == null || this.formType === '') {
+      return 'Form Builder';
+    }
+    return String(this.formType) === '1' ? 'Form Builder' : 'Refund Form Builder';
+  }
+
+  onTitleChange(title: string): void {
+    this.formBuilderService.setTitle(title);
+  }
+
   goToProductPage() {
 
     this.router.navigate(['/products/', this.product_id_backup]);

@@ -1,0 +1,76 @@
+<div class="cp-page">
+  <header class="cp-intro">
+    <div>
+      <p class="cp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Campaigns</span>
+      </p>
+      <h1 class="cp-title">Campaigns</h1>
+      <p class="cp-lede">Campaigns in Brand Center</p>
+    </div>
+    <span class="cp-status"><span class="cp-status__dot" aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="cp-stats cp-stats--3">
+    <article class="cp-stat">
+      <p class="cp-label">Active campaigns</p>
+      <p class="cp-value">{{ activeCount }}</p>
+    </article>
+    <article class="cp-stat">
+      <p class="cp-label">Filled slots</p>
+      <p class="cp-value">{{ filledSlots }}</p>
+    </article>
+    <article class="cp-stat">
+      <p class="cp-label">Planned budget</p>
+      <p class="cp-value">{{ plannedBudget }}</p>
+    </article>
+  </div>
+
+  <section class="cp-panel">
+    <div class="cp-toolbar">
+      <div>
+        <h2 class="cp-section-title" style="margin: 0">Campaign management</h2>
+        <p class="cp-hint">Preview campaigns stored in this browser.</p>
+      </div>
+      <button type="button" class="cp-btn" style="margin-left: auto" (click)="create()">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+        New campaign
+      </button>
+    </div>
+
+    @if (!campaigns.length) {
+      <p class="cp-empty">No campaigns yet.</p>
+    } @else {
+      @for (campaign of campaigns; track campaign.id) {
+        <article class="cp-campaign">
+          <div class="cp-campaign__main">
+            <span class="cp-icon" aria-hidden="true"><i class="fa fa-bullhorn"></i></span>
+            <div class="cp-campaign__copy">
+              <h3>{{ campaign.name }}</h3>
+              <p class="cp-hint">{{ campaign.channel }} · Budget {{ inr(campaign.budget) }}</p>
+            </div>
+            <span class="cp-badge" [ngClass]="statusClass(campaign)">{{ effectiveStatus(campaign) }}</span>
+            <button type="button" class="cp-outline" (click)="changeStatus(campaign)">{{ actionLabel(campaign) }}</button>
+          </div>
+          <div class="cp-dates">
+            <label class="cp-field">
+              Start date
+              <input type="date" [(ngModel)]="campaign.startDate" />
+            </label>
+            <label class="cp-field">
+              End date
+              <input type="date" [(ngModel)]="campaign.endDate" />
+            </label>
+          </div>
+          <div class="cp-meter">
+            <div class="cp-meter__track">
+              <div class="cp-meter__fill" [style.width]="fillWidth(campaign)"></div>
+            </div>
+            <span class="cp-hint">{{ campaign.filled }}/{{ campaign.slots }} filled</span>
+          </div>
+        </article>
+      }
+    }
+  </section>
+</div>

@@ -26,19 +26,20 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, DragDropModule, FormsModule],
   template: `
-    <div class="canvas-root" (click)="clearSelection()">
+    <div class="canvas-root" [class.canvas-root--preview]="mode === 'preview'" (click)="mode !== 'preview' && clearSelection()">
       
 
       <div
         cdkDropList
         class="canvas-dropzone"
-        [class.drag-disabled]="formStatus === '1'"
-        (cdkDropListDropped)="formStatus !== '1' ? onDrop($event) : null"
+        [class.drag-disabled]="formStatus === '1' || mode === 'preview'"
+        [cdkDropListDisabled]="formStatus === '1' || mode === 'preview'"
+        (cdkDropListDropped)="formStatus !== '1' && mode !== 'preview' ? onDrop($event) : null"
         (click)="$event.stopPropagation()"
       >
         <ng-container *ngIf="formDef$ | async as formDef">
           <div *ngIf="formDef.elements.length === 0" class="canvas-empty">
-            Click elements in the left panel to add them to your form
+            {{ mode === 'preview' ? 'Fields you add will appear here.' : 'Add a field to start this form.' }}
           </div>
 
           <div
@@ -48,41 +49,41 @@ import { FormsModule } from '@angular/forms';
             [class.selected]="(selectedId$ | async) === el.id"
             [class.canvas-element--fixed]="isFixed(el)"
             cdkDrag
-            [cdkDragDisabled]="formStatus === '1'"
+            [cdkDragDisabled]="formStatus === '1' || mode === 'preview'"
             [cdkDragData]="el"
           >
             <div class="canvas-element-header">
-              <div class="drag-handle" *ngIf="formStatus !== '1'">☰</div>
-              <span class="el-label">
-                {{ el.label || (el.type | titlecase) }}
-              </span>
-              <div class="canvas-element-actions" *ngIf="formStatus !== '1'">
+              <button type="button" class="el-copy" (click)="onSelect(el.id, $event)">
+                <span class="el-label">{{ el.label || (el.type | titlecase) }}</span>
+                <span class="el-meta">{{ el.type }}{{ el.required ? ' · required' : '' }}</span>
+              </button>
+              <div class="canvas-element-actions" *ngIf="formStatus !== '1' && mode !== 'preview'">
                 <button
                   type="button"
                   class="icon-btn"
                   (click)="moveElementUp(i, $event)"
                   [disabled]="i === 0"
-                  [title]="'Move up'"
+                  aria-label="Move up"
                 >
-                  ↑
+                  <i class="fa fa-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
                   type="button"
                   class="icon-btn"
                   (click)="moveElementDown(i, $event)"
                   [disabled]="i === formDef.elements.length - 1"
-                  [title]="'Move down'"
+                  aria-label="Move down"
                 >
-                  ↓
+                  <i class="fa fa-arrow-down" aria-hidden="true"></i>
                 </button>
                 <button
                   type="button"
                   class="icon-btn"
                   *ngIf="!isFixed(el)"
                   (click)="deleteElement(el.id); $event.stopPropagation()"
-                  [title]="'Delete'"
+                  aria-label="Remove field"
                 >
-                  ✕
+                  <i class="fa fa-trash-o" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -264,8 +265,9 @@ import { FormsModule } from '@angular/forms';
       .canvas-root {
         display: flex;
         flex-direction: column;
-        height: 100%;
-        background: #f1f5f9;
+        background: transparent;
+        color: oklch(0.25 0.035 260);
+        font-family: Inter, system-ui, sans-serif;
       }
       .canvas-toolbar {
         display: flex;
@@ -309,33 +311,52 @@ import { FormsModule } from '@angular/forms';
       .canvas-dropzone {
         flex: 1;
         overflow-y: auto;
-        padding: 16px;
+        padding: 0;
       }
       .canvas-empty {
-        border: 2px dashed #cbd5f5;
-        border-radius: 12px;
-        padding: 40px;
+        border: 1px dashed oklch(0.93 0.012 270);
+        border-radius: 0.75rem;
+        padding: 2rem 1rem;
         text-align: center;
-        color: #64748b;
+        color: oklch(0.58 0.035 260);
         font-size: 14px;
-        background: #f8fafc;
+        background: #fff;
       }
       .canvas-element {
+        display: flex;
+        flex-direction: column;
         background: #ffffff;
-        border-radius: 10px;
-        border: 1px solid transparent;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+        border-radius: 0.75rem;
+        border: 1px solid oklch(0.93 0.012 270);
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
         cursor: pointer;
-        transition: border 0.15s, box-shadow 0.15s, transform 0.1s;
       }
       .canvas-element:hover {
-        border-color: #bfdbfe;
+        border-color: oklch(0.55 0.23 285);
       }
       .canvas-element.selected {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 1px #2563eb;
+        border-color: oklch(0.55 0.23 285);
+        background: oklch(0.965 0.02 280);
+      }
+      .canvas-root--preview .canvas-element-header {
+        display: none;
+      }
+      .canvas-root--preview .canvas-element {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+        cursor: default;
+        box-shadow: none;
+      }
+      .canvas-root--preview .canvas-element:hover,
+      .canvas-root--preview .canvas-element.selected {
+        border: 0;
+        background: transparent;
+      }
+      .canvas-root:not(.canvas-root--preview) .canvas-element-body {
+        display: none;
       }
       .canvas-element.cdk-drag-animating {
         transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
@@ -353,9 +374,19 @@ import { FormsModule } from '@angular/forms';
       }
       .canvas-element-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
+        gap: 0.5rem;
+      }
+      .el-copy {
+        min-width: 0;
+        flex: 1;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        font: inherit;
+        color: inherit;
       }
       .drag-handle {
         cursor: grab;
@@ -377,27 +408,39 @@ import { FormsModule } from '@angular/forms';
         cursor: default !important;
       }
       .el-label {
-        font-weight: 600;
-        font-size: 13px;
-        color: #0f172a;
-        flex: 1;
+        display: block;
+        overflow: hidden;
+        font-weight: 500;
+        font-size: 14px;
+        color: oklch(0.25 0.035 260);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .el-meta {
+        display: block;
+        margin-top: 0.125rem;
+        font-size: 11px;
+        color: oklch(0.58 0.035 260);
       }
       .canvas-element--fixed {
-        border-color: #bbf7d0;
-        background: #f8fff9;
+        border-color: oklch(0.93 0.012 270);
       }
       .canvas-element-actions {
         display: flex;
         gap: 4px;
       }
       .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
         background: transparent;
         border: none;
-        color: #94a3b8;
+        border-radius: calc(1.125rem - 2px);
+        color: oklch(0.58 0.035 260);
         cursor: pointer;
-        font-size: 13px;
-        padding: 2px 4px;
-        min-width: 20px;
+        font-size: 14px;
       }
       .icon-btn:hover:not(:disabled) {
         color: #0f172a;
@@ -411,22 +454,29 @@ import { FormsModule } from '@angular/forms';
       }
       .field-label {
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 0.375rem;
+        font-size: 13px;
         font-weight: 500;
       }
       .required {
-        color: #ef4444;
+        color: oklch(0.64 0.22 12);
       }
       .field-input,
       .field-textarea {
         width: 100%;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        padding: 6px 8px;
-        font-size: 13px;
+        height: 2.5rem;
+        border-radius: calc(1.125rem - 2px);
+        border: 1px solid oklch(0.93 0.012 270);
+        padding: 0 0.75rem;
+        font: inherit;
+        font-size: 14px;
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
       }
       .field-textarea {
-        min-height: 60px;
+        height: 6rem;
+        min-height: 6rem;
+        padding-top: 0.5rem;
         resize: vertical;
       }
       .helper-text {
@@ -579,6 +629,7 @@ export class FormCanvasComponent {
   }
 
   @Input() formStatus: string = '';
+  @Input() mode: 'list' | 'preview' = 'list';
 
   constructor() {
     this.jsonText = this.fb.exportToJson();

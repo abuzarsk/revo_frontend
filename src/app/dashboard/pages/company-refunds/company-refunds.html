@@ -1,0 +1,47 @@
+<div class="cp-page">
+  <header class="cp-intro">
+    <div>
+      <p class="cp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Refunds</span>
+      </p>
+      <h1 class="cp-title">Refunds</h1>
+      <p class="cp-lede">Refunds in Brand Center</p>
+    </div>
+    <span class="cp-status"><span class="cp-status__dot" aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="cp-stats">
+    @for (stat of stats; track stat.label) {
+      <article class="cp-stat">
+        <p class="cp-label">{{ stat.label }}</p>
+        <p class="cp-value">{{ stat.value }}</p>
+      </article>
+    }
+  </div>
+
+  <section class="cp-panel">
+    <div class="cp-toolbar">
+      <h2 class="cp-section-title" style="margin: 0">Orders &amp; refunds</h2>
+      <div class="cp-toolbar__actions">
+        <label class="cp-search" style="flex: 0 0 13rem">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <input type="search" placeholder="Search orders" [(ngModel)]="query" aria-label="Search orders" />
+        </label>
+        <div class="cp-pills" role="group" aria-label="Order status">
+          @for (pill of pills; track pill.value) {
+            <button type="button" class="cp-pill" [class.is-active]="status === pill.value" (click)="status = pill.value">
+              {{ pill.label }}
+            </button>
+          }
+        </div>
+        <button type="button" class="cp-export" (click)="exportCsv()">
+          <i class="fa fa-download" aria-hidden="true"></i>
+          Export CSV
+        </button>
+      </div>
+    </div>
+    <p class="cp-empty" style="margin: 0; border: 0">No orders found.</p>
+  </section>
+</div>

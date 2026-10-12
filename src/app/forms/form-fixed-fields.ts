@@ -4,6 +4,7 @@ export const FIXED_FORM_FIELD_IDS = {
   FORM_NAME: 'fixed_form_name',
   DIVIDER: 'fixed_divider',
   ORDER_ID: 'fixed_order_id',
+  ORDER_AMOUNT: 'fixed_order_amount',
   REVIEWER_NAME: 'fixed_reviewer_name',
   DEAL_TYPE: 'fixed_deal_type',
 } as const;
@@ -30,6 +31,11 @@ function normalizeLabel(label: string | undefined): string {
 
 function labelIncludes(label: string | undefined, needle: string): boolean {
   return normalizeLabel(label).includes(needle.toLowerCase());
+}
+
+function isOrderAmountLabel(label: string | undefined): boolean {
+  const normalized = normalizeLabel(label).replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+  return normalized.includes('order amt') || normalized.includes('order amount');
 }
 
 export function createDefaultFixedElements(): FormElement[] {
@@ -65,6 +71,18 @@ export function createDefaultFixedElements(): FormElement[] {
       type: 'text',
       label: 'Order Id',
       placeholder: 'Enter order id',
+      required: true,
+      fixed: true,
+      helperText: '',
+      styles: { ...baseStyles },
+      validation: {},
+      logic: {},
+    },
+    {
+      id: FIXED_FORM_FIELD_IDS.ORDER_AMOUNT,
+      type: 'number',
+      label: 'Order amount',
+      placeholder: 'Enter order amount',
       required: true,
       fixed: true,
       helperText: '',
@@ -129,6 +147,14 @@ function findLegacyMatch(
       (el) =>
         (el.type === 'text' || el.type === 'number') &&
         labelIncludes(el.label, 'order id')
+    );
+  }
+
+  if (def.id === FIXED_FORM_FIELD_IDS.ORDER_AMOUNT) {
+    return available.find(
+      (el) =>
+        (el.type === 'number' || el.type === 'text') &&
+        isOrderAmountLabel(el.label)
     );
   }
 

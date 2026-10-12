@@ -40,6 +40,10 @@ export const ROUTES = {
   ACCESS_MANAGEMENT: 'access-management',
   BANK_UPI: 'bank-upi',
   ORDER_HISTORY: 'order-history',
+  SUBMISSIONS: 'submissions',
+  REFUNDS: 'refunds',
+  CAMPAIGNS: 'campaigns',
+  ANALYTICS: 'analytics',
 } as const;
 
 /**
@@ -68,6 +72,9 @@ export const MENU_KEYS = {
   COMPANY_PRODUCTS: 'company_products',
   BANK_UPI: 'bank_upi',
   ORDER_HISTORY: 'order_history',
+  REFUNDS: 'refunds',
+  CAMPAIGNS: 'campaigns',
+  ANALYTICS: 'analytics',
 } as const;
 
 /**
@@ -360,10 +367,34 @@ export const COMPANY_SIDEBAR_MENU = [
     icon: 'product',
   },
   {
+    key: MENU_KEYS.SUBMISSIONS,
+    label: 'Submissions',
+    route: ROUTES.SUBMISSIONS,
+    icon: 'submissions',
+  },
+  {
+    key: MENU_KEYS.REFUNDS,
+    label: 'Refunds',
+    route: ROUTES.REFUNDS,
+    icon: 'refunds',
+  },
+  {
     key: MENU_KEYS.MEDIATORS,
     label: 'Mediators',
     route: ROUTES.MEDIATORS,
     icon: 'supervised_user_circle',
+  },
+  {
+    key: MENU_KEYS.CAMPAIGNS,
+    label: 'Campaigns',
+    route: ROUTES.CAMPAIGNS,
+    icon: 'campaigns',
+  },
+  {
+    key: MENU_KEYS.ANALYTICS,
+    label: 'Analytics',
+    route: ROUTES.ANALYTICS,
+    icon: 'analytics',
   },
 ];
 

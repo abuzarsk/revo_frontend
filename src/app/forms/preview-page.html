@@ -1,15 +1,19 @@
 <section class="dashboard-section">
-  <div class="section-header">
-    <div class="header-left">
-      <h2 class="section-title">Form Preview</h2>
-      <p class="section-subtitle">Preview and test your form before publishing.</p>
+  <header class="preview-intro">
+    <div>
+      <p class="preview-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Form Preview</span>
+      </p>
+      <h1 class="preview-page-title">Form Preview</h1>
+      <p class="preview-lede">Preview and test this form before publishing.</p>
     </div>
-    <div class="header-right">
-      <a routerLink="/builder/{{encoded_product_id}}" class="back-link">
-        ← Back to Builder
-      </a>
-    </div>
-  </div>
+    <a routerLink="/builder/{{encoded_product_id}}" class="back-link">
+      <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      Back to builder
+    </a>
+  </header>
 
   <main class="preview-main" *ngIf="formDef$ | async as form">
     <div class="preview-card">

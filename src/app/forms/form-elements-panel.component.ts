@@ -14,62 +14,41 @@ interface PaletteItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="panel">
-      <div class="panel-header">Form Elements</div>
-      <div class="palette">
-        <div
-          class="palette-item"
-          *ngFor="let item of palette"
-          (click)="addElement(item.type)"
-        >
-          <div class="icon">{{ item.icon }}</div>
-          <div class="label">{{ item.label }}</div>
-        </div>
-      </div>
+    <div class="palette">
+      <button
+        type="button"
+        class="palette-item"
+        *ngFor="let item of palette"
+        (click)="addElement(item.type)"
+      >
+        {{ item.label }}
+      </button>
     </div>
   `,
   styles: [
     `
-      .panel {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background: #f8fafc;
-        border-right: 1px solid #e2e8f0;
-      }
-      .panel-header {
-        padding: 12px 16px;
-        font-weight: 600;
-        border-bottom: 1px solid #e2e8f0;
-      }
       .palette {
-        padding: 8px;
-        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .palette-item {
-        display: flex;
-        align-items: center;
-        padding: 8px 10px;
-        margin-bottom: 6px;
-        border-radius: 6px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        height: 2rem;
+        padding: 0 0.75rem;
+        border: 1px solid oklch(0.93 0.012 270);
+        border-radius: calc(1.125rem - 2px);
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        color: oklch(0.25 0.035 260);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
         cursor: pointer;
-        font-size: 13px;
-        transition: box-shadow 0.15s, background 0.1s, transform 0.1s;
       }
       .palette-item:hover {
-        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
-        background: #f9fafb;
-      }
-      .icon {
-        width: 20px;
-        margin-right: 8px;
-        text-align: center;
-        font-size: 16px;
-      }
-      .label {
-        flex: 1;
+        border-color: oklch(0.55 0.23 285);
+        color: oklch(0.55 0.23 285);
       }
     `,
   ],

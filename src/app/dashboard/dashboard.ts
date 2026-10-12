@@ -311,6 +311,10 @@ export class Dashboard implements OnInit, OnDestroy {
       companies: 'fa-building',
       bank: 'fa-university',
       orders: 'fa-shopping-bag',
+      submissions: 'fa-file-text-o',
+      refunds: 'fa-undo',
+      campaigns: 'fa-bullhorn',
+      analytics: 'fa-bar-chart',
     };
     return map[icon] ?? 'fa-circle';
   }

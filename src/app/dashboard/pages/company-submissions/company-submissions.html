@@ -1,0 +1,49 @@
+<div class="cp-page">
+  <header class="cp-intro">
+    <div>
+      <p class="cp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Submissions</span>
+      </p>
+      <h1 class="cp-title">Submissions</h1>
+      <p class="cp-lede">Submissions in Brand Center</p>
+    </div>
+    <span class="cp-status"><span class="cp-status__dot" aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="cp-stats cp-stats--6">
+    @for (status of statuses; track status.key) {
+      <button
+        type="button"
+        class="cp-count"
+        [class.is-active]="statusFilter === status.key"
+        (click)="setStatus(status.key)"
+      >
+        <span class="cp-badge" [ngClass]="status.badge">{{ status.label }}</span>
+        <p class="cp-value">{{ countFor(status.key) }}</p>
+      </button>
+    }
+  </div>
+
+  <div class="cp-panel cp-filters">
+    <label class="cp-search">
+      <i class="fa fa-search" aria-hidden="true"></i>
+      <input type="search" placeholder="Search by ID, product, member or company" [(ngModel)]="query" aria-label="Search submissions" />
+    </label>
+    <select class="cp-select" [(ngModel)]="statusFilter" aria-label="Filter status">
+      <option value="all">All statuses</option>
+      <option value="action">Needs my action</option>
+      @for (status of statuses; track status.key) {
+        <option [value]="status.key">{{ status.label }}</option>
+      }
+    </select>
+    <select class="cp-select" [(ngModel)]="productFilter" aria-label="Filter product">
+      <option value="all">All products</option>
+    </select>
+  </div>
+
+  <section class="cp-panel" style="padding: 0; overflow: hidden">
+    <p class="cp-empty" style="margin: 0; border: 0; border-radius: 0">No submissions match.</p>
+  </section>
+</div>
