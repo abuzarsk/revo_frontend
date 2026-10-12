@@ -1,117 +1,73 @@
 <div class="oh-page">
-  <!-- <section class="oh-hero">
-    <div class="oh-hero__left">
-      <span class="oh-hero__avatar">{{ userInitials }}</span>
+  <header class="oh-intro">
+    <p class="oh-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Order History</span>
+    </p>
+    <div class="oh-intro__row">
       <div>
-        <h1 class="oh-hero__title">Hi, {{ userName }}</h1>
-        <p class="oh-hero__subtitle">Order archive</p>
+        <h1 class="oh-intro__title">Order History</h1>
+        <p class="oh-intro__lede">Order History in Member Portal</p>
       </div>
+      <span class="oh-status">
+        <span class="oh-status__dot" aria-hidden="true"></span>
+        All systems operational
+      </span>
     </div>
-    <div class="oh-hero__stats">
-      <article class="oh-hero-stat">
-        <span class="oh-hero-stat__icon"><i class="fa fa-clone" aria-hidden="true"></i></span>
-        <div>
-          <p class="oh-hero-stat__value">{{ totalCount }}</p>
-          <p class="oh-hero-stat__label">Total</p>
-        </div>
-      </article>
-      <article class="oh-hero-stat">
-        <span class="oh-hero-stat__icon"><i class="fa fa-inr" aria-hidden="true"></i></span>
-        <div>
-          <p class="oh-hero-stat__value">{{ formatCurrency(paidAmount) }}</p>
-          <p class="oh-hero-stat__label">Paid</p>
-        </div>
-      </article>
-    </div>
-  </section> -->
+  </header>
 
-  <!-- <section class="oh-status-section">
-    <div class="oh-status-section__header">
-      <h2 class="oh-status-section__title">
-        <i class="fa fa-filter" aria-hidden="true"></i> STATUS
-      </h2>
-    </div>
-    <div class="oh-status-row">
-      @for (status of statusSummary; track status.key) {
-        <button
-          type="button"
-          class="oh-status-chip"
-          [class.oh-status-chip--active]="selectedStatusKey === status.key"
-          (click)="toggleStatusFilter(status.key)"
-        >
-          <span class="oh-status-chip__count">{{ status.count }}</span>
-          <span class="oh-status-chip__label">{{ status.label }}</span>
-        </button>
-      }
-    </div>
-  </section> -->
+  <section class="oh-stats">
+    <article class="oh-stat">
+      <p class="oh-stat__label">Total orders</p>
+      <p class="oh-stat__value">{{ totalOrders }}</p>
+    </article>
+    <article class="oh-stat">
+      <p class="oh-stat__label">Total spent</p>
+      <p class="oh-stat__value">{{ formatCurrency(totalSpent) }}</p>
+    </article>
+    <article class="oh-stat">
+      <p class="oh-stat__label">Refunds received</p>
+      <p class="oh-stat__value">{{ formatCurrency(refundsReceived) }}</p>
+    </article>
+    <article class="oh-stat">
+      <p class="oh-stat__label">In transit</p>
+      <p class="oh-stat__value">{{ inTransitCount }}</p>
+    </article>
+  </section>
 
   <section class="oh-orders-panel">
-    <div class="oh-orders-panel__header">
-      <h2 class="oh-orders-panel__title">
-        <i class="fa fa-list-ul" aria-hidden="true"></i> ALL ORDERS
-      </h2>
-      <a class="oh-dashboard-link" routerLink="/">
-        <i class="fa fa-long-arrow-left" aria-hidden="true"></i> Dashboard
-      </a>
-    </div>
-
-    <!--<div class="oh-filters">
-      <label class="oh-filter-field oh-filter-field--search">
-        <span class="oh-filter-label">Search</span>
+    <div class="oh-toolbar">
+      <h2 class="oh-orders-panel__title">Your orders</h2>
+      <div class="oh-toolbar__actions">
+      <label class="oh-search">
+        <i class="fa fa-search" aria-hidden="true"></i>
         <input
-          type="text"
-          class="oh-filter-input"
-          placeholder="Order ID, brand, code..."
+          type="search"
+          placeholder="Search orders"
           [(ngModel)]="searchQuery"
+          (keyup.enter)="applyFilters()"
+          aria-label="Search orders"
         />
       </label>
-
-      <label class="oh-filter-field">
-        <span class="oh-filter-label">Platform</span>
-        <select class="oh-filter-input" [(ngModel)]="platformFilter">
-          @for (p of platforms; track p) {
-            <option [value]="p">{{ p === 'all' ? 'All platforms' : p }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="oh-filter-field">
-        <span class="oh-filter-label">Status</span>
-        <select class="oh-filter-input" [(ngModel)]="statusFilter">
-          @for (opt of statusOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="oh-filter-field oh-filter-field--date">
-        <span class="oh-filter-label">From</span>
-        <input type="date" class="oh-filter-input" [(ngModel)]="dateFrom" />
-      </label>
-
-      <label class="oh-filter-field oh-filter-field--date">
-        <span class="oh-filter-label">To</span>
-        <input type="date" class="oh-filter-input" [(ngModel)]="dateTo" />
-      </label>
-
-      <label class="oh-filter-field">
-        <span class="oh-filter-label">Sort</span>
-        <select class="oh-filter-input" [(ngModel)]="sortOrder">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-        </select>
-      </label>
-
-      <div class="oh-filter-buttons">
-        <button type="button" class="oh-btn oh-btn--primary" (click)="applyFilters()">
-          <i class="fa fa-filter" aria-hidden="true"></i> Apply
-        </button>
-        <button type="button" class="oh-btn oh-btn--csv" (click)="exportCsv()">
-          <i class="fa fa-download" aria-hidden="true"></i> CSV
-        </button>
+      <div class="oh-pills" role="group" aria-label="Order status">
+        @for (pill of statusPills; track pill.value) {
+          <button
+            type="button"
+            class="oh-pill"
+            [class.is-active]="activePill === pill.value"
+            (click)="setStatusPill(pill)"
+          >
+            {{ pill.label }}
+          </button>
+        }
       </div>
-    </div>-->
+      <button type="button" class="oh-export" (click)="exportCsv()">
+        <i class="fa fa-download" aria-hidden="true"></i>
+        Export CSV
+      </button>
+      </div>
+    </div>
 
     @if (loading) {
       <p class="oh-message oh-message--info">Loading order history...</p>
@@ -130,113 +86,63 @@
     }
 
     @if (!loading && orders.length) {
-      <div class="oh-table-wrap">
-        <table class="oh-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Product Details</th>
-              <th>Product Link</th>
-              <th>Form Submission</th>
-              <th>Refund Submission</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (order of orders; track order.id; let i = $index) {
-              <tr>
-                <td class="oh-cell-num">{{ orderRowNumber(i) }}</td>
-
-                <td class="oh-cell-product">
-                  <div class="oh-product-details">
-                    @if (order.productImageUrl) {
-                      <img
-                        class="oh-product-thumb"
-                        [src]="order.productImageUrl"
-                        [alt]="order.productLabel || order.productName"
-                      />
-                    } @else {
-                      <div class="oh-product-thumb oh-product-thumb--placeholder" aria-hidden="true">
-                        <i class="fa fa-picture-o"></i>
-                      </div>
-                    }
-                    <div class="oh-product-copy">
-                      @if (order.productLabel) {
-                        <p class="oh-product-label">{{ order.productLabel }}</p>
-                      }
-                      <p class="oh-product-name">{{ order.productName }}</p>
-                      @if (order.productCode && order.productCode !== '—') {
-                        <p class="oh-product-code">{{ order.productCode }}</p>
-                      }
-                      <p class="oh-product-meta">Brand: {{ order.brandName }}</p>
-                      <!-- <p class="oh-product-meta">Type: {{ order.orderType }}</p>
-                      <p class="oh-product-meta oh-product-meta--muted">
-                        Submitted: {{ order.submittedAt }}
-                      </p> -->
-                    </div>
-                  </div>
-                </td>
-
-                <td class="oh-cell-link">
-                  @if (order.productLink) {
-                    <button
-                      type="button"
-                      class="oh-product-link"
-                      (click)="openProductLink(order.productLink)"
-                    >
-                      <i class="fa fa-link" aria-hidden="true"></i> Open link
-                    </button>
-                  } @else {
-                    <span class="oh-muted">—</span>
+      <div class="oh-rows">
+        @for (order of orders; track order.id) {
+          <article class="oh-row">
+            <div class="oh-row__main">
+              <span class="oh-row__icon" [ngClass]="'oh-row__icon--' + orderTone(order)" aria-hidden="true">
+                <i class="fa" [ngClass]="statusIcon(order)"></i>
+              </span>
+              <div class="oh-row__copy">
+                <p class="oh-row__title">
+                  {{ order.productName }}
+                  @if (order.brandName && order.brandName !== '—') {
+                    <span>· {{ order.brandName }}</span>
                   }
-                </td>
-
-                <td class="oh-cell-fields">
-                  <ng-container
-                    *ngTemplateOutlet="submissionFieldsTpl; context: { order: order, type: 'submission' }"
-                  />
-                </td>
-
-                <td class="oh-cell-fields oh-cell-fields--refund">
-                  <ng-container
-                    *ngTemplateOutlet="submissionFieldsTpl; context: { order: order, type: 'refund' }"
-                  />
-                </td>
-
-                <td class="oh-cell-status">
-                  <span [class]="getStatusBadgeClass(order.statusLabel)">
-                    {{ order.statusLabel }}
-                  </span>
-                </td>
-
-                <td class="oh-cell-actions">
+                </p>
+                <p class="oh-row__meta">{{ orderMeta(order) }}</p>
+              </div>
+            </div>
+            <div class="oh-row__side">
+              <span class="oh-status-text" [ngClass]="'oh-status-text--' + orderTone(order)">{{ orderStatusText(order) }}</span>
+              <span class="oh-row__amount">{{ orderAmount(order) !== null ? formatCurrency(orderAmount(order)!) : '' }}</span>
+              <button type="button" class="oh-view" (click)="toggleOrder(order)">
+                {{ expandedOrderId === order.id ? 'Hide' : 'View' }}
+              </button>
+            </div>
+            @if (expandedOrderId === order.id) {
+              <div class="oh-row__detail">
+                @if (order.productLink) {
+                  <button type="button" class="oh-product-link" (click)="openProductLink(order.productLink)">
+                    <i class="fa fa-link" aria-hidden="true"></i> Open link
+                  </button>
+                }
+                <div class="oh-row__fields">
+                  <div>
+                    <p class="oh-row__field-label">Form submission</p>
+                    <ng-container *ngTemplateOutlet="submissionFieldsTpl; context: { order: order, type: 'submission' }" />
+                  </div>
+                  <div>
+                    <p class="oh-row__field-label">Refund submission</p>
+                    <ng-container *ngTemplateOutlet="submissionFieldsTpl; context: { order: order, type: 'refund' }" />
+                  </div>
+                </div>
+                <div class="oh-row__actions">
                   @if (canRequestRefund(order)) {
-                    <button
-                      type="button"
-                      class="oh-action-pill oh-action-pill--primary"
-                      (click)="refundSubmission(order)"
-                    >
+                    <button type="button" class="oh-action-pill oh-action-pill--primary" (click)="refundSubmission(order)">
                       Refund
                     </button>
                   }
                   @if (canViewRefund(order)) {
-                    <button
-                      type="button"
-                      class="oh-action-pill oh-action-pill--secondary"
-                      (click)="viewRefundSubmission(order)"
-                    >
+                    <button type="button" class="oh-action-pill oh-action-pill--secondary" (click)="viewRefundSubmission(order)">
                       View refund
                     </button>
                   }
-                  @if (!canRequestRefund(order) && !canViewRefund(order)) {
-                    <span class="oh-muted">—</span>
-                  }
-                </td>
-              </tr>
+                </div>
+              </div>
             }
-          </tbody>
-        </table>
+          </article>
+        }
       </div>
     }
 

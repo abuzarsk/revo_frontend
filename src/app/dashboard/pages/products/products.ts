@@ -64,7 +64,7 @@ export class Products {
 
   mediatorProducts: any[] = [];
   userProducts: any[] = [];
-  viewMode: 'list' | 'table' = 'table';
+  viewMode: 'list' | 'table' = 'list';
 
   constructor(private fb: FormBuilder, private apiService: Apiservice, private cdr: ChangeDetectorRef, private router: Router) {
     this.productForm = this.fb.group({
@@ -272,13 +272,13 @@ export class Products {
       next: (res: any) => {
         this.applyProductsPage(res, page);
         this.productsLoading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (error: any) => {
         console.log(error);
         this.products = [];
         this.productsLoading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
     });
   }
@@ -492,6 +492,19 @@ export class Products {
     this.viewMode = mode;
   }
 
+  get productsPortalLabel(): string {
+    if (this.role == ENTITY_TYPE_IDS.COMPANY) {
+      return 'Brand Center';
+    }
+    if (this.role == ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'Partner Hub';
+    }
+    if (this.role == ENTITY_TYPE_IDS.USER) {
+      return 'Member Portal';
+    }
+    return 'workspace';
+  }
+
   companyPromotionLabel(status: number): string {
     if (status === 1) {
       return 'Promoted';
@@ -507,7 +520,7 @@ export class Products {
   }
 
   formatMultipleSubmission(value: unknown): string {
-    return this.isMultipleSubmissionEnabled(value) ? 'true' : 'false';
+    return this.isMultipleSubmissionEnabled(value) ? 'Yes' : 'No';
   }
 
   formatMaxSubmissionByOne(product: any): string | number {
@@ -526,18 +539,6 @@ export class Products {
     return brand || company || '—';
   }
 
-  productPrice(product: any): string {
-    const value = product?.price ?? product?.product_price ?? product?.payout ?? product?.payout_value;
-    if (value == null || value === '') {
-      return '—';
-    }
-    const amount = Number(String(value).replace(/[^\d.]/g, ''));
-    if (Number.isNaN(amount)) {
-      return String(value);
-    }
-    return '₹' + amount.toLocaleString('en-IN');
-  }
-
   productRefund(product: any): string {
     const value = product?.refund_percent ?? product?.refund_percentage;
     if (value != null && value !== '') {
@@ -545,6 +546,24 @@ export class Products {
       return text.includes('%') ? text : `${text}%`;
     }
     return String(product?.refund_submission_count || 0);
+  }
+
+  submissionLimit(product: any): string {
+    const used = Number(product?.submission_count || 0);
+    const limit = product?.order_limit;
+    if (limit == null || limit === '') {
+      return `${used}/—`;
+    }
+    return `${used}/${limit}`;
+  }
+
+  submissionRemaining(product: any): string {
+    const limit = Number(product?.order_limit);
+    if (!limit) {
+      return '';
+    }
+    const used = Number(product?.submission_count || 0);
+    return `${Math.max(limit - used, 0)} remaining`;
   }
 
   private isMultipleSubmissionEnabled(value: unknown): boolean {
@@ -568,13 +587,13 @@ export class Products {
       next: (res: any) => {
         this.applyMediatorProductsPage(res, page);
         this.mediatorProductsLoading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (error: any) => {
         console.log(error);
         this.mediatorProducts = [];
         this.mediatorProductsLoading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
     });
   }
@@ -601,13 +620,13 @@ export class Products {
       next: (res: any) => {
         this.applyUserProductsPage(res, page);
         this.userProductsLoading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (error: any) => {
         console.log(error);
         this.userProducts = [];
         this.userProductsLoading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
     });
   }

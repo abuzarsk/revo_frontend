@@ -15,26 +15,18 @@
   <aside class="dashboard-sidebar" [class.dashboard-sidebar--collapsed]="sidebarCollapsed">
     <div class="sidebar-brand">
       <span class="sidebar-brand__mark" aria-hidden="true">R</span>
-      <div class="sidebar-brand__text">
-        <h1 class="sidebar-brand__title">Revo Admin</h1>
-        <p class="sidebar-brand__subtitle">{{ sidebarSubtitle }}</p>
-      </div>
-      <button
-        type="button"
-        class="sidebar-collapse-btn"
-        [attr.aria-label]="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        [attr.aria-expanded]="!sidebarCollapsed"
-        (click)="toggleSidebarCollapse()"
-      >
-        <i
-          class="fa"
-          [class.fa-angle-left]="!sidebarCollapsed"
-          [class.fa-angle-right]="sidebarCollapsed"
-          aria-hidden="true"
-        ></i>
-      </button>
+      <span class="sidebar-brand__word">revo</span>
     </div>
 
+    <div class="workspace-card">
+      <span class="workspace-card__mark">{{ workspaceInitials(sidebarSubtitle) }}</span>
+      <div class="workspace-card__text">
+        <p class="workspace-card__name">{{ sidebarSubtitle }}</p>
+        <p class="workspace-card__hint">Current workspace</p>
+      </div>
+    </div>
+
+    <p class="sidebar-section">Main</p>
     <nav class="sidebar-nav" aria-label="Main navigation">
       @for (item of sidebarMenu; track item.key) {
         <a
@@ -52,6 +44,7 @@
     </nav>
 
     <div class="sidebar-footer">
+      <p class="sidebar-section">Workspace</p>
       <button
         type="button"
         class="sidebar-link sidebar-link--muted"
@@ -62,12 +55,21 @@
       </button>
       <button
         type="button"
-        class="sidebar-link sidebar-link--danger"
-        [attr.title]="sidebarCollapsed && !mobileSidebarOpen ? 'Log Out' : null"
+        class="sidebar-link"
+        [attr.title]="sidebarCollapsed && !mobileSidebarOpen ? 'Logout' : null"
         (click)="logout()"
       >
         <i class="fa fa-sign-out" aria-hidden="true"></i>
-        <span class="sidebar-link__label">Log Out</span>
+        <span class="sidebar-link__label">Logout</span>
+      </button>
+      <button
+        type="button"
+        class="sidebar-collapse-btn"
+        [attr.aria-label]="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.aria-expanded]="!sidebarCollapsed"
+        (click)="toggleSidebarCollapse()"
+      >
+        <i class="fa fa-bars" aria-hidden="true"></i>
       </button>
     </div>
   </aside>
@@ -84,14 +86,21 @@
         >
           @if (isMobileViewport && mobileSidebarOpen) {
             <i class="fa fa-times" aria-hidden="true"></i>
-          } @else if (!isMobileViewport && sidebarCollapsed) {
-            <i class="fa fa-angle-right" aria-hidden="true"></i>
           } @else {
             <i class="fa fa-bars" aria-hidden="true"></i>
           }
         </button>
-        <h2 class="content-header__title">Revo</h2>
+        <div class="content-header__titles">
+          <h2 class="content-header__title">{{ sidebarSubtitle }}</h2>
+          <p class="content-header__subtitle">Overview of your workspace</p>
+        </div>
       </div>
+
+      <label class="header-search">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        <input type="search" placeholder="Search products, companies, users..." aria-label="Search" />
+        <kbd>⌘K</kbd>
+      </label>
 
       <div class="content-header__actions">
         <button type="button" class="icon-btn" aria-label="Notifications">
@@ -99,22 +108,38 @@
           <span class="icon-btn__dot" aria-hidden="true"></span>
         </button>
 
-        @if (role !== 1 && roles.length > 1) {
-          <div class="role-switch">
-            <i class="fa fa-briefcase" aria-hidden="true"></i>
-            <select class="role-select" [value]="role" (change)="changeRole($event)">
-              @for (r of roles; track r) {
-                <option [value]="r" [selected]="r == role">{{ getRoleLabel(r) }}</option>
-              }
-            </select>
-          </div>
-        } @else {
-          <button type="button" class="icon-btn" aria-label="Workspace">
-            <i class="fa fa-briefcase" aria-hidden="true"></i>
+        <div class="workspace-menu">
+          <button
+            type="button"
+            class="workspace-chip"
+            [attr.aria-expanded]="workspaceMenuOpen"
+            (click)="toggleWorkspaceMenu($event)"
+          >
+            <span class="workspace-chip__avatar">{{ workspaceInitials(sidebarSubtitle) }}</span>
+            <span class="workspace-chip__label">{{ role ? getRoleLabel(role) : userName }}</span>
+            <i class="fa fa-angle-down" aria-hidden="true"></i>
           </button>
-        }
 
-        <div class="user-avatar" [attr.title]="userName">{{ userInitials }}</div>
+          @if (workspaceMenuOpen) {
+            <div class="workspace-popover" (click)="$event.stopPropagation()">
+              <p class="workspace-popover__label">Switch workspace</p>
+              @for (r of workspaceOptions; track r) {
+                <button
+                  type="button"
+                  class="workspace-option"
+                  [class.is-current]="r == role"
+                  (click)="selectWorkspace(r, $event)"
+                >
+                  <span class="workspace-option__mark">{{ workspaceInitials(workspaceName(r)) }}</span>
+                  <span class="workspace-option__name">{{ workspaceName(r) }}</span>
+                  @if (r == role) {
+                    <i class="fa fa-check" aria-hidden="true"></i>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
       </div>
     </header>
 

@@ -21,6 +21,7 @@ export class Usercompanies implements OnInit {
   connectSearch = '';
   connectResults: any[] = [];
   userConnections: any[] = [];
+  activeTab: 'connected' | 'requests' | 'rejected' = 'connected';
 
   constructor(
     private apiService: Apiservice,
@@ -31,6 +32,65 @@ export class Usercompanies implements OnInit {
     this.tokenObj = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ);
     this.token = this.tokenObj?.token ?? null;
     this.getUserConnections();
+  }
+
+  setTab(tab: 'connected' | 'requests' | 'rejected'): void {
+    this.activeTab = tab;
+  }
+
+  get visibleConnections(): any[] {
+    if (this.activeTab !== 'connected') {
+      return [];
+    }
+    return this.userConnections;
+  }
+
+  connectionName(connection: any): string {
+    return connection?.alias || connection?.company_alias || connection?.mediator_alias || connection?.name || '—';
+  }
+
+  connectionInitials(connection: any): string {
+    const name = this.connectionName(connection).trim();
+    if (!name || name === '—') {
+      return '?';
+    }
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  connectionDatePrefix(): string {
+    if (this.activeTab === 'requests') {
+      return 'Requested';
+    }
+    if (this.activeTab === 'rejected') {
+      return 'Rejected';
+    }
+    return 'Connected';
+  }
+
+  connectionStatusLabel(): string {
+    return this.connectionDatePrefix();
+  }
+
+  connectionProductCount(connection: any): number | null {
+    const value =
+      connection?.active_product_count ??
+      connection?.product_count ??
+      connection?.products_count ??
+      connection?.active_products;
+    if (value == null || value === '') {
+      return null;
+    }
+    const count = Number(value);
+    return Number.isFinite(count) ? count : null;
+  }
+
+  connectionGroupLink(connection: any): string | null {
+    const link = connection?.group_link || connection?.company_group_link;
+    return link ? String(link) : null;
   }
 
   openConnect(): void {
@@ -89,11 +149,12 @@ export class Usercompanies implements OnInit {
   }
 
   getCompanyLogoSrc(c: any): string {
-    const logo = c?.logo;
+    const logo = c?.logo || c?.profile_pic || c?.company_logo;
     if (!logo) return '';
     const base = this.imageBaseUrl.endsWith('/') ? this.imageBaseUrl : `${this.imageBaseUrl}/`;
     if (logo.startsWith('http://') || logo.startsWith('https://')) return logo;
-    return `${base}companies/${logo.startsWith('/') ? logo.slice(1) : logo}`;
+    const folder = c?.role == 3 ? 'mediators' : 'companies';
+    return `${base}${folder}/${logo.startsWith('/') ? logo.slice(1) : logo}`;
   }
 
 

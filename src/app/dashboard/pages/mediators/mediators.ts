@@ -20,12 +20,14 @@ export class Mediators {
   role: any;
   ENTITY_TYPE_IDS: any = ENTITY_TYPE_IDS;
 
-  /** Company (non-admin) view: tab state */
-  activeMediatorTab: 'mediators' | 'requested' | 'rejected' = 'mediators';
+  /** Company (non-admin) view: filter and search */
+  mediatorFilter: 'all' | 'active' | 'requested' | 'rejected' = 'all';
+  mediatorQuery = '';
   companyMediatorsList: any[] = [];
   requestedMediatorsList: any[] = [];
   rejectedMediatorsList: any[] = [];
   loadingCompanyMediators = false;
+  private companyLoadsPending = 0;
 
   constructor(private apiService: Apiservice, private cdr: ChangeDetectorRef) {
     const tokenObj = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ);
@@ -44,27 +46,59 @@ export class Mediators {
     }
   }
 
-  setMediatorTab(tab: 'mediators' | 'requested' | 'rejected'): void {
-    this.activeMediatorTab = tab;
-    if (tab === 'mediators') {
-      this.getMediatorConnectedCompanies();
-    } else if (tab === 'requested') {
-      this.getMediatorRequestedCompanies();
-    } else if (tab === 'rejected') {
-      this.getMediatorRejectedCompanies();
-    }
+  setMediatorFilter(filter: 'all' | 'active' | 'requested' | 'rejected'): void {
+    this.mediatorFilter = filter;
   }
 
-  /** Load lists for company tabs when backend endpoints are available */
+  get portalLabel(): string {
+    if (this.role == ENTITY_TYPE_IDS.COMPANY) {
+      return 'Brand Center';
+    }
+    if (this.role == ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'Partner Hub';
+    }
+    if (this.role == ENTITY_TYPE_IDS.USER) {
+      return 'Member Portal';
+    }
+    return 'workspace';
+  }
+
+  get visibleMediators(): any[] {
+    const query = this.mediatorQuery.trim().toLowerCase();
+    let rows = [
+      ...this.tagMediators(this.companyMediatorsList, 'active'),
+      ...this.tagMediators(this.requestedMediatorsList, 'requested'),
+      ...this.tagMediators(this.rejectedMediatorsList, 'rejected'),
+    ];
+    if (this.mediatorFilter !== 'all') {
+      rows = rows.filter((row) => row._status === this.mediatorFilter);
+    }
+    if (!query) {
+      return rows;
+    }
+    return rows.filter((row) => {
+      const name = this.mediatorName(row).toLowerCase();
+      const subtitle = this.mediatorSubtitle(row).toLowerCase();
+      return name.includes(query) || subtitle.includes(query);
+    });
+  }
+
+  /** Load connected, requested, and rejected mediators for the company view */
   loadCompanyMediatorTabs(): void {
     if (!this.token) return;
     this.loadingCompanyMediators = true;
-    // Wire these when API paths exist; placeholders keep UI working
+    this.companyLoadsPending = 3;
     this.companyMediatorsList = [];
     this.requestedMediatorsList = [];
     this.rejectedMediatorsList = [];
-    this.loadingCompanyMediators = false;
     this.getMediatorConnectedCompanies();
+    this.getMediatorRequestedCompanies();
+    this.getMediatorRejectedCompanies();
+  }
+
+  private finishCompanyLoad(): void {
+    this.companyLoadsPending = Math.max(0, this.companyLoadsPending - 1);
+    this.loadingCompanyMediators = this.companyLoadsPending > 0;
     this.cdr.detectChanges();
   }
 
@@ -98,11 +132,12 @@ export class Mediators {
       (res: any) => {
         console.log(res);
         
-        this.companyMediatorsList = res.data;
-        this.cdr.detectChanges();
+        this.companyMediatorsList = this.asList(res?.data);
+        this.finishCompanyLoad();
       },
       (error: any) => {
         console.log(error);
+        this.finishCompanyLoad();
       }
     );
   }
@@ -111,11 +146,12 @@ export class Mediators {
     this.apiService.getCompaniesRequestedMediator(this.token).subscribe(
       (res: any) => {
         console.log(res);
-        this.requestedMediatorsList = res.data;
-        this.cdr.detectChanges();
+        this.requestedMediatorsList = this.asList(res?.data);
+        this.finishCompanyLoad();
       },
       (error: any) => {
         console.log(error);
+        this.finishCompanyLoad();
       }
     );
   }
@@ -125,15 +161,55 @@ export class Mediators {
     this.apiService.getCompaniesRejectedMediator(this.token).subscribe(
       (res: any) => {
         console.log(res);
-        this.rejectedMediatorsList = res.data;
-        this.cdr.detectChanges();
+        this.rejectedMediatorsList = this.asList(res?.data);
+        this.finishCompanyLoad();
       },
       (error: any) => {
         console.log(error);
+        this.finishCompanyLoad();
       }
     );
   }
 
+
+  mediatorName(row: any): string {
+    return row?.user?.mediator_alias || row?.mediator_alias || row?.alias || '—';
+  }
+
+  mediatorSubtitle(row: any): string {
+    const text = row?.mediator_description || row?.description;
+    return text ? String(text) : 'No description';
+  }
+
+  mediatorInitials(row: any): string {
+    const name = this.mediatorName(row).trim();
+    if (!name || name === '—') {
+      return '?';
+    }
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  mediatorStatusLabel(status: string): string {
+    if (status === 'active') {
+      return 'Active';
+    }
+    if (status === 'requested') {
+      return 'Requested';
+    }
+    return 'Rejected';
+  }
+
+  private tagMediators(list: any[] | null | undefined, status: 'active' | 'requested' | 'rejected'): any[] {
+    return this.asList(list).map((row) => ({ ...row, _status: status }));
+  }
+
+  private asList(data: any): any[] {
+    return Array.isArray(data) ? data : [];
+  }
 
   rejectMediatorRequest(row: any): void {
     if (!this.token) return;

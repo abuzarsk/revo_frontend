@@ -49,6 +49,7 @@ export class Dashboard implements OnInit, OnDestroy {
   userInitials = 'U';
   sidebarCollapsed = false;
   mobileSidebarOpen = false;
+  workspaceMenuOpen = false;
   dashboardData: any = null;
   sidebarMenu: SidebarMenuItem[] = [];
 
@@ -193,6 +194,12 @@ export class Dashboard implements OnInit, OnDestroy {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closeMobileSidebar();
+    this.workspaceMenuOpen = false;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.workspaceMenuOpen = false;
   }
 
   protected get sidebarSubtitle(): string {
@@ -236,6 +243,48 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected closeMobileSidebar(): void {
     this.mobileSidebarOpen = false;
+  }
+
+  protected get workspaceOptions(): number[] {
+    if (this.roles.length) {
+      return this.roles;
+    }
+    return this.role ? [this.role] : [];
+  }
+
+  protected workspaceName(roleId: number): string {
+    if (roleId === 1) {
+      return 'Enterprise Control';
+    }
+    if (roleId === 2) {
+      return 'Brand Center';
+    }
+    if (roleId === 3) {
+      return 'Partner Hub';
+    }
+    return 'Member Portal';
+  }
+
+  protected workspaceInitials(label: string): string {
+    const parts = label.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return label.slice(0, 2).toUpperCase();
+  }
+
+  protected toggleWorkspaceMenu(event: Event): void {
+    event.stopPropagation();
+    this.workspaceMenuOpen = !this.workspaceMenuOpen;
+  }
+
+  protected selectWorkspace(roleId: number, event: Event): void {
+    event.stopPropagation();
+    this.workspaceMenuOpen = false;
+    if (!roleId || roleId === this.role) {
+      return;
+    }
+    this.applyRoleChange(roleId);
   }
 
   protected getRoleLabel(roleId: number): string {
@@ -283,11 +332,15 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   changeRole(event: Event): void {
+    const selectedRole = Number((event.target as HTMLSelectElement)?.value);
+    this.applyRoleChange(selectedRole);
+  }
+
+  private applyRoleChange(selectedRole: number): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
-    const selectedRole = Number((event.target as HTMLSelectElement)?.value);
     const rawTokenObj = localStorage.getItem(STORAGE_KEYS.TOKEN_OBJ);
     const tokenObj = rawTokenObj ? JSON.parse(rawTokenObj) : null;
 

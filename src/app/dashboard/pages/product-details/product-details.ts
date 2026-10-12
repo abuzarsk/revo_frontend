@@ -191,6 +191,52 @@ export class ProductDetails implements OnInit, OnDestroy {
     return this.imageBaseUrl + 'products/' + this.product.photo;
   }
 
+  get productMeta(): string {
+    const product = this.product;
+    const parts = [
+      product?.brand_name || (product?.brand_id != null ? '#' + product.brand_id : ''),
+      product?.company_name || product?.company || '',
+      product?.marketplace || product?.platform || product?.channel || '',
+    ].filter((part) => part != null && String(part).trim() !== '');
+    return parts.join(' · ');
+  }
+
+  get productDescription(): string {
+    const value = this.product?.description ?? this.product?.product_description ?? '';
+    return String(value || '').trim();
+  }
+
+  get categoryLabel(): string {
+    const value =
+      this.product?.category_name ||
+      this.product?.category ||
+      this.product?.product_category ||
+      '';
+    return String(value || '').trim();
+  }
+
+  get productRefundLabel(): string {
+    const value = this.product?.refund_percent ?? this.product?.refund_percentage;
+    if (value != null && value !== '') {
+      const text = String(value);
+      return text.includes('%') ? text : `${text}%`;
+    }
+    return String(this.product?.refund_submission_count || 0);
+  }
+
+  get capacityRemainingLabel(): string {
+    const limitRaw = this.product?.order_limit;
+    if (limitRaw == null || limitRaw === '') {
+      return '—';
+    }
+    const limit = Number(limitRaw);
+    if (!Number.isFinite(limit)) {
+      return String(limitRaw);
+    }
+    const used = Number(this.product?.submission_count || 0);
+    return `${Math.max(limit - used, 0)} / ${limit}`;
+  }
+
   get promotionLabel(): string {
     const status = this.promoteStatus;
     if (status === 1) {

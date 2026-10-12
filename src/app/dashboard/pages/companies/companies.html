@@ -145,114 +145,119 @@
 </div>
 
 
-<div class="companies-page" *ngIf="role == ENTITY_TYPE_IDS.MEDIATOR">
-  <div class="tabs-container">
-    <div class="tabs">
+<div class="companies-page companies-page--network" *ngIf="role == ENTITY_TYPE_IDS.MEDIATOR">
+  <header class="cnet-intro">
+    <p class="cnet-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Companies</span>
+    </p>
+    <div class="cnet-header">
+      <div>
+        <h1 class="cnet-title">Companies</h1>
+        <p class="cnet-lede">Manage connected companies and partner relationships.</p>
+      </div>
+      <span class="cnet-status">
+        <span class="cnet-status__dot" aria-hidden="true"></span>
+        All systems operational
+      </span>
+    </div>
+  </header>
 
-
-    <button
-      type="button"
-      class="tab"
-      [class.active]="activeTab === 'companies'"
-      (click)="setTab('companies')">
-      Companies
-    </button>
-    <button
-      type="button"
-      class="tab"
-      [class.active]="activeTab === 'requests'"
-      (click)="setTab('requests')">
-      Requested Companies
-    </button>
-    <button
-      type="button"
-      class="tab"
-      [class.active]="activeTab === 'rejected'"
-      (click)="setTab('rejected')">
-      Rejected By Companies
+  <div class="cnet-toolbar">
+    <p class="cnet-toolbar__label">Your company network</p>
+    <button type="button" class="cnet-connect" (click)="openConnectOverlay()">
+      <i class="fa fa-plus" aria-hidden="true"></i>
+      Connect
     </button>
   </div>
-    <div>
-      <button type="button" class="button button--primary" (click)="openConnectOverlay()">
-        Connect
-      </button>
-    </div>
 
+  <div class="cnet-tabs" role="tablist" aria-label="Company network">
+    <button
+      type="button"
+      class="cnet-tab"
+      role="tab"
+      [class.is-active]="activeTab === 'companies'"
+      [attr.aria-selected]="activeTab === 'companies'"
+      (click)="setTab('companies')"
+    >
+      Connected
+      <span class="cnet-tab__count">{{ companyCount(mediatorConnectedCompanies) }}</span>
+    </button>
+    <button
+      type="button"
+      class="cnet-tab"
+      role="tab"
+      [class.is-active]="activeTab === 'requests'"
+      [attr.aria-selected]="activeTab === 'requests'"
+      (click)="setTab('requests')"
+    >
+      Requests
+      <span class="cnet-tab__count">{{ companyCount(mediatorRequestedCompanies) }}</span>
+    </button>
+    <button
+      type="button"
+      class="cnet-tab"
+      role="tab"
+      [class.is-active]="activeTab === 'rejected'"
+      [attr.aria-selected]="activeTab === 'rejected'"
+      (click)="setTab('rejected')"
+    >
+      Rejected
+      <span class="cnet-tab__count">{{ companyCount(mediatorRejectedCompanies) }}</span>
+    </button>
   </div>
 
-  <div class="tab-content">
-    <div *ngIf="activeTab === 'companies'" class="panel">
-      <h1>Companies</h1>
-      <div *ngFor="let c of mediatorConnectedCompanies">
-        <div class="connect-result-item">
-          <div class="connect-result-main">
-            <div class="connect-result-logo" *ngIf="c.logo">
-              <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" />
-            </div>
-            <div class="connect-result-text">
-              <div class="connect-result-name">{{ c.company_alias || '—' }}</div>
-              <div class="connect-result-meta">
-                {{ c.company_description || 'No description' }}
-              </div>
-              <div class="connect-result-updated">
-                Connected on: {{ c.updated_on ? (c.updated_on | date:'medium') : '—' }}
-                <span class="badge-connected badge-connected--connected">Connected</span>
-              </div>
-
-            </div>
-          </div>
+  <div class="cnet-list" *ngIf="visibleCompanies.length">
+    <article class="cnet-card" *ngFor="let c of visibleCompanies; let i = index">
+      <div class="cnet-card__identity">
+        <div class="cnet-card__avatar" [attr.data-tone]="i % 6">
+          <img *ngIf="companyLogo(c)" [src]="companyLogo(c)" alt="" />
+          <span *ngIf="!companyLogo(c)">{{ companyInitials(c) }}</span>
+        </div>
+        <div class="cnet-card__copy">
+          <h2 class="cnet-card__name">{{ companyName(c) }}</h2>
+          <p class="cnet-card__meta">
+            <span>
+              <i class="fa fa-calendar-o" aria-hidden="true"></i>
+              {{ companyDatePrefix() }}
+              {{ (c.updated_on || c.created_on) ? ((c.updated_on || c.created_on) | date:'d MMM y') : '—' }}
+            </span>
+            <span *ngIf="companyProductCount(c) !== null">
+              <i class="fa fa-cube" aria-hidden="true"></i>
+              {{ companyProductCount(c) }} active {{ companyProductCount(c) === 1 ? 'product' : 'products' }}
+            </span>
+            <span *ngIf="companyProductCount(c) === null && (c.company_description || c.description)">
+              {{ c.company_description || c.description }}
+            </span>
+          </p>
         </div>
       </div>
-    </div>
-    <div *ngIf="activeTab === 'requests'" class="panel">
-      <h1>Requested Companies</h1>
-      <div *ngFor="let c of mediatorRequestedCompanies">
-        <div class="connect-result-item">
-          <div class="connect-result-main">
-            <div class="connect-result-logo" *ngIf="c.logo">
-              <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" />
-            </div>
-            <div class="connect-result-text">
-              <div class="connect-result-name">{{ c.company_alias || '—' }}</div>
-              <div class="connect-result-meta">
-                {{ c.company_description || 'No description' }}
-              </div>
-              <div class="connect-result-updated">
-                Requested on: {{ c.updated_on ? (c.updated_on | date:'medium') : '—' }}
-                <span class="badge-connected badge-connected--requested">Requested</span>
-              </div>
-
-            </div>
-          </div>
-        </div>
+      <div class="cnet-card__actions">
+        <span
+          class="cnet-pill"
+          [class.cnet-pill--connected]="activeTab === 'companies'"
+          [class.cnet-pill--requested]="activeTab === 'requests'"
+          [class.cnet-pill--rejected]="activeTab === 'rejected'"
+        >
+          {{ companyStatusLabel() }}
+        </span>
+        <a
+          *ngIf="companyGroupLink(c)"
+          class="cnet-open"
+          [href]="companyGroupLink(c)"
+          target="_blank"
+          rel="noopener"
+        >
+          Open
+        </a>
+        <button *ngIf="!companyGroupLink(c)" type="button" class="cnet-open" disabled>Open</button>
       </div>
-    </div>
-  
-    <div *ngIf="activeTab === 'rejected'" class="panel">
-      <h1>Rejected By Companies</h1>
-      <div *ngFor="let c of mediatorRejectedCompanies">
-        <div class="connect-result-item">
-          <div class="connect-result-main">
-            <div class="connect-result-logo" *ngIf="c.logo">
-              <img [src]="imageBaseUrl + 'companies/'+c.logo" alt="Logo" />
-            </div>
-            <div class="connect-result-text">
-              <div class="connect-result-name">{{ c.company_alias || '—' }}</div>
-              <div class="connect-result-meta">
-                {{ c.company_description || 'No description' }}
-              </div>
-              <div class="connect-result-updated">
-                Rejected on: {{ c.updated_on ? (c.updated_on | date:'medium') : '—' }}
-                <span class="badge-connected badge-connected--rejected">Rejected</span>
-              </div>
+    </article>
+  </div>
 
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  
+  <div class="empty" *ngIf="!visibleCompanies.length">
+    No companies in this list yet.
   </div>
 
   <!-- Connect overlay -->

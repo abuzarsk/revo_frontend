@@ -18,6 +18,7 @@ export class BankUpi implements OnInit {
   saveMessage = '';
   saveError = '';
   hasExistingBankDetails = false;
+  payoutMethod: 'upi' | 'bank' = 'upi';
 
   bankForm: FormGroup;
   upiForm: FormGroup;
@@ -95,6 +96,55 @@ export class BankUpi implements OnInit {
       return;
     }
     this.saveDetails({ ...this.bankForm.value, ...this.upiForm.value }, 'upi');
+  }
+
+  setPayoutMethod(value: string): void {
+    this.payoutMethod = value === 'bank' ? 'bank' : 'upi';
+  }
+
+  addPayoutMethod(): void {
+    if (this.payoutMethod === 'bank') {
+      this.saveBankDetails();
+      return;
+    }
+    this.saveUpiDetails();
+  }
+
+  get savedMethods(): Array<{ kind: 'bank' | 'upi'; title: string; subtitle: string; primary: boolean }> {
+    const methods: Array<{ kind: 'bank' | 'upi'; title: string; subtitle: string; primary: boolean }> = [];
+    const bank = this.bankForm.getRawValue();
+    const upi = this.upiForm.getRawValue();
+    const hasBank = !!(bank.revo_user_bank_name || bank.revo_back_account_no);
+    const hasUpi = !!upi.revo_user_upi;
+
+    if (hasBank) {
+      const bankName = bank.revo_user_bank_name || 'Bank account';
+      methods.push({
+        kind: 'bank',
+        title: `${bankName} ${this.maskAccount(bank.revo_back_account_no)}`.trim(),
+        subtitle: bank.revo_bank_holder_name || 'Bank payout',
+        primary: true,
+      });
+    }
+
+    if (hasUpi) {
+      methods.push({
+        kind: 'upi',
+        title: upi.revo_user_upi,
+        subtitle: upi.revo_upi_display_name || 'UPI payout',
+        primary: !hasBank,
+      });
+    }
+
+    return methods;
+  }
+
+  private maskAccount(account: string): string {
+    const digits = String(account || '').replace(/\D/g, '');
+    if (!digits) {
+      return '';
+    }
+    return `···· ${digits.slice(-4)}`;
   }
 
   saveAll(): void {

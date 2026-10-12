@@ -1,5 +1,3 @@
-import { googleClientIds } from './google-client';
-
 export const environment = {
   production: true,
   /**
@@ -10,7 +8,8 @@ export const environment = {
   imageBaseUrl: 'https://revo.pinnaci.com/apis/public/uploads/',
   appUrl: 'https://revo.pinnaci.com',
 
-  googleClientId: googleClientIds.production,
+  googleClientId: '',
+  googleSecret: '',
 
   /**
    * Centralized list of REST endpoints that the UI can reference.
