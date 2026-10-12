@@ -1,13 +1,21 @@
 <div class="bank-upi-page">
-  <div class="bank-upi-header">
-    <div>
-      <h1 class="bank-upi-title">Bank & UPI</h1>
-      <p class="bank-upi-subtitle">Manage your payout bank account and UPI details.</p>
+  <header class="bank-upi-intro">
+    <p class="bank-upi-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Bank &amp; UPI</span>
+    </p>
+    <div class="bank-upi-header">
+      <div>
+        <h1 class="bank-upi-title">Bank &amp; UPI</h1>
+        <p class="bank-upi-subtitle">Bank &amp; UPI in Member Portal</p>
+      </div>
+      <span class="bank-upi-status">
+        <span class="bank-upi-status__dot" aria-hidden="true"></span>
+        All systems operational
+      </span>
     </div>
-    <button type="button" class="button button--primary" [disabled]="saving || loading" (click)="saveAll()">
-      {{ saving ? 'Saving...' : (hasExistingBankDetails ? 'Update all' : 'Save all') }}
-    </button>
-  </div>
+  </header>
 
   @if (loading) {
     <p class="bank-upi-message bank-upi-message--info">Loading details...</p>
@@ -27,80 +35,115 @@
 
   <div class="bank-upi-grid">
     <section class="bank-upi-card">
-      <div class="bank-upi-card__header">
-        <h2 class="bank-upi-card__title">Bank details</h2>
-        <span class="bank-upi-card__badge">Primary payout</span>
+      <div class="payout-card__head">
+        <span class="payout-card__icon" aria-hidden="true">
+          <i class="fa fa-credit-card"></i>
+        </span>
+        <div>
+          <h2 class="bank-upi-card__title">Add payout method</h2>
+          <p class="payout-card__hint">Saved to your account. No payment is sent from this screen.</p>
+        </div>
       </div>
 
-      <form class="bank-upi-form" [formGroup]="bankForm" (ngSubmit)="saveBankDetails()">
+      <div class="bank-upi-form">
         <div class="form-row">
-          <label for="account-holder-name">Account holder name</label>
-          <input id="account-holder-name" type="text" formControlName="revo_bank_holder_name" placeholder="Name as per bank records" />
-          @if (isInvalid(bankForm, 'revo_bank_holder_name')) {
-            <span class="field-error">Account holder name is required.</span>
-          }
+          <label for="payout-method">Method</label>
+          <select id="payout-method" [value]="payoutMethod" (change)="setPayoutMethod($any($event.target).value)">
+            <option value="upi">UPI</option>
+            <option value="bank">Bank account</option>
+          </select>
         </div>
 
-        <div class="form-row">
-          <label for="bank-name">Bank name</label>
-          <input id="bank-name" type="text" formControlName="revo_user_bank_name" placeholder="e.g. HDFC Bank" />
-          @if (isInvalid(bankForm, 'revo_user_bank_name')) {
-            <span class="field-error">Bank name is required.</span>
-          }
-        </div>
-
-        <div class="form-row">
-          <label for="account-number">Account number</label>
-          <input id="account-number" type="text" formControlName="revo_back_account_no" placeholder="Enter account number" />
-          @if (isInvalid(bankForm, 'revo_back_account_no')) {
-            <span class="field-error">Enter a valid account number (9–18 digits).</span>
-          }
-        </div>
-
-        <div class="form-row">
-          <label for="ifsc-code">IFSC code</label>
-          <input id="ifsc-code" type="text" formControlName="revo_bank_ifsc" placeholder="e.g. HDFC0001234" />
-          @if (isInvalid(bankForm, 'revo_bank_ifsc')) {
-            <span class="field-error">Enter a valid IFSC code.</span>
-          }
-        </div>
-
-      
-
-        <div class="bank-upi-form__actions">
-          <button type="submit" class="button button--secondary" [disabled]="saving || loading">
-            {{ hasExistingBankDetails ? 'Update bank details' : 'Save bank details' }}
-          </button>
-        </div>
-      </form>
+        @if (payoutMethod === 'upi') {
+          <form [formGroup]="upiForm" (ngSubmit)="addPayoutMethod()">
+            <div class="form-row">
+              <label for="upi-id">UPI ID</label>
+              <input id="upi-id" type="text" formControlName="revo_user_upi" placeholder="name@bank" />
+              @if (isInvalid(upiForm, 'revo_user_upi')) {
+                <span class="field-error">Enter a valid UPI ID (e.g. name@bank).</span>
+              }
+            </div>
+            <div class="form-row">
+              <label for="upi-name">Display label</label>
+              <input id="upi-name" type="text" formControlName="revo_upi_display_name" placeholder="Personal account" />
+            </div>
+            <button type="submit" class="payout-add" [disabled]="saving || loading">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+              {{ saving ? 'Saving...' : 'Add method' }}
+            </button>
+          </form>
+        } @else {
+          <form [formGroup]="bankForm" (ngSubmit)="addPayoutMethod()">
+            <div class="form-row">
+              <label for="account-holder-name">Account holder name</label>
+              <input id="account-holder-name" type="text" formControlName="revo_bank_holder_name" placeholder="Name as per bank records" />
+              @if (isInvalid(bankForm, 'revo_bank_holder_name')) {
+                <span class="field-error">Account holder name is required.</span>
+              }
+            </div>
+            <div class="form-row">
+              <label for="bank-name">Bank name</label>
+              <input id="bank-name" type="text" formControlName="revo_user_bank_name" placeholder="e.g. HDFC Bank" />
+              @if (isInvalid(bankForm, 'revo_user_bank_name')) {
+                <span class="field-error">Bank name is required.</span>
+              }
+            </div>
+            <div class="form-row">
+              <label for="account-number">Account number</label>
+              <input id="account-number" type="text" formControlName="revo_back_account_no" placeholder="Enter account number" />
+              @if (isInvalid(bankForm, 'revo_back_account_no')) {
+                <span class="field-error">Enter a valid account number (9–18 digits).</span>
+              }
+            </div>
+            <div class="form-row">
+              <label for="ifsc-code">IFSC code</label>
+              <input id="ifsc-code" type="text" formControlName="revo_bank_ifsc" placeholder="e.g. HDFC0001234" />
+              @if (isInvalid(bankForm, 'revo_bank_ifsc')) {
+                <span class="field-error">Enter a valid IFSC code.</span>
+              }
+            </div>
+            <button type="submit" class="payout-add" [disabled]="saving || loading">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+              {{ saving ? 'Saving...' : 'Add method' }}
+            </button>
+          </form>
+        }
+      </div>
     </section>
 
     <section class="bank-upi-card">
-      <div class="bank-upi-card__header">
-        <h2 class="bank-upi-card__title">UPI details</h2>
-        <span class="bank-upi-card__badge bank-upi-card__badge--upi">Instant payout</span>
+      <div class="payout-card__head">
+        <span class="payout-card__icon payout-card__icon--saved" aria-hidden="true">
+          <i class="fa fa-file-text-o"></i>
+        </span>
+        <div>
+          <h2 class="bank-upi-card__title">Saved payout methods</h2>
+          <p class="payout-card__hint">{{ savedMethods.length }} {{ savedMethods.length === 1 ? 'method' : 'methods' }} on your account</p>
+        </div>
       </div>
 
-      <form class="bank-upi-form" [formGroup]="upiForm" (ngSubmit)="saveUpiDetails()">
-        <div class="form-row">
-          <label for="upi-id">UPI ID</label>
-          <input id="upi-id" type="text" formControlName="revo_user_upi" placeholder="yourname@upi" />
-          @if (isInvalid(upiForm, 'revo_user_upi')) {
-            <span class="field-error">Enter a valid UPI ID (e.g. name@bank).</span>
+      @if (!savedMethods.length) {
+        <p class="payout-empty">No payout methods saved yet.</p>
+      } @else {
+        <ul class="payout-list">
+          @for (method of savedMethods; track method.kind) {
+            <li class="payout-row">
+              <span class="payout-row__icon" [class.payout-row__icon--upi]="method.kind === 'upi'" aria-hidden="true">
+                <i class="fa" [class.fa-university]="method.kind === 'bank'" [class.fa-envelope-o]="method.kind === 'upi'"></i>
+              </span>
+              <div class="payout-row__copy">
+                <p class="payout-row__title">{{ method.title }}</p>
+                <p class="payout-row__meta">{{ method.subtitle }}</p>
+              </div>
+              @if (method.primary) {
+                <span class="payout-primary">Primary</span>
+              }
+            </li>
           }
-        </div>
+        </ul>
+      }
 
-        <div class="form-row">
-          <label for="upi-name">UPI display name</label>
-          <input id="upi-name" type="text" formControlName="revo_upi_display_name" placeholder="Optional display name" />
-        </div>
-
-        <div class="bank-upi-form__actions">
-          <button type="submit" class="button button--secondary" [disabled]="saving || loading">
-            Save UPI details
-          </button>
-        </div>
-      </form>
+      <p class="payout-note">These details are stored on your account for payouts. Only enter an account you control.</p>
     </section>
   </div>
 </div>

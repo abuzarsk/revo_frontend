@@ -63,13 +63,15 @@
           [class.status-card--active]="selectedStatusKey === status.key"
           (click)="toggleStatusFilter(status.key)"
         >
-          <span class="status-card__icon status-card__icon--{{ status.tone }}">
-            <i class="fa {{ status.icon }}" aria-hidden="true"></i>
-          </span>
-          <p class="status-card__label">{{ status.label }}</p>
+          <div class="status-card__top">
+            <p class="status-card__label">{{ status.label }}</p>
+            <span class="status-card__icon" aria-hidden="true">
+              <i class="fa {{ status.icon }}"></i>
+            </span>
+          </div>
           <p class="status-card__count">{{ status.count }}</p>
-          @if (status.badge) {
-            <span class="status-card__badge">{{ status.badge }}</span>
+          @if (statusCaption(status)) {
+            <p class="status-card__detail">{{ statusCaption(status) }}</p>
           }
         </button>
       }

@@ -19,6 +19,7 @@ interface OrderStatusCard {
   icon: string;
   tone: 'blue' | 'purple' | 'green' | 'red' | 'gray';
   badge?: string;
+  detail?: string;
 }
 
 type ActionTone = QuickAction['tone'];
@@ -133,6 +134,26 @@ export class DashboardWelcome implements OnInit, OnDestroy {
 
   quickActions: QuickAction[] = [];
   orderStatuses: OrderStatusCard[] = [];
+
+  private readonly statusDetails: Record<string, string> = {
+    products: 'Products in this workspace',
+    mediators_connected: 'Connected mediators',
+    users_connected: 'Connected users',
+    companies_connected: 'Companies with visible products',
+    active_promoted_products: 'Currently promoted',
+    demoted_products: 'Not currently promoted',
+    mediator_promoted_products: 'Promoted by mediators',
+    mediator_demoted_products: 'Demoted by mediators',
+    form_submissions: 'Submitted product forms',
+    refund_submissions: 'Refund forms submitted',
+    accepted_refunds: 'Accepted refund forms',
+    pending_refunds: 'Awaiting review',
+    rejected_refunds: 'Rejected refund forms',
+  };
+
+  statusCaption(status: OrderStatusCard): string {
+    return status.detail || this.statusDetails[status.key] || '';
+  }
 
   private initialized = false;
 
