@@ -1,37 +1,108 @@
 <div class="usercompanies-page">
-  <div class="usercompanies-header">
-    <h1 class="usercompanies-title">User companies</h1>
-    <button type="button" class="button button--primary" (click)="openConnect()">
+  <header class="ucnet-intro">
+    <p class="ucnet-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Companies</span>
+    </p>
+    <div class="ucnet-header">
+      <div>
+        <h1 class="ucnet-title">Companies</h1>
+        <p class="ucnet-lede">Manage connected companies and partner relationships.</p>
+      </div>
+      <span class="ucnet-status">
+        <span class="ucnet-status__dot" aria-hidden="true"></span>
+        All systems operational
+      </span>
+    </div>
+  </header>
+
+  <div class="ucnet-toolbar">
+    <p class="ucnet-toolbar__label">Your company network</p>
+    <button type="button" class="ucnet-connect" (click)="openConnect()">
+      <i class="fa fa-plus" aria-hidden="true"></i>
       Connect
     </button>
-
-   
   </div>
-  
-  <section class="userconnections-section" *ngIf="userConnections.length > 0">
-    <div class="userconnections-section-header">
-      <h2 class="userconnections-section-title">Connected companies</h2>
-      <span class="userconnections-count">{{ userConnections.length }}</span>
-    </div>
 
-    <div class="userconnections-list">
-      <article class="userconnections-item" *ngFor="let c of userConnections">
-        <div class="userconnections-item-main">
-          <div class="userconnections-item-logo">
-            <img [src]="getCompanyLogoSrc(c)" alt="" class="logo-img" />
-          </div>
-          <div class="userconnections-item-name">
-            {{ c.alias || '—' }}
-          </div>
+  <div class="ucnet-tabs" role="tablist" aria-label="Company network">
+    <button
+      type="button"
+      class="ucnet-tab"
+      role="tab"
+      [class.is-active]="activeTab === 'connected'"
+      (click)="setTab('connected')"
+    >
+      Connected
+      <span class="ucnet-tab__count">{{ userConnections.length }}</span>
+    </button>
+    <button
+      type="button"
+      class="ucnet-tab"
+      role="tab"
+      [class.is-active]="activeTab === 'requests'"
+      (click)="setTab('requests')"
+    >
+      Requests
+      <span class="ucnet-tab__count">0</span>
+    </button>
+    <button
+      type="button"
+      class="ucnet-tab"
+      role="tab"
+      [class.is-active]="activeTab === 'rejected'"
+      (click)="setTab('rejected')"
+    >
+      Rejected
+      <span class="ucnet-tab__count">0</span>
+    </button>
+  </div>
+
+  <div class="ucnet-list" *ngIf="visibleConnections.length">
+    <article class="ucnet-card" *ngFor="let c of visibleConnections; let i = index">
+      <div class="ucnet-card__identity">
+        <div class="ucnet-card__avatar" [attr.data-tone]="i % 6">
+          <img *ngIf="getCompanyLogoSrc(c)" [src]="getCompanyLogoSrc(c)" alt="" />
+          <span *ngIf="!getCompanyLogoSrc(c)">{{ connectionInitials(c) }}</span>
         </div>
-        <div class="userconnections-item-actions">
-          <button type="button" class="button button--danger" (click)="disconnect(c)">
-            Disconnect
-          </button>
+        <div class="ucnet-card__copy">
+          <h2 class="ucnet-card__name">{{ connectionName(c) }}</h2>
+          <p class="ucnet-card__meta">
+            <span>
+              <i class="fa fa-calendar-o" aria-hidden="true"></i>
+              {{ connectionDatePrefix() }}
+              {{ (c.updated_on || c.created_on) ? ((c.updated_on || c.created_on) | date:'d MMM y') : '—' }}
+            </span>
+            <span *ngIf="connectionProductCount(c) !== null">
+              <i class="fa fa-cube" aria-hidden="true"></i>
+              {{ connectionProductCount(c) }} active {{ connectionProductCount(c) === 1 ? 'product' : 'products' }}
+            </span>
+            <span *ngIf="connectionProductCount(c) === null && c.description">
+              {{ c.description }}
+            </span>
+          </p>
         </div>
-      </article>
-    </div>
-  </section>
+      </div>
+      <div class="ucnet-card__actions">
+        <span class="ucnet-pill ucnet-pill--connected">{{ connectionStatusLabel() }}</span>
+        <a
+          *ngIf="connectionGroupLink(c)"
+          class="ucnet-open"
+          [href]="connectionGroupLink(c)"
+          target="_blank"
+          rel="noopener"
+        >
+          Open
+        </a>
+        <button *ngIf="!connectionGroupLink(c)" type="button" class="ucnet-open" disabled>Open</button>
+        <button type="button" class="ucnet-disconnect" (click)="disconnect(c)">Disconnect</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="empty" *ngIf="!visibleConnections.length">
+    {{ activeTab === 'connected' ? 'No connected companies yet.' : 'Nothing in this list yet.' }}
+  </div>
 
   <div class="usercompanies-overlay" *ngIf="showConnectOverlay">
     <div class="usercompanies-overlay-backdrop" (click)="closeConnect()"></div>

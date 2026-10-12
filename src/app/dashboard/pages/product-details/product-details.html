@@ -1,20 +1,9 @@
 <div class="product-details-page">
   <section class="dashboard-section">
-    <header class="section-header">
-      <div class="header-left">
-        <button type="button" class="back-button" (click)="goBack()" title="Back to Products">
-          <i class="fa fa-arrow-left" aria-hidden="true"></i>
-          Back to Products
-        </button>
-        <div class="header-titles">
-          <p class="section-overline">Product</p>
-          <h1 class="section-title">{{ product?.name || 'Product Details' }}</h1>
-          <p class="section-subtitle" *ngIf="product && !loading">
-            {{ product.brand_name || ('Brand #' + product.brand_id) }}
-          </p>
-        </div>
-      </div>
-    </header>
+    <button type="button" class="back-button" (click)="goBack()">
+      <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      Back to Products
+    </button>
 
     <div *ngIf="loading" class="loading-container">
       <p>Loading product details…</p>
@@ -28,59 +17,20 @@
     </div>
 
     <div class="section-body" *ngIf="!loading && product && !error">
-      <div class="product-details-layout">
-        <div class="product-details-media" *ngIf="photoUrl">
-          <img [src]="photoUrl" [alt]="product.name || 'Product photo'" />
-        </div>
-        <div class="product-details-media product-details-media--placeholder" *ngIf="!photoUrl">
-          <span>{{ product.name?.charAt(0) | uppercase }}</span>
-        </div>
+      <article class="product-hero">
+        <div class="product-hero__top">
+          <div class="product-hero__identity">
+            <div class="product-hero__media" *ngIf="photoUrl">
+              <img [src]="photoUrl" [alt]="product.name || 'Product photo'" />
+            </div>
+            <div class="product-hero__media product-hero__media--empty" *ngIf="!photoUrl" aria-hidden="true">
+              <i class="fa fa-cube"></i>
+            </div>
 
-        <div class="product-details-content">
-          <div class="details-grid">
-            <div class="detail-card">
-              <span class="detail-label">Brand</span>
-              <span class="detail-value">{{ product.brand_name || ('#' + product.brand_id) }}</span>
-            </div>
-            <div class="detail-card">
-              <span class="detail-label">Order limit</span>
-              <span class="detail-value">{{ product.order_limit ?? '—' }}</span>
-            </div>
-            <div class="detail-card">
-              <span class="detail-label">Default completed order</span>
-              <span class="detail-value">{{ product.default_completed_order ?? 0 }}</span>
-            </div>
-            <div class="detail-card">
-              <span class="detail-label">Submissions</span>
-              <span class="detail-value">{{ product.submission_count ?? 0 }}</span>
-            </div>
-            <div class="detail-card">
-              <span class="detail-label">Refund submissions</span>
-              <span class="detail-value">{{ product.refund_submission_count ?? 0 }}</span>
-            </div>
-            <div class="detail-card">
-              <span class="detail-label">Promotion status</span>
-              <span class="detail-value">{{ promotionLabel }}</span>
-            </div>
-            <!--<div class="detail-card">
-              <span class="detail-label">Product form</span>
-              <span class="detail-value">{{ product.form_name || '—' }} · {{ formStatusLabel }}</span>
-            </div>
-            <div class="detail-card">
-              <span class="detail-label">Refund form</span>
-              <span class="detail-value">{{ refundFormStatusLabel }}</span>
-            </div>-->
-            <div class="detail-card" *ngIf="product.is_multiple_submission_by_one">
-              <span class="detail-label">Multiple submissions</span>
-              <span class="detail-value">Allowed (max {{ product.max_submission_by_one || '∞' }})</span>
-            </div>
-            <div class="detail-card" *ngIf="product.created_on">
-              <span class="detail-label">Created</span>
-              <span class="detail-value">{{ product.created_on | date: 'medium' }}</span>
-            </div>
-          </div>
-
-          <div class="product-details-actions">
+            <div class="product-hero__copy">
+              <div class="product-hero__heading">
+                <h1 class="product-hero__title">{{ product.name || 'Product Details' }}</h1>
+                <div class="product-details-actions">
             <ng-container *ngIf="isCompany">
               <button
                 type="button"
@@ -186,13 +136,73 @@
                 View submissions
               </button> -->
             </ng-container>
+                </div>
+              </div>
+              <p class="product-hero__created" *ngIf="product.created_on">
+                Created {{ product.created_on | date: 'MMM d, y, h:mm a' }}
+              </p>
+              <p class="product-hero__meta" *ngIf="productMeta">{{ productMeta }}</p>
+              <p class="product-hero__desc" *ngIf="productDescription">{{ productDescription }}</p>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div class="product-hero__stats">
+          <div class="detail-stat">
+            <span>Refund</span>
+            <strong>{{ productRefundLabel }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Capacity remaining</span>
+            <strong>{{ capacityRemainingLabel }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="categoryLabel">
+            <span>Category</span>
+            <strong>{{ categoryLabel }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="!categoryLabel">
+            <span>Promotion status</span>
+            <strong>{{ promotionLabel }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Brand</span>
+            <strong>{{ product.brand_name || ('#' + product.brand_id) }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Order limit</span>
+            <strong>{{ product.order_limit ?? '—' }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Default completed</span>
+            <strong>{{ product.default_completed_order ?? 0 }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Submissions</span>
+            <strong>{{ product.submission_count ?? 0 }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Refund submissions</span>
+            <strong>{{ product.refund_submission_count ?? 0 }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="categoryLabel">
+            <span>Promotion status</span>
+            <strong>{{ promotionLabel }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="product.is_multiple_submission_by_one">
+            <span>Multiple submissions</span>
+            <strong>Allowed (max {{ product.max_submission_by_one || '∞' }})</strong>
+          </div>
+        </div>
+
+      </article>
       <section class="product-submissions-section">
         <div class="product-submissions-header">
-          <div class="product-submissions-heading">
-            <h2 class="subsection-title">Form Submissions</h2>
+          <h2 class="subsection-title">Form Submissions</h2>
+          <div class="product-submissions-tools">
+            <span class="submission-count-pill" *ngIf="!submissionsLoading && submissionTotal">
+              {{ submissionTotal }}
+              {{ submissionTotal === 1 ? 'submission' : 'submissions' }}
+            </span>
             <button
               *ngIf="showExcelDownload"
               type="button"
@@ -204,10 +214,6 @@
               {{ excelDownloading ? 'Downloading…' : 'Download Excel' }}
             </button>
           </div>
-          <span class="submission-count-pill" *ngIf="!submissionsLoading && submissionTotal">
-            {{ submissionTotal }}
-            {{ submissionTotal === 1 ? 'submission' : 'submissions' }}
-          </span>
         </div>
 
         <div *ngIf="submissionsLoading" class="submissions-loading">

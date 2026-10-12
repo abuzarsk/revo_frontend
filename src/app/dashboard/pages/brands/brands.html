@@ -134,7 +134,7 @@
 
   <section class="brands-panel">
     <div class="brands-panel__header">
-      <h2 class="brands-panel__title">ALL BRANDS</h2>
+      <h2 class="brands-panel__title">All brands</h2>
       <div class="brands-panel__actions">
         <div class="brands-view-toggle" role="group" aria-label="Brands view">
           <button
@@ -142,24 +142,20 @@
             class="view-toggle-btn"
             [class.view-toggle-btn--active]="viewMode === 'cards'"
             (click)="setViewMode('cards')"
+            aria-label="Cards"
           >
             <i class="fa fa-th-large" aria-hidden="true"></i>
-            Cards
           </button>
           <button
             type="button"
             class="view-toggle-btn"
             [class.view-toggle-btn--active]="viewMode === 'list'"
             (click)="setViewMode('list')"
+            aria-label="List"
           >
             <i class="fa fa-list" aria-hidden="true"></i>
-            List
           </button>
         </div>
-        <button type="button" class="brands-panel__add" (click)="addBrand()">
-          <i class="fa fa-plus" aria-hidden="true"></i>
-          New brand
-        </button>
       </div>
     </div>
 
@@ -197,8 +193,7 @@
 
     <div class="brands-list" *ngIf="!brandsLoading && brands.length && viewMode === 'list'">
       <article class="brand-row" *ngFor="let brand of brands; let i = index">
-        <div class="brand-row__index">{{ brandPaginator.showingFrom + i }}</div>
-        <div class="brand-row__avatar">
+        <div class="brand-row__avatar" [attr.data-tone]="i % 6">
           <span>{{ brand.brand_name?.charAt(0) | uppercase }}</span>
         </div>
         <div class="brand-row__info">

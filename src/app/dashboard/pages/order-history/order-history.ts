@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import {
   ENTITY_TYPE_IDS,
@@ -46,9 +46,11 @@ interface OrderHistoryRow {
   productImageUrl: string | null;
   productCode: string;
   brandName: string;
+  companyName: string;
   platform: string;
   orderType: string;
   submittedAt: string;
+  submittedShort: string;
   productLink: string;
   submission: Record<string, unknown>;
   refundSubmission: Record<string, unknown>;
@@ -81,7 +83,7 @@ const DEFAULT_STATUS_SUMMARY: StatusSummary[] = [
 
 @Component({
   selector: 'app-order-history',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './order-history.html',
   styleUrl: './order-history.css',
 })
@@ -102,9 +104,11 @@ export class OrderHistory implements OnInit {
   loading = false;
   loadError = '';
 
+  expandedOrderId: string | number | null = null;
   searchQuery = '';
   platformFilter = 'all';
   statusFilter = 'all';
+  activePill = 'all';
   dateFrom = '';
   dateTo = '';
   sortOrder = 'newest';
@@ -125,6 +129,15 @@ export class OrderHistory implements OnInit {
     { value: 'rejected', label: 'Rejected' },
     { value: 'paid', label: 'Paid' },
     { value: 'cancelled', label: 'Cancelled' },
+  ];
+
+  statusPills = [
+    { value: 'all', label: 'All', api: 'all' },
+    { value: 'delivered', label: 'Delivered', api: 'paid' },
+    { value: 'shipped', label: 'Shipped', api: 'brand_paid' },
+    { value: 'processing', label: 'Processing', api: 'order_form_filled' },
+    { value: 'refunded', label: 'Refunded', api: 'refund_form_filled' },
+    { value: 'cancelled', label: 'Cancelled', api: 'cancelled' },
   ];
 
   constructor(
@@ -164,6 +177,135 @@ export class OrderHistory implements OnInit {
     };
   }
 
+  summaryCount(key: string): number {
+    return this.statusSummary.find((item) => item.key === key)?.count ?? 0;
+  }
+
+  setStatusPill(pill: { value: string; api: string }): void {
+    this.activePill = pill.value;
+    this.statusFilter = pill.api;
+    this.selectedStatusKey = pill.api === 'all' ? null : pill.api;
+    this.loadOrders(1);
+  }
+
+  orderTone(order: OrderHistoryRow): 'refunded' | 'delivered' | 'shipped' | 'processing' | 'cancelled' {
+    const key = order.statusKey;
+    if (key === 'refund_form_filled' || key === 'approved') {
+      return 'refunded';
+    }
+    if (key === 'paid') {
+      return 'delivered';
+    }
+    if (key === 'brand_paid') {
+      return 'shipped';
+    }
+    if (key === 'cancelled' || key === 'rejected') {
+      return 'cancelled';
+    }
+    return 'processing';
+  }
+
+  orderStatusText(order: OrderHistoryRow): string {
+    const tone = this.orderTone(order);
+    return tone.charAt(0).toUpperCase() + tone.slice(1);
+  }
+
+  statusIcon(order: OrderHistoryRow): string {
+    const tone = this.orderTone(order);
+    if (tone === 'delivered') {
+      return 'fa-check';
+    }
+    if (tone === 'cancelled') {
+      return 'fa-times-circle';
+    }
+    if (tone === 'shipped') {
+      return 'fa-truck';
+    }
+    if (tone === 'refunded') {
+      return 'fa-undo';
+    }
+    return 'fa-history';
+  }
+
+  get totalSpent(): number {
+    if (this.paidAmount > 0) {
+      return this.paidAmount;
+    }
+    return this.orders.reduce((sum, order) => {
+      if (this.orderTone(order) === 'cancelled') {
+        return sum;
+      }
+      return sum + (this.orderAmount(order) ?? 0);
+    }, 0);
+  }
+
+  get refundsReceived(): number {
+    return this.orders.reduce((sum, order) => {
+      if (this.orderTone(order) !== 'refunded') {
+        return sum;
+      }
+      return sum + (this.refundAmount(order) ?? 0);
+    }, 0);
+  }
+
+  get inTransitCount(): number {
+    const summaryTotal = this.statusSummary.reduce((sum, item) => sum + item.count, 0);
+    if (summaryTotal > 0) {
+      return this.summaryCount('brand_paid') + this.summaryCount('order_form_filled') + this.summaryCount('refill_requested');
+    }
+    return this.orders.filter((order) => {
+      const tone = this.orderTone(order);
+      return tone === 'shipped' || tone === 'processing';
+    }).length;
+  }
+
+  refundAmount(order: OrderHistoryRow): number | null {
+    const sources = [order.refundSubmission, order.raw, order.submission];
+    const keys = ['refund_amount', 'refundAmount', 'refunded_amount'];
+    for (const source of sources) {
+      for (const key of keys) {
+        const value = Number(source?.[key]);
+        if (Number.isFinite(value) && value > 0) {
+          return value;
+        }
+      }
+    }
+    return null;
+  }
+
+  orderMeta(order: OrderHistoryRow): string {
+    const code = order.productCode !== '—' ? order.productCode : `ORD-${order.id}`;
+    const parts = [code];
+    if (order.companyName && order.companyName !== '—') {
+      parts.push(order.companyName);
+    }
+    if (order.platform && order.platform !== '—') {
+      parts.push(order.platform);
+    }
+    if (order.submittedShort) {
+      parts.push(order.submittedShort);
+    }
+    return parts.join(' · ');
+  }
+
+  toggleOrder(order: OrderHistoryRow): void {
+    this.expandedOrderId = this.expandedOrderId === order.id ? null : order.id;
+  }
+
+  orderAmount(order: OrderHistoryRow): number | null {
+    const sources = [order.raw, order.submission, order.refundSubmission];
+    const keys = ['amount', 'price', 'order_amount', 'paid_amount', 'product_price', 'refund_amount'];
+    for (const source of sources) {
+      for (const key of keys) {
+        const value = Number(source?.[key]);
+        if (Number.isFinite(value) && value > 0) {
+          return value;
+        }
+      }
+    }
+    return null;
+  }
+
   toggleStatusFilter(key: string): void {
     this.selectedStatusKey = this.selectedStatusKey === key ? null : key;
     this.statusFilter = this.selectedStatusKey ?? 'all';
@@ -189,11 +331,24 @@ export class OrderHistory implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
+    const formatted = new Intl.NumberFormat('en-IN', {
+      maximumFractionDigits: 0,
     }).format(amount);
+    return `₹${formatted}`;
+  }
+
+  private formatShortDate(value: unknown): string {
+    if (!value) {
+      return '';
+    }
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'short',
+    }).format(date);
   }
 
   getStatusBadgeClass(label: string): string {
@@ -512,6 +667,15 @@ export class OrderHistory implements OnInit {
           record['revo_brand_name'],
         '—'
       ),
+      companyName: this.readString(
+        record['company_alias'] ??
+          record['company_name'] ??
+          product['company_alias'] ??
+          product['company_name'] ??
+          record['revo_company_alias'] ??
+          record['revo_company_name'],
+        '—'
+      ),
       platform: this.readString(
         product['platform'] ??
           record['platform'] ??
@@ -524,6 +688,12 @@ export class OrderHistory implements OnInit {
         '—'
       ),
       submittedAt: this.formatDate(
+        record['created_on'] ??
+          record['created_at'] ??
+          record['submitted_at'] ??
+          record['updated_at']
+      ),
+      submittedShort: this.formatShortDate(
         record['created_on'] ??
           record['created_at'] ??
           record['submitted_at'] ??

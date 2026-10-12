@@ -1,5 +1,3 @@
-import { googleClientIds } from './google-client';
-
 export const environment = {
   production: false,
   /**
@@ -10,7 +8,8 @@ export const environment = {
   imageBaseUrl: 'http://localhost/www/revo2/public/uploads/',
   appUrl: 'http://localhost:4200',
   
-  googleClientId: googleClientIds.development,
+  googleClientId: '',
+  googleSecret: '',
   // apiBaseUrl: 'https://revo.pinnaci.com/apis/public/',//'https://api.revo.app',
   // imageBaseUrl: 'https://revo.pinnaci.com/apis/public/uploads/',
   

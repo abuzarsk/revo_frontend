@@ -1,5 +1,6 @@
 import { afterNextRender, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { getTokenFromLocalStorage, ROUTES, STORAGE_KEYS,ENTITY_TYPE_IDS } from '../../constants';
 import { Apiservice } from '../../services/apiservice';
 
@@ -18,6 +19,7 @@ interface OrderStatusCard {
   icon: string;
   tone: 'blue' | 'purple' | 'green' | 'red' | 'gray';
   badge?: string;
+  detail?: string;
 }
 
 type ActionTone = QuickAction['tone'];
@@ -109,6 +111,7 @@ const COUNT_FIELD_NAMES = [
 
 @Component({
   selector: 'app-dashboard-welcome',
+  imports: [RouterLink],
   templateUrl: './dashboard-welcome.html',
   styleUrl: './dashboard-welcome.css',
 })
@@ -131,6 +134,26 @@ export class DashboardWelcome implements OnInit, OnDestroy {
 
   quickActions: QuickAction[] = [];
   orderStatuses: OrderStatusCard[] = [];
+
+  private readonly statusDetails: Record<string, string> = {
+    products: 'Products in this workspace',
+    mediators_connected: 'Connected mediators',
+    users_connected: 'Connected users',
+    companies_connected: 'Companies with visible products',
+    active_promoted_products: 'Currently promoted',
+    demoted_products: 'Not currently promoted',
+    mediator_promoted_products: 'Promoted by mediators',
+    mediator_demoted_products: 'Demoted by mediators',
+    form_submissions: 'Submitted product forms',
+    refund_submissions: 'Refund forms submitted',
+    accepted_refunds: 'Accepted refund forms',
+    pending_refunds: 'Awaiting review',
+    rejected_refunds: 'Rejected refund forms',
+  };
+
+  statusCaption(status: OrderStatusCard): string {
+    return status.detail || this.statusDetails[status.key] || '';
+  }
 
   private initialized = false;
 
@@ -158,10 +181,15 @@ export class DashboardWelcome implements OnInit, OnDestroy {
 
 
     if (this.role === ENTITY_TYPE_IDS.COMPANY) {
+      this.portalBadge = 'Brand Center overview';
       this.orderStatuses = DEFAULT_ORDER_STATUSES_FOR_COMPANIES;
+    } else if (this.role === ENTITY_TYPE_IDS.ADMIN) {
+      this.portalBadge = 'Enterprise overview';
     } else if (this.role === ENTITY_TYPE_IDS.USER) {
+      this.portalBadge = 'Member Portal overview';
       this.orderStatuses = DEFAULT_ORDER_STATUS_FOR_USERS;
     } else if (this.role === ENTITY_TYPE_IDS.MEDIATOR) {
+      this.portalBadge = 'Partner Hub overview';
       this.orderStatuses = DEFAULT_ORDER_STATUSES_FOR_MEDIATORS;
     }
     if (isPlatformBrowser(this.platformId)) {
@@ -219,6 +247,39 @@ export class DashboardWelcome implements OnInit, OnDestroy {
 
   protected toggleStatusFilter(key: string): void {
     this.selectedStatusKey = this.selectedStatusKey === key ? null : key;
+  }
+
+  protected get heroStats(): OrderStatusCard[] {
+    return this.orderStatuses.slice(0, 2);
+  }
+
+  protected get pageWelcome(): string {
+    if (this.welcomeMessage && this.welcomeMessage !== 'Welcome back to your dashboard.') {
+      return this.welcomeMessage;
+    }
+    if (this.role === ENTITY_TYPE_IDS.COMPANY) {
+      return 'Welcome to your brand center.';
+    }
+    if (this.role === ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'Welcome to your partner hub.';
+    }
+    if (this.role === ENTITY_TYPE_IDS.ADMIN) {
+      return 'Welcome to enterprise control.';
+    }
+    return 'Welcome to your member portal.';
+  }
+
+  protected get heroTitle(): string {
+    if (this.role === ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'Your partner activity, at a glance';
+    }
+    if (this.role === ENTITY_TYPE_IDS.USER) {
+      return 'Your activity, at a glance';
+    }
+    if (this.role === ENTITY_TYPE_IDS.ADMIN) {
+      return 'Your network, at a glance';
+    }
+    return 'Your product performance, at a glance';
   }
 
   private unwrapDashboardResponse(res: any): any {

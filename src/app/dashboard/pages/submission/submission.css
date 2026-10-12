@@ -98,7 +98,7 @@
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
   background: #eef2ff;
-  color: #4338ca;
+  color: #5b3df0;
   font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
@@ -157,7 +157,7 @@
 
 .submission-item--expanded {
   border-color: #c7d2fe;
-  box-shadow: 0 1px 4px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 1px 4px rgba(109, 74, 255, 0.12);
 }
 
 .submission-item__header {
@@ -210,7 +210,7 @@
 }
 
 .submission-item--expanded .submission-item__index {
-  background: #4f46e5;
+  background: #6d4aff;
   color: #fff;
 }
 
@@ -240,7 +240,7 @@
 }
 
 .submission-item__chevron {
-  color: #4f46e5;
+  color: #6d4aff;
   font-size: 0.85rem;
 }
 
@@ -333,14 +333,14 @@
   border: none;
   cursor: pointer;
   color: #fff;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+  background: linear-gradient(135deg, #6d4aff 0%, #8b6cff 100%);
+  box-shadow: 0 2px 6px rgba(109, 74, 255, 0.35);
   transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
 }
 
 .button:hover {
-  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
-  box-shadow: 0 3px 10px rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, #5b3df0 0%, #6d4aff 100%);
+  box-shadow: 0 3px 10px rgba(109, 74, 255, 0.4);
 }
 
 .button:active {
@@ -421,10 +421,10 @@
 }
 
 .pagination-btn--active {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  border-color: #4f46e5;
+  background: linear-gradient(135deg, #6d4aff 0%, #8b6cff 100%);
+  border-color: #6d4aff;
   color: #fff;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 2px 6px rgba(109, 74, 255, 0.3);
 }
 
 .pagination-btn:hover:not(:disabled):not(.pagination-btn--active) {

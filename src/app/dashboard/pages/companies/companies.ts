@@ -35,7 +35,8 @@ export class Companies {
 
   constructor(private apiService: Apiservice, private cdr: ChangeDetectorRef) {
     this.tokenObj = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ);
-    this.role = this.tokenObj?.user?.default_role ?? null;
+    const storedRole = getTokenFromLocalStorage(STORAGE_KEYS.CURRENT_ROLE);
+    this.role = Number(storedRole ?? this.tokenObj?.user?.default_role ?? null) || null;
     this.token = this.tokenObj?.token ?? null;
   }
 
@@ -46,11 +47,11 @@ export class Companies {
   }
 
   getCompaniesData(): void {
-    if(this.role == 1){
+    if(this.role == ENTITY_TYPE_IDS.ADMIN){
       this.getCompanies(this.token);
       this.getCompanyRequests(this.token);
       this.setTab('companies');
-    }else if(this.role ==3){
+    }else if(this.role == ENTITY_TYPE_IDS.MEDIATOR){
       this.setTab('companies');
       this.getMediatorConnectedCompanies();
       this.getMediatorRequestedCompanies();
@@ -299,11 +300,81 @@ export class Companies {
     return this.isConnectProcessing(company) ? 'Connecting...' : 'Connect';
   }
 
+  get visibleCompanies(): any[] {
+    if (this.activeTab === 'requests') {
+      return this.asList(this.mediatorRequestedCompanies);
+    }
+    if (this.activeTab === 'rejected') {
+      return this.asList(this.mediatorRejectedCompanies);
+    }
+    return this.asList(this.mediatorConnectedCompanies);
+  }
+
+  companyCount(list: any[] | null | undefined): number {
+    return this.asList(list).length;
+  }
+
+  companyName(company: any): string {
+    return company?.company_alias || company?.alias || '—';
+  }
+
+  companyInitials(company: any): string {
+    const name = this.companyName(company).trim();
+    if (!name || name === '—') {
+      return '?';
+    }
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  companyLogo(company: any): string | null {
+    return this.getLogoUrl(company?.company_logo || company?.logo);
+  }
+
+  companyGroupLink(company: any): string | null {
+    const link = company?.company_group_link || company?.group_link;
+    return link ? String(link) : null;
+  }
+
+  companyProductCount(company: any): number | null {
+    const value =
+      company?.active_product_count ??
+      company?.product_count ??
+      company?.products_count ??
+      company?.active_products;
+    if (value == null || value === '') {
+      return null;
+    }
+    const count = Number(value);
+    return Number.isFinite(count) ? count : null;
+  }
+
+  companyDatePrefix(): string {
+    if (this.activeTab === 'requests') {
+      return 'Requested';
+    }
+    if (this.activeTab === 'rejected') {
+      return 'Rejected';
+    }
+    return 'Connected';
+  }
+
+  companyStatusLabel(): string {
+    return this.companyDatePrefix();
+  }
+
+  private asList(data: any): any[] {
+    return Array.isArray(data) ? data : [];
+  }
+
   getMediatorConnectedCompanies(): void {
     this.apiService.getMediatorConnectedCompanies(this.token).subscribe(
       (res: any) => {
         console.log(res);
-        this.mediatorConnectedCompanies = res.data;
+        this.mediatorConnectedCompanies = this.asList(res?.data);
         this.cdr.detectChanges();
       },
       (error: any) => {
@@ -315,7 +386,7 @@ export class Companies {
     this.apiService.getMediatorRequestedCompanies(this.token).subscribe(
       (res: any) => {
         console.log(res);
-        this.mediatorRequestedCompanies = res.data;
+        this.mediatorRequestedCompanies = this.asList(res?.data);
         this.cdr.detectChanges();
       },
       (error: any) => {
@@ -328,7 +399,7 @@ export class Companies {
     this.apiService.getMediatorRejectedCompanies(this.token).subscribe(
       (res: any) => {
         console.log(res);
-        this.mediatorRejectedCompanies = res.data;
+        this.mediatorRejectedCompanies = this.asList(res?.data);
         this.cdr.detectChanges();
       },
       (error: any) => {
