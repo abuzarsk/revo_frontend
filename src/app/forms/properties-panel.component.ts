@@ -12,16 +12,12 @@ import { combineLatest, map, Observable } from 'rxjs';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="panel">
-      <div class="panel-header">Field Properties</div>
+      <div class="panel-header">Field settings</div>
 
       <ng-container *ngIf="vm$ | async as vm">
         <div *ngIf="!vm.selected" class="content">
-          <div class="section">
-            <div class="section-title">Form Settings</div>
-           
-          </div>
           <div class="empty-message">
-            Select a field on the canvas to edit its properties.
+            Select a field to configure it.
           </div>
         </div>
 
@@ -250,32 +246,28 @@ import { combineLatest, map, Observable } from 'rxjs';
   styles: [
     `
       .panel {
-        height: 100%;
         display: flex;
         flex-direction: column;
-        background: #f8fafc;
-        border-left: 1px solid #e2e8f0;
+        background: transparent;
+        color: oklch(0.25 0.035 260);
+        font-family: Inter, system-ui, sans-serif;
       }
       .panel-header {
-        padding: 12px 16px;
-        font-weight: 600;
-        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 1rem;
+        font-size: 14px;
+        font-weight: 700;
       }
-      .empty {
-        padding: 16px;
-        font-size: 13px;
-        color: #6b7280;
-      }
+      .empty,
       .empty-message {
-        padding: 16px;
-        margin-top: 12px;
-        font-size: 13px;
-        color: #6b7280;
-        text-align: center;
-        font-style: italic;
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+        font-style: normal;
+        text-align: left;
+        color: oklch(0.58 0.035 260);
       }
       .content {
-        padding: 8px 12px 16px;
+        padding: 0;
         overflow-y: auto;
       }
       .fixed-field-note {
@@ -316,10 +308,10 @@ import { combineLatest, map, Observable } from 'rxjs';
       }
       .field-label {
         display: block;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 500;
-        margin-bottom: 4px;
-        color: #0f172a;
+        margin-bottom: 0.75rem;
+        color: oklch(0.25 0.035 260);
       }
       .field-label.inline {
         display: flex;
@@ -328,30 +320,43 @@ import { combineLatest, map, Observable } from 'rxjs';
       }
       .field-input {
         width: 100%;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        padding: 4px 6px;
-        font-size: 12px;
-        margin-top: 2px;
+        height: 2.5rem;
+        border-radius: calc(1.125rem - 2px);
+        border: 1px solid oklch(0.93 0.012 270);
+        padding: 0 0.75rem;
+        font: inherit;
+        font-size: 14px;
+        margin-top: 0.375rem;
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
       }
       .field-input.small {
         max-width: 80px;
       }
       .field-textarea {
         width: 100%;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        padding: 4px 6px;
-        font-size: 12px;
-        margin-top: 2px;
+        height: 6rem;
+        border-radius: calc(1.125rem - 2px);
+        border: 1px solid oklch(0.93 0.012 270);
+        padding: 0.5rem 0.75rem;
+        font: inherit;
+        font-size: 14px;
+        margin-top: 0.375rem;
         resize: vertical;
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
       }
       .checkbox-row {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        margin-top: 4px;
+        gap: 0.5rem;
+        font-size: 14px;
+        margin-top: 0.25rem;
+      }
+      .checkbox-row input {
+        width: 1rem;
+        height: 1rem;
+        accent-color: oklch(0.55 0.23 285);
       }
       .hint {
         font-size: 11px;
@@ -385,7 +390,7 @@ import { combineLatest, map, Observable } from 'rxjs';
         color: #475569;
       }
       .segmented button.active {
-        background: #2563eb;
+        background: oklch(0.55 0.23 285);
         color: white;
       }
       code {

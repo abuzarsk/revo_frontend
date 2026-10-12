@@ -15,6 +15,10 @@ import { authGuard } from './guards/auth.guard';
 import { Usercompanies } from './dashboard/pages/usercompanies/usercompanies';
 import { BankUpi } from './dashboard/pages/bank-upi/bank-upi';
 import { OrderHistory } from './dashboard/pages/order-history/order-history';
+import { CompanySubmissions } from './dashboard/pages/company-submissions/company-submissions';
+import { CompanyRefunds } from './dashboard/pages/company-refunds/company-refunds';
+import { CompanyCampaigns } from './dashboard/pages/company-campaigns/company-campaigns';
+import { CompanyAnalytics } from './dashboard/pages/company-analytics/company-analytics';
 import { BuilderPageComponent } from './forms/builder-page.component';
 import { PreviewPageComponent } from './forms/preview-page.component';
 import { FormLoadingPageComponent } from './dashboard/pages/form-loading/form-loading';
@@ -41,14 +45,20 @@ export const routes: Routes = [
       { path: 'usercompanies', component: Usercompanies },
       { path: 'bank-upi', component: BankUpi },
       { path: 'order-history', component: OrderHistory },
+      { path: 'submissions', component: CompanySubmissions },
+      { path: 'refunds', component: CompanyRefunds },
+      { path: 'campaigns', component: CompanyCampaigns },
+      { path: 'analytics', component: CompanyAnalytics },
+      { path: 'builder/:id', component: BuilderPageComponent },
     ],
+
   },
-  { path: 'builder/:id', component: BuilderPageComponent },
   { path: 'preview/:id', component: PreviewPageComponent },
   { path: 'form/:id', component: FormLoadingPageComponent},
   { path: 'refundform/:id', component: FormLoadingPageComponent },
   { path: 'submission/:id', component: Submission },
   { path: 'refund/submission/:id', component: Submission },
+
   // { path: 'builder/:id/refund', component: BuilderPageComponent },
   // { path: 'preview/:id/refund', component: PreviewPageComponent },
   // { path: 'form/:id/refund', component: FormLoadingPageComponent },

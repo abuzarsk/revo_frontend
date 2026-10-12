@@ -464,7 +464,9 @@ export class Products {
 
 
   viewForm(p: any): void {
-    console.log(p);
+    if (!p?.form_id) {
+      return;
+    }
     this.router.navigate(['/builder', p.form_id]);
   }
 
@@ -637,7 +639,9 @@ export class Products {
   }
 
   refundForm(p: any): void {
-    console.log(p);
+    if (!p?.refund_form_id) {
+      return;
+    }
     this.router.navigate(['/builder', p.refund_form_id]);
   }
 

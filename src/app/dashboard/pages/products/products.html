@@ -218,6 +218,14 @@
           <i class="fa fa-level-down" aria-hidden="true"></i>
           <span class="pcard__tip">Demote</span>
         </button>
+        <button type="button" class="pcard__action" aria-label="Product Form Builder" (click)="viewForm(p)">
+          <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+          <span class="pcard__tip">Product Form Builder</span>
+        </button>
+        <button type="button" class="pcard__action" aria-label="Refund Form Builder" (click)="refundForm(p)">
+          <i class="fa fa-file-text-o" aria-hidden="true"></i>
+          <span class="pcard__tip">Refund Form Builder</span>
+        </button>
         <button type="button" class="pcard__action" aria-label="Product Form submissions" (click)="viewSubmissions(p)">
           <i class="fa fa-list-alt" aria-hidden="true"></i>
           <span class="pcard__tip">Product Form submissions</span>
@@ -427,6 +435,24 @@
             >
               <i class="fa fa-pencil" aria-hidden="true"></i>
               <span class="table-tip">Edit</span>
+            </button>
+            <button
+              type="button"
+              class="table-icon-btn"
+              aria-label="Product Form Builder"
+              (click)="viewForm(p)"
+            >
+              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              <span class="table-tip">Product Form Builder</span>
+            </button>
+            <button
+              type="button"
+              class="table-icon-btn"
+              aria-label="Refund Form Builder"
+              (click)="refundForm(p)"
+            >
+              <i class="fa fa-file-text-o" aria-hidden="true"></i>
+              <span class="table-tip">Refund Form Builder</span>
             </button>
           </div>
         </td>
