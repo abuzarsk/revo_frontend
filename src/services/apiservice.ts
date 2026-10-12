@@ -88,9 +88,13 @@ export class Apiservice {
       has_submission?: string;
       has_refund?: string;
     },
+    perPage?: number,
   ) {
     const params = new URLSearchParams();
     params.set('page', String(page));
+    if (perPage != null && perPage > 0) {
+      params.set('per_page', String(perPage));
+    }
     if (filters?.brand_id != null && filters.brand_id !== '') {
       params.set('brand_id', String(filters.brand_id));
     }
@@ -491,9 +495,13 @@ export class Apiservice {
       has_submission?: string;
       has_refund?: string;
     },
+    perPage?: number,
   ) {
     const params = new URLSearchParams();
     params.set('page', String(page));
+    if (perPage != null && perPage > 0) {
+      params.set('per_page', String(perPage));
+    }
     if (filters?.brand_id != null && filters.brand_id !== '') {
       params.set('brand_id', String(filters.brand_id));
     }
@@ -530,6 +538,53 @@ export class Apiservice {
 
   refundFormSubmission(token:any,data:any){
     return this.http.post(environment.apiBaseUrl+environment.apis.user+"/refundForm-submissions",data,{headers:{'Authorization':'Bearer '+token}});
+  }
+
+  /** Company role only. Backend rejects every other role. */
+  /** Company role only. Expected price is product form price minus less. */
+  getCompanyRefunds(
+    token: string,
+    page: number = 1,
+    perPage: number = 100,
+    filters?: { status?: string; q?: string },
+  ) {
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('per_page', String(perPage));
+    if (filters?.status && filters.status !== 'all') {
+      params.set('status', filters.status);
+    }
+    if (filters?.q) {
+      params.set('q', filters.q);
+    }
+    return this.http.get(
+      environment.apiBaseUrl + 'company/refunds?' + params.toString(),
+      { headers: { Authorization: 'Bearer ' + token } },
+    );
+  }
+
+  getCompanySubmissions(
+    token: string,
+    page: number = 1,
+    perPage: number = 10,
+    filters?: { product_id?: string; status?: string; q?: string },
+  ) {
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('per_page', String(perPage));
+    if (filters?.product_id && filters.product_id !== 'all') {
+      params.set('product_id', filters.product_id);
+    }
+    if (filters?.status && filters.status !== 'all') {
+      params.set('status', filters.status);
+    }
+    if (filters?.q) {
+      params.set('q', filters.q);
+    }
+    return this.http.get(
+      environment.apiBaseUrl + 'company/submissions?' + params.toString(),
+      { headers: { Authorization: 'Bearer ' + token } },
+    );
   }
 
   getFormSubmissions(token:any,promote_id:any, page: number = 1, perPage?: number){

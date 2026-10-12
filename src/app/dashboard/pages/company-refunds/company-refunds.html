@@ -1,0 +1,121 @@
+<div class="cp-page">
+  <header class="cp-intro">
+    <div>
+      <p class="cp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Refunds</span>
+      </p>
+      <h1 class="cp-title">Refunds</h1>
+      <p class="cp-lede">Refunds in Brand Center</p>
+    </div>
+    <span class="cp-status"><span class="cp-status__dot" aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="cp-stats">
+    <article class="cp-stat">
+      <p class="cp-label">Orders</p>
+      <p class="cp-value">{{ rows.length }}</p>
+    </article>
+    <article class="cp-stat">
+      <p class="cp-label">Order value</p>
+      <p class="cp-value">{{ money(orderValue) }}</p>
+    </article>
+    <article class="cp-stat">
+      <p class="cp-label">Refunds issued</p>
+      <p class="cp-value">{{ money(refundsIssued) }}</p>
+    </article>
+    <article class="cp-stat">
+      <p class="cp-label">In transit</p>
+      <p class="cp-value">{{ inTransit }}</p>
+    </article>
+  </div>
+
+  <section class="cp-panel">
+    <div class="cp-toolbar cp-orders-bar">
+      <h2 class="cp-section-title">Orders &amp; refunds</h2>
+      <label class="cp-search" style="flex: 0 0 13rem">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        <input type="search" placeholder="Search orders" [(ngModel)]="query" aria-label="Search orders" />
+      </label>
+      <div class="cp-pills" role="group" aria-label="Order status">
+        @for (pill of pills; track pill.value) {
+          <button type="button" class="cp-pill" [class.is-active]="status === pill.value" (click)="setStatus(pill.value)">
+            {{ pill.label }}
+          </button>
+        }
+      </div>
+      <button type="button" class="cp-export" (click)="exportCsv()">
+        <i class="fa fa-download" aria-hidden="true"></i>
+        Export CSV
+      </button>
+    </div>
+
+    @if (loading) {
+      <p class="cp-empty" style="margin: 0; border: 0">Loading refunds…</p>
+    } @else if (loadError) {
+      <p class="cp-empty" style="margin: 0; border: 0">{{ loadError }}</p>
+    } @else if (!filtered.length) {
+      <p class="cp-empty" style="margin: 0; border: 0">No orders found.</p>
+    } @else {
+      <div class="cp-orders">
+        @for (row of filtered; track row.id) {
+          <article class="cp-order">
+            <span class="cp-order__icon" [ngClass]="statusClass(row.status)" aria-hidden="true">
+              <i class="fa" [ngClass]="statusIcon(row.status)"></i>
+            </span>
+            <div class="cp-order__copy">
+              <p class="cp-order__title">
+                {{ row.product_name || 'Product' }}
+                @if (row.brand_name) {
+                  <span> · {{ row.brand_name }}</span>
+                }
+              </p>
+              <p class="cp-order__meta">
+                {{ row.order_id || row.submission_id }} · {{ row.revo_user_name || 'Member' }} ·
+                {{ row.company_name || 'Company' }} · {{ formatWhen(row.updated_on || row.created_on) }}
+              </p>
+            </div>
+            <span class="cp-badge" [ngClass]="statusClass(row.status)">{{ statusLabel(row.status) }}</span>
+            <span class="cp-order__amount">{{ money(row.expected_price ?? row.product_price) }}</span>
+            <button type="button" class="cp-outline" (click)="open(row)">View</button>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</div>
+
+@if (selected) {
+  <div class="cp-modal-back" (click)="close()">
+    <section class="cp-modal" role="dialog" aria-modal="true" aria-labelledby="refund-order-title" (click)="$event.stopPropagation()">
+      <div class="cp-modal__head">
+        <h2 id="refund-order-title">Order {{ selected.order_id || selected.submission_id }}</h2>
+        <button type="button" class="cp-modal__close" (click)="close()" aria-label="Close">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="cp-modal__row"><span>Product</span><strong>{{ selected.product_name }}@if (selected.brand_name) { · {{ selected.brand_name }} }</strong></div>
+      <div class="cp-modal__row"><span>Company</span><strong>{{ selected.company_name || '—' }}</strong></div>
+      <div class="cp-modal__row"><span>Member</span><strong>{{ selected.revo_user_name || '—' }}</strong></div>
+      <div class="cp-modal__row"><span>Price</span><strong>{{ money(selected.product_price) }}</strong></div>
+      <div class="cp-modal__row"><span>Less</span><strong>{{ money(selected.less) }}</strong></div>
+      <div class="cp-modal__row"><span>Expected price</span><strong>{{ money(selected.expected_price) }}</strong></div>
+      @if (selected.review_link) {
+        <div class="cp-modal__row"><span>Review link</span><strong><a [href]="selected.review_link" target="_blank" rel="noopener">{{ selected.review_link }}</a></strong></div>
+      }
+      @if (selected.remark) {
+        <div class="cp-modal__row"><span>Note</span><strong>{{ selected.remark }}</strong></div>
+      }
+      <div class="cp-modal__row">
+        <span>Status</span>
+        <span class="cp-badge" [ngClass]="statusClass(selected.status)">{{ statusLabel(selected.status) }}</span>
+      </div>
+      @if (screenshotUrl(selected); as shot) {
+        <a [href]="shot" target="_blank" rel="noopener">
+          <img class="cp-modal__shot" [src]="shot" alt="Refund screenshot" />
+        </a>
+      }
+    </section>
+  </div>
+}

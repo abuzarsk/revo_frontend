@@ -1,5 +1,5 @@
 import { afterNextRender, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { getTokenFromLocalStorage, ROUTES, STORAGE_KEYS,ENTITY_TYPE_IDS } from '../../constants';
 import { Apiservice } from '../../services/apiservice';
@@ -111,7 +111,7 @@ const COUNT_FIELD_NAMES = [
 
 @Component({
   selector: 'app-dashboard-welcome',
-  imports: [RouterLink],
+  imports: [RouterLink, NgClass],
   templateUrl: './dashboard-welcome.html',
   styleUrl: './dashboard-welcome.css',
 })
@@ -235,6 +235,7 @@ export class DashboardWelcome implements OnInit, OnDestroy {
           orderStatuses: this.orderStatuses,
         });
         this.isLoading = false;
+        this.loadHomeFeed();
         this.cdr.detectChanges();
       },
       error: (err: any) => {
@@ -269,17 +270,258 @@ export class DashboardWelcome implements OnInit, OnDestroy {
     return 'Welcome to your member portal.';
   }
 
+  homeSubmissions: any[] = [];
+  homeProducts: any[] = [];
+
+  protected get isCompany(): boolean {
+    return Number(this.role) === ENTITY_TYPE_IDS.COMPANY;
+  }
+
+  protected get isUser(): boolean {
+    return Number(this.role) === ENTITY_TYPE_IDS.USER;
+  }
+
+  protected get greeting(): string {
+    const hour = new Date().getHours();
+    const part = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+    const first = (this.userName || 'there').split(' ')[0];
+    return `Good ${part}, ${first}`;
+  }
+
+  protected get heroLead(): string {
+    if (this.isUser) {
+      return 'Track your applications and find products with open sample slots.';
+    }
+    if (Number(this.role) === ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'Review product applications and keep your partner network moving.';
+    }
+    return 'Monitor submissions by product, spot reviews that need attention, and keep your campaigns moving.';
+  }
+
   protected get heroTitle(): string {
-    if (this.role === ENTITY_TYPE_IDS.MEDIATOR) {
+    if (this.isUser) {
+      return this.greeting;
+    }
+    if (Number(this.role) === ENTITY_TYPE_IDS.MEDIATOR) {
       return 'Your partner activity, at a glance';
     }
-    if (this.role === ENTITY_TYPE_IDS.USER) {
-      return 'Your activity, at a glance';
-    }
-    if (this.role === ENTITY_TYPE_IDS.ADMIN) {
+    if (Number(this.role) === ENTITY_TYPE_IDS.ADMIN) {
       return 'Your network, at a glance';
     }
     return 'Your product performance, at a glance';
+  }
+
+  protected get activityCount(): number {
+    return this.statusCount('form_submissions');
+  }
+
+  protected get homeMetrics(): { label: string; value: string; detail: string; icon: string; route: string }[] {
+    if (this.isUser) {
+      const needs = this.statusCount('pending_refunds') + this.statusCount('rejected_refunds');
+      return [
+        {
+          label: 'Available products',
+          value: String(this.statusCount('products') || this.totalProducts),
+          detail: 'Products you can open',
+          icon: 'fa-cube',
+          route: '/products',
+        },
+        {
+          label: 'My submissions',
+          value: String(this.statusCount('form_submissions')),
+          detail: `${this.statusCount('refund_submissions')} refund forms`,
+          icon: 'fa-clipboard',
+          route: '/order-history',
+        },
+        {
+          label: 'Needs attention',
+          value: String(needs),
+          detail: 'Pending or rejected refunds',
+          icon: 'fa-check',
+          route: '/order-history',
+        },
+        {
+          label: 'Refunds paid',
+          value: String(this.statusCount('accepted_refunds')),
+          detail: 'Accepted refund submissions',
+          icon: 'fa-credit-card',
+          route: '/order-history',
+        },
+      ];
+    }
+
+    const paid = this.statusCount('accepted_refunds');
+    const rejected = this.statusCount('rejected_refunds');
+    const reviewed = paid + rejected;
+    const rate = reviewed ? Math.round((paid / reviewed) * 100) : 0;
+    return [
+      {
+        label: 'Active products',
+        value: String(this.statusCount('active_promoted_products')),
+        detail: `${this.statusCount('products')} total listings`,
+        icon: 'fa-cube',
+        route: '/products',
+      },
+      {
+        label: 'Awaiting review',
+        value: String(this.statusCount('pending_refunds')),
+        detail: 'Refunds waiting for a decision',
+        icon: 'fa-clipboard',
+        route: '/refunds',
+      },
+      {
+        label: 'Approval rate',
+        value: `${rate}%`,
+        detail: `${paid} paid`,
+        icon: 'fa-line-chart',
+        route: '/analytics',
+      },
+      {
+        label: 'Refunds issued',
+        value: String(this.statusCount('refund_submissions')),
+        detail: `${paid} marked paid`,
+        icon: 'fa-undo',
+        route: '/refunds',
+      },
+    ];
+  }
+
+  protected get pipeline(): { key: string; label: string; count: number }[] {
+    const keys = [
+      { key: 'submitted', label: 'Submitted' },
+      { key: 'under_review', label: 'Under review' },
+      { key: 'approved', label: 'Approved' },
+      { key: 'paid', label: 'Refund paid' },
+      { key: 'rejected', label: 'Rejected' },
+    ];
+    return keys
+      .map((item) => ({
+        ...item,
+        count: this.homeSubmissions.filter((row) => row.status === item.key).length,
+      }))
+      .filter((item) => item.count > 0);
+  }
+
+  protected get pipelineTotal(): number {
+    return this.pipeline.reduce((sum, item) => sum + item.count, 0);
+  }
+
+  protected get awaitingReview(): number {
+    return this.homeSubmissions.filter(
+      (row) => row.status === 'submitted' || row.status === 'under_review',
+    ).length;
+  }
+
+  protected get activityBuckets(): { label: string; count: number }[] {
+    const today = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const end = new Date(today);
+      end.setHours(23, 59, 59, 999);
+      end.setDate(today.getDate() - (5 - index) * 7);
+      const start = new Date(end);
+      start.setDate(end.getDate() - 7);
+      start.setHours(0, 0, 0, 0);
+      const count = this.homeSubmissions.filter((row) => {
+        const date = new Date(String(row.created_on || row.updated_on || '').replace(' ', 'T'));
+        return !Number.isNaN(date.getTime()) && date >= start && date <= end;
+      }).length;
+      return {
+        label: start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+        count,
+      };
+    });
+  }
+
+  protected get quickLinks(): { label: string; route: string }[] {
+    if (this.isUser) {
+      return [
+        { label: 'Products', route: '/products' },
+        { label: 'Companies', route: '/usercompanies' },
+        { label: 'Order history', route: '/order-history' },
+        { label: 'Bank & UPI', route: '/bank-upi' },
+      ];
+    }
+    if (Number(this.role) === ENTITY_TYPE_IDS.MEDIATOR) {
+      return [
+        { label: 'Companies', route: '/companies' },
+        { label: 'Products', route: '/products' },
+      ];
+    }
+    return [
+      { label: 'Products', route: '/products' },
+      { label: 'Submissions', route: '/submissions' },
+      { label: 'Refunds', route: '/refunds' },
+      { label: 'Campaigns', route: '/campaigns' },
+      { label: 'Analytics', route: '/analytics' },
+    ];
+  }
+
+  protected statusCount(key: string): number {
+    return this.orderStatuses.find((status) => status.key === key)?.count ?? 0;
+  }
+
+  protected barHeight(count: number): number {
+    const max = Math.max(1, ...this.activityBuckets.map((bucket) => bucket.count));
+    return Math.max(count > 0 ? 8 : 0, (count / max) * 100);
+  }
+
+  protected share(count: number): number {
+    return this.pipelineTotal ? (count / this.pipelineTotal) * 100 : 0;
+  }
+
+  protected statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      submitted: 'Submitted',
+      under_review: 'Under review',
+      approved: 'Approved',
+      paid: 'Refund paid',
+      rejected: 'Rejected',
+    };
+    return labels[status] || status;
+  }
+
+  protected formatWhen(value: string): string {
+    if (!value) {
+      return '—';
+    }
+    const date = new Date(String(value).replace(' ', 'T'));
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  }
+
+  protected slotsLeft(product: any): number {
+    return Math.max(0, Number(product.order_limit || 0) - Number(product.submission_count || 0));
+  }
+
+  private loadHomeFeed(): void {
+    if (!this.token) {
+      return;
+    }
+    if (this.isCompany) {
+      this.apiService.getCompanySubmissions(this.token, 1, 100).subscribe({
+        next: (res: any) => {
+          this.homeSubmissions = Array.isArray(res?.data?.data) ? res.data.data : [];
+          this.cdr.detectChanges();
+        },
+      });
+      this.apiService.getProductsByCompany(this.token, 1, undefined, 8).subscribe({
+        next: (res: any) => {
+          this.homeProducts = Array.isArray(res?.data?.data) ? res.data.data : [];
+          this.cdr.detectChanges();
+        },
+      });
+      return;
+    }
+    if (this.isUser) {
+      this.apiService.getUserProducts(this.token, 1, undefined, 8).subscribe({
+        next: (res: any) => {
+          this.homeProducts = Array.isArray(res?.data?.data) ? res.data.data : [];
+          this.cdr.detectChanges();
+        },
+      });
+    }
   }
 
   private unwrapDashboardResponse(res: any): any {

@@ -4,8 +4,10 @@ export const FIXED_FORM_FIELD_IDS = {
   FORM_NAME: 'fixed_form_name',
   DIVIDER: 'fixed_divider',
   ORDER_ID: 'fixed_order_id',
+  ORDER_AMOUNT: 'fixed_order_amount',
   REVIEWER_NAME: 'fixed_reviewer_name',
   DEAL_TYPE: 'fixed_deal_type',
+  LESS: 'fixed_less',
 } as const;
 
 const baseStyles = {
@@ -30,6 +32,15 @@ function normalizeLabel(label: string | undefined): string {
 
 function labelIncludes(label: string | undefined, needle: string): boolean {
   return normalizeLabel(label).includes(needle.toLowerCase());
+}
+
+function isOrderAmountLabel(label: string | undefined): boolean {
+  const normalized = normalizeLabel(label).replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+  return normalized.includes('order amt') || normalized.includes('order amount');
+}
+
+function isLessLabel(label: string | undefined): boolean {
+  return normalizeLabel(label) === 'less';
 }
 
 export function createDefaultFixedElements(): FormElement[] {
@@ -73,6 +84,18 @@ export function createDefaultFixedElements(): FormElement[] {
       logic: {},
     },
     {
+      id: FIXED_FORM_FIELD_IDS.ORDER_AMOUNT,
+      type: 'number',
+      label: 'Order amount',
+      placeholder: 'Enter order amount',
+      required: true,
+      fixed: true,
+      helperText: '',
+      styles: { ...baseStyles },
+      validation: {},
+      logic: {},
+    },
+    {
       id: FIXED_FORM_FIELD_IDS.REVIEWER_NAME,
       type: 'text',
       label: 'Reviewer Name',
@@ -97,6 +120,18 @@ export function createDefaultFixedElements(): FormElement[] {
       logic: {},
       options: ['Cashback', 'Review', 'Other'],
     } as OptionsElement,
+    {
+      id: FIXED_FORM_FIELD_IDS.LESS,
+      type: 'text',
+      label: 'Less',
+      placeholder: 'Enter less',
+      required: true,
+      fixed: true,
+      helperText: '',
+      styles: { ...baseStyles },
+      validation: {},
+      logic: {},
+    },
   ];
 }
 
@@ -132,6 +167,14 @@ function findLegacyMatch(
     );
   }
 
+  if (def.id === FIXED_FORM_FIELD_IDS.ORDER_AMOUNT) {
+    return available.find(
+      (el) =>
+        (el.type === 'number' || el.type === 'text') &&
+        isOrderAmountLabel(el.label)
+    );
+  }
+
   if (def.id === FIXED_FORM_FIELD_IDS.REVIEWER_NAME) {
     return available.find(
       (el) => el.type === 'text' && labelIncludes(el.label, 'reviewer name')
@@ -143,6 +186,13 @@ function findLegacyMatch(
       (el) =>
         (el.type === 'dropdown' || el.type === 'radio' || el.type === 'text') &&
         labelIncludes(el.label, 'deal type')
+    );
+  }
+
+  if (def.id === FIXED_FORM_FIELD_IDS.LESS) {
+    return available.find(
+      (el) =>
+        (el.type === 'text' || el.type === 'number') && isLessLabel(el.label)
     );
   }
 
