@@ -1,0 +1,183 @@
+<div class="mediators-page" *ngIf="role == ENTITY_TYPE_IDS.ADMIN">
+  <div *ngIf="loading" class="loading">Loading mediators…</div>
+  <div *ngIf="!loading && mediatorsList.length === 0" class="empty">No mediators found.</div>
+  <div *ngIf="!loading && mediatorsList.length > 0" class="table-wrap">
+    <table class="data-table data-table--wide">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Profile</th>
+          <th>Alias</th>
+          <th>Size</th>
+          <th>Group link</th>
+          <th>Slots / month</th>
+          <th>Description</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Default role</th>
+          <th>Created source</th>
+          <th>User created on</th>
+          <th>Updated on</th>
+          <th>Created on</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of mediatorsList; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td class="cell-logo">
+            <img *ngIf="getLogoUrl(row.profile_pic)" [src]="getLogoUrl(row.profile_pic)" alt="Profile" class="logo-img" />
+            <span *ngIf="!getLogoUrl(row.profile_pic)">—</span>
+          </td>
+          <td>{{ row.alias ?? '—' }}</td>
+          <td>{{ row.size ?? '—' }}</td>
+          <td class="cell-link">
+            <a *ngIf="row.group_link" [href]="row.group_link" target="_blank" rel="noopener">
+                {{ row.group_link }}
+            </a>
+            <span *ngIf="!row.group_link">—</span>
+          </td>
+          <td>{{ row.slot_in_a_month ?? '—' }}</td>
+          <td>{{ row.description ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_name ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_email ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_phone ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_default_role ?? '—' }}</td>
+          <td>{{ row.user?.revo_user_created_source ?? '—' }}</td>
+          <td>{{ row.user?.created_on ?? '—' }}</td>
+          <td>{{ row.updated_on ?? '—' }}</td>
+          <td>{{ row.created_on ?? '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mediators-page mediators-page--company" *ngIf="role != ENTITY_TYPE_IDS.ADMIN">
+  <header class="mediators-intro">
+    <p class="mediators-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Mediators</span>
+    </p>
+    <div class="mediators-header">
+      <div class="mediators-heading">
+        <h1 class="mediators-title">Mediators</h1>
+        <p class="mediators-lede">Mediators in {{ portalLabel }}</p>
+      </div>
+      <span class="mediators-status">
+        <span class="mediators-status__dot" aria-hidden="true"></span>
+        All systems operational
+      </span>
+    </div>
+  </header>
+
+  <section class="mediators-panel">
+    <div class="mediators-panel__top">
+      <div>
+        <p class="mediators-kicker">Partner network</p>
+        <h2 class="mediators-panel__title">Mediators</h2>
+      </div>
+      <label class="mediators-search">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        <input
+          type="search"
+          placeholder="Search mediator"
+          [value]="mediatorQuery"
+          (input)="mediatorQuery = $any($event.target).value"
+          aria-label="Search mediator"
+        />
+      </label>
+    </div>
+
+    <div class="mediators-filters" role="group" aria-label="Mediator status">
+      <button
+        type="button"
+        class="mediators-filter"
+        [class.mediators-filter--active]="mediatorFilter === 'all'"
+        (click)="setMediatorFilter('all')"
+      >
+        All
+      </button>
+      <button
+        type="button"
+        class="mediators-filter"
+        [class.mediators-filter--active]="mediatorFilter === 'active'"
+        (click)="setMediatorFilter('active')"
+      >
+        Active
+      </button>
+      <button
+        type="button"
+        class="mediators-filter"
+        [class.mediators-filter--active]="mediatorFilter === 'requested'"
+        (click)="setMediatorFilter('requested')"
+      >
+        Requested
+      </button>
+      <button
+        type="button"
+        class="mediators-filter"
+        [class.mediators-filter--active]="mediatorFilter === 'rejected'"
+        (click)="setMediatorFilter('rejected')"
+      >
+        Rejected
+      </button>
+    </div>
+
+    <div *ngIf="loadingCompanyMediators" class="loading">Loading mediators…</div>
+
+    <div class="mediators-grid" *ngIf="!loadingCompanyMediators && visibleMediators.length">
+      <article class="mpartner" *ngFor="let m of visibleMediators; let i = index">
+        <div class="mpartner__top">
+          <div class="mpartner__identity">
+            <div class="mpartner__avatar" [attr.data-tone]="i % 6">
+              <img *ngIf="getLogoUrl(m.mediator_profile_pic)" [src]="getLogoUrl(m.mediator_profile_pic)" alt="" />
+              <span *ngIf="!getLogoUrl(m.mediator_profile_pic)">{{ mediatorInitials(m) }}</span>
+            </div>
+            <div class="mpartner__copy">
+              <h3 class="mpartner__name">{{ mediatorName(m) }}</h3>
+              <p class="mpartner__meta">{{ mediatorSubtitle(m) }}</p>
+            </div>
+          </div>
+          <span
+            class="mpartner__badge"
+            [class.mpartner__badge--active]="m._status === 'active'"
+            [class.mpartner__badge--requested]="m._status === 'requested'"
+            [class.mpartner__badge--rejected]="m._status === 'rejected'"
+          >
+            {{ mediatorStatusLabel(m._status) }}
+          </span>
+        </div>
+
+        <div class="mpartner__stats">
+          <div>
+            <p class="mpartner__label">Size</p>
+            <p class="mpartner__value">{{ m.mediator_size || '—' }}</p>
+          </div>
+          <div>
+            <p class="mpartner__label">Slots / month</p>
+            <p class="mpartner__value">{{ m.mediator_slot_in_a_month ?? '—' }}</p>
+          </div>
+          <div>
+            <p class="mpartner__label">Updated</p>
+            <p class="mpartner__value">{{ (m.updated_on | date:'MMM d, y') || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="mpartner__actions" *ngIf="m._status === 'requested'">
+          <button type="button" class="btn-reject-request" (click)="rejectMediatorRequest(m)">
+            Reject request
+          </button>
+          <button type="button" class="btn-accept-request" (click)="acceptMediatorRequest(m)">
+            Accept request
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <div class="empty" *ngIf="!loadingCompanyMediators && !visibleMediators.length">
+      {{ mediatorQuery ? 'No mediators match your search.' : 'No mediators yet.' }}
+    </div>
+  </section>
+</div>

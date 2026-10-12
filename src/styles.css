@@ -1,0 +1,41 @@
+/* Revo design system – global styles */
+body {
+  font-family: "Oxanium", sans-serif !important;
+  margin: 0 !important;
+}
+
+app-dashboard,
+app-dashboard *:not(.fa) {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+app-dashboard .tab.active,
+app-dashboard .button--primary {
+  background: linear-gradient(135deg, #9a78ff 0%, #6d45f3 100%) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+/* Shared signup/login primary button */
+.submit-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: #3b4ce2;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #2f3ecf;
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

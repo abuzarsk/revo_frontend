@@ -1,0 +1,10 @@
+{
+  "/revo-public": {
+    "target": "http://localhost/www/revo2/public",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/revo-public": ""
+    }
+  }
+}

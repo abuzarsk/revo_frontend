@@ -1,0 +1,40 @@
+<div class="users-page">
+  <div *ngIf="loading" class="loading">Loading users…</div>
+  <div *ngIf="!loading && usersList.length === 0" class="empty">No users found.</div>
+  <div *ngIf="!loading && usersList.length > 0" class="table-wrap">
+    <table class="data-table data-table--wide">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Default role</th>
+          <th>Created source</th>
+          <th>Roles</th>
+          <th>Updated by</th>
+          <th>Updated on</th>
+          <th>Created by</th>
+          <th>Created on</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of usersList; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ row.revo_user_id ?? '—' }}</td>
+          <td>{{ row.revo_user_name ?? '—' }}</td>
+          <td>{{ row.revo_user_email ?? '—' }}</td>
+          <td>{{ row.revo_user_phone ?? '—' }}</td>
+          <td>{{ formatRoleId(row.revo_user_default_role) }}</td>
+          <td>{{ row.revo_user_created_source ?? '—' }}</td>
+          <td>{{ formatRoles(row.roles) }}</td>
+          <td>{{ row.updated_by ?? '—' }}</td>
+          <td>{{ row.updated_on ?? '—' }}</td>
+          <td>{{ row.created_by ?? '—' }}</td>
+          <td>{{ row.created_on ?? '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

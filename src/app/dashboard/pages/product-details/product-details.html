@@ -1,0 +1,567 @@
+<div class="product-details-page">
+  <section class="dashboard-section">
+    <button type="button" class="back-button" (click)="goBack()">
+      <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      Back to Products
+    </button>
+
+    <div *ngIf="loading" class="loading-container">
+      <p>Loading product details…</p>
+    </div>
+
+    <div *ngIf="!loading && error" class="error-container">
+      <p>{{ error }}</p>
+      <button type="button" class="button button--secondary" (click)="goBack()">
+        Back to Products
+      </button>
+    </div>
+
+    <div class="section-body" *ngIf="!loading && product && !error">
+      <article class="product-hero">
+        <div class="product-hero__top">
+          <div class="product-hero__identity">
+            <div class="product-hero__media" *ngIf="photoUrl">
+              <img [src]="photoUrl" [alt]="product.name || 'Product photo'" />
+            </div>
+            <div class="product-hero__media product-hero__media--empty" *ngIf="!photoUrl" aria-hidden="true">
+              <i class="fa fa-cube"></i>
+            </div>
+
+            <div class="product-hero__copy">
+              <div class="product-hero__heading">
+                <h1 class="product-hero__title">{{ product.name || 'Product Details' }}</h1>
+                <div class="product-details-actions">
+            <ng-container *ngIf="isCompany">
+              <button
+                type="button"
+                class="button button--primary"
+                *ngIf="showPromoteButton"
+                [disabled]="promotionUpdating"
+                (click)="promoteProduct()"
+              >
+                {{ promotionUpdating ? 'Updating…' : 'Promote' }}
+              </button>
+              <button
+                type="button"
+                class="button button--secondary"
+                *ngIf="showDemoteButton"
+                [disabled]="promotionUpdating"
+                (click)="demoteProduct()"
+              >
+                {{ promotionUpdating ? 'Updating…' : 'Demote' }}
+              </button>
+              <!--<button type="button" class="button button--secondary" (click)="viewSubmissions()">
+                Product Form submissions
+              </button>-->
+              <button type="button" class="button button--primary" (click)="viewForm(product)">
+                Product Form Builder
+              </button>
+              <button type="button" class="button button--primary" (click)="refundForm(product)">
+                Refund Form Builder
+              </button>
+              <!--<button
+                type="button"
+                class="button button--secondary"
+                *ngIf="product.refund_form_status == 1 || product.refund_submission_count > 0"
+                (click)="viewRefundSubmissions()"
+              >
+                Refund Form submissions
+              </button>-->
+            </ng-container>
+
+            <ng-container *ngIf="isMediator">
+              <button
+                type="button"
+                class="button button--primary"
+                *ngIf="showPromoteButton"
+                [disabled]="promotionUpdating"
+                (click)="promoteProduct()"
+              >
+                {{ promotionUpdating ? 'Updating…' : 'Promote' }}
+              </button>
+              <button
+                type="button"
+                class="button button--secondary"
+                *ngIf="showDemoteButton"
+                [disabled]="promotionUpdating"
+                (click)="demoteProduct()"
+              >
+                {{ promotionUpdating ? 'Updating…' : 'Demote' }}
+              </button>
+              <!--<button
+                type="button"
+                class="button button--secondary"
+                *ngIf="product.submission_count > 0"
+                (click)="viewSubmissions()"
+              >
+                View submissions
+              </button>-->
+            </ng-container>
+
+            <ng-container *ngIf="!isUser">
+
+              <button
+                type="button"
+                class="button button--primary"
+                [class.button--copied]="formLinkCopied"
+                (click)="copyFormLink()"
+              >
+                <i
+                  class="fa"
+                  [class.fa-link]="!formLinkCopied"
+                  [class.fa-check]="formLinkCopied"
+                  aria-hidden="true"
+                ></i>
+                {{ formLinkCopied ? 'Copied' : 'Copy Form Link' }}
+              </button>
+            </ng-container>
+
+            <ng-container *ngIf="isUser">
+              
+              <button
+                type="button"
+                class="button button--primary"
+                *ngIf="product.max_submission_by_one > 0 && product.max_submission_by_one > userSubmissionCount"
+                (click)="openForm()"
+              >
+                Form
+              </button>
+              
+              <!-- <button
+                type="button"
+                class="button button--secondary"
+                *ngIf="product.submission_count > 0"
+                (click)="viewSubmissions()"
+              >
+                View submissions
+              </button> -->
+            </ng-container>
+                </div>
+              </div>
+              <p class="product-hero__created" *ngIf="product.created_on">
+                Created {{ product.created_on | date: 'MMM d, y, h:mm a' }}
+              </p>
+              <p class="product-hero__meta" *ngIf="productMeta">{{ productMeta }}</p>
+              <p class="product-hero__desc" *ngIf="productDescription">{{ productDescription }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-hero__stats">
+          <div class="detail-stat">
+            <span>Refund</span>
+            <strong>{{ productRefundLabel }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Capacity remaining</span>
+            <strong>{{ capacityRemainingLabel }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="categoryLabel">
+            <span>Category</span>
+            <strong>{{ categoryLabel }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="!categoryLabel">
+            <span>Promotion status</span>
+            <strong>{{ promotionLabel }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Brand</span>
+            <strong>{{ product.brand_name || ('#' + product.brand_id) }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Order limit</span>
+            <strong>{{ product.order_limit ?? '—' }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Default completed</span>
+            <strong>{{ product.default_completed_order ?? 0 }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Submissions</span>
+            <strong>{{ product.submission_count ?? 0 }}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Refund submissions</span>
+            <strong>{{ product.refund_submission_count ?? 0 }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="categoryLabel">
+            <span>Promotion status</span>
+            <strong>{{ promotionLabel }}</strong>
+          </div>
+          <div class="detail-stat" *ngIf="product.is_multiple_submission_by_one">
+            <span>Multiple submissions</span>
+            <strong>Allowed (max {{ product.max_submission_by_one || '∞' }})</strong>
+          </div>
+        </div>
+
+      </article>
+      <section class="product-submissions-section">
+        <div class="product-submissions-header">
+          <h2 class="subsection-title">Form Submissions</h2>
+          <div class="product-submissions-tools">
+            <span class="submission-count-pill" *ngIf="!submissionsLoading && submissionTotal">
+              {{ submissionTotal }}
+              {{ submissionTotal === 1 ? 'submission' : 'submissions' }}
+            </span>
+            <button
+              *ngIf="showExcelDownload"
+              type="button"
+              class="button button--secondary button--excel"
+              [disabled]="excelDownloading || !productId"
+              (click)="downloadSubmissionExcel()"
+            >
+              <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+              {{ excelDownloading ? 'Downloading…' : 'Download Excel' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="submissionsLoading" class="submissions-loading">
+          Loading submissions…
+        </div>
+
+        <div *ngIf="!submissionsLoading && submissionsError" class="submissions-error">
+          {{ submissionsError }}
+        </div>
+
+        <div
+          class="table-wrap table-wrap--horizontal"
+          *ngIf="!submissionsLoading && !submissionsError && submissions.length"
+        >
+          <table class="data-table submissions-data-table submissions-data-table--wide">
+            <thead>
+              <tr>
+                <th class="col-meta">#</th>
+                <th class="col-meta">Submitter</th>
+                <th class="col-meta">Submitted</th>
+                <th class="col-meta">Refund</th>
+                <th
+                  *ngFor="let col of formFieldColumns"
+                  [title]="col.label"
+                  class="submission-head submission-head--form"
+                >
+                  {{ col.label }}
+                </th>
+                <th
+                  *ngFor="let col of refundFieldColumns"
+                  [title]="col.label"
+                  class="submission-head submission-head--refund"
+                >
+                  {{ col.label }}
+                </th>
+                <th *ngIf="showRefundReviewColumn" class="col-meta">Refund actions</th>
+                <th *ngIf="isUser" class="col-meta">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of submissions; index as i">
+                <td class="col-meta">{{ submissionRowNumber(i) }}</td>
+                <td class="col-meta">{{ s.revo_user_name || s.user?.name || '—' }}</td>
+                <td class="col-meta">
+                  {{ (s.created_on || s.updated_at || s.submitted_at) | date: 'medium' }}
+                </td>
+                <td class="col-meta">
+                  <span
+                    class="submission-refund-pill"
+                    [class.submission-refund-pill--zero]="getRefundSubmissionCount(s) === 0"
+                  >
+                    {{ getRefundSubmissionCount(s) }}
+                  </span>
+                </td>
+                <td
+                  *ngFor="let col of formFieldColumns"
+                  [title]="getSubmissionColumnValue(s, col)"
+                  class="submission-cell submission-cell--form"
+                >
+                  {{ getSubmissionColumnValue(s, col) }}
+                </td>
+                <td
+                  *ngFor="let col of refundFieldColumns"
+                  [title]="getSubmissionColumnValue(s, col)"
+                  class="submission-cell submission-cell--refund"
+                >
+                  {{ getSubmissionColumnValue(s, col) }}
+                </td>
+                <td *ngIf="showRefundReviewColumn" class="cell-actions col-meta">
+                  <div class="refund-decision" *ngIf="isRefundAccepted(s)">
+                    <span class="refund-decision__status refund-decision__status--accepted">
+                      Accepted
+                    </span>
+                    <a
+                      *ngIf="getRefundAcceptRejectScreenshotUrl(s) as screenshotUrl"
+                      class="refund-decision__screenshot"
+                      [href]="screenshotUrl"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <img [src]="screenshotUrl" alt="Refund accept screenshot" />
+                    </a>
+                    <span
+                      class="refund-decision__remark"
+                      [title]="getRefundAcceptRejectRemark(s)"
+                    >
+                      {{ getRefundAcceptRejectRemark(s) }}
+                    </span>
+                  </div>
+
+                  <div class="refund-decision" *ngIf="isRefundRejected(s)">
+                    <span class="refund-decision__status refund-decision__status--rejected">
+                      {{ getRefundAcceptStatusLabel(s) }}
+                    </span>
+                    <span
+                      class="refund-decision__remark"
+                      [title]="getRefundAcceptRejectRemark(s)"
+                    >
+                      {{ getRefundAcceptRejectRemark(s) }}
+                    </span>
+                  </div>
+
+                  <div
+                    class="refund-review-actions"
+                    *ngIf="canReviewRefund(s)"
+                  >
+                    <button
+                      type="button"
+                      class="button button--success button--sm"
+                      [disabled]="isRefundReviewUpdating(s)"
+                      (click)="acceptRefund(s)"
+                    >
+                      Accept Refund
+                    </button>
+                    <button
+                      type="button"
+                      class="button button--danger button--sm"
+                      [disabled]="isRefundReviewUpdating(s)"
+                      (click)="rejectRefund(s)"
+                    >
+                      Reject Refund
+                    </button>
+                  </div>
+
+                  <span
+                    *ngIf="
+                      !isRefundAccepted(s) &&
+                      !isRefundRejected(s) &&
+                      !canReviewRefund(s)
+                    "
+                  >
+                    —
+                  </span>
+                </td>
+                <td *ngIf="isUser" class="cell-actions col-meta">
+                  <button
+                    type="button"
+                    class="button button--secondary button--sm"
+                    *ngIf="canRequestRefund(s)"
+                    (click)="refundSubmission(s)"
+                  >
+                    Refund
+                  </button>
+
+                  <div *ngIf="isRefundPending(s)" class="refund-pending">
+                    Refund pending
+                  </div>
+
+                  <div
+                  *ngIf="isRefundAccepted(s) || isRefundRejected(s)"
+                  >
+                  <div class="refund-decision" *ngIf="isRefundAccepted(s)">
+                    <span class="refund-decision__status refund-decision__status--accepted">
+                      Accepted
+                    </span>
+                    <a
+                      *ngIf="getRefundAcceptRejectScreenshotUrl(s) as screenshotUrl"
+                      class="refund-decision__screenshot"
+                      [href]="screenshotUrl"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <img [src]="screenshotUrl" alt="Refund accept screenshot" />
+                    </a>
+                    <span
+                      class="refund-decision__remark"
+                      [title]="getRefundAcceptRejectRemark(s)"
+                    >
+                      {{ getRefundAcceptRejectRemark(s) }}
+                    </span>
+                  </div>
+
+                  <div class="refund-decision" *ngIf="isRefundRejected(s)">
+                    <span class="refund-decision__status refund-decision__status--rejected">
+                      {{ getRefundAcceptStatusLabel(s) }}
+                    </span>
+                    <span
+                      class="refund-decision__remark"
+                      [title]="getRefundAcceptRejectRemark(s)"
+                    >
+                      {{ getRefundAcceptRejectRemark(s) }}
+                    </span>
+                  </div>
+
+
+                  </div>
+                  <!-- <button
+                    type="button"
+                    class="button button--secondary button--sm"
+                    *ngIf="canViewRefund(s)"
+                    (click)="viewRefundSubmission(s)"
+                  >
+                    View refund
+                  </button> -->
+                  <span *ngIf="!canRequestRefund(s) && !canViewRefund(s)">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <nav
+          class="submissions-pagination-bar"
+          *ngIf="!submissionsLoading && submissionTotal > 0"
+          aria-label="Submissions pagination"
+        >
+          <div class="pagination-summary">
+            Showing {{ submissionPaginator.showingFrom }}–{{ submissionPaginator.showingTo }}
+            of {{ submissionPaginator.total }} submissions
+          </div>
+          <div class="pagination-controls">
+            <button
+              type="button"
+              class="pagination-btn pagination-btn--label"
+              [disabled]="submissionCurrentPage <= 1"
+              (click)="goToSubmissionPage(1)"
+            >
+              First
+            </button>
+            <button
+              type="button"
+              class="pagination-btn pagination-btn--label"
+              [disabled]="submissionCurrentPage <= 1"
+              (click)="goToSubmissionPage(submissionCurrentPage - 1)"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              class="pagination-btn pagination-btn--page"
+              *ngFor="let pageNum of submissionPaginator.pageNumbers"
+              [class.pagination-btn--active]="pageNum === submissionCurrentPage"
+              (click)="goToSubmissionPage(pageNum)"
+            >
+              {{ pageNum }}
+            </button>
+            <button
+              type="button"
+              class="pagination-btn pagination-btn--label"
+              [disabled]="submissionCurrentPage >= submissionLastPage"
+              (click)="goToSubmissionPage(submissionCurrentPage + 1)"
+            >
+              Next
+            </button>
+            <button
+              type="button"
+              class="pagination-btn pagination-btn--label"
+              [disabled]="submissionCurrentPage >= submissionLastPage"
+              (click)="goToSubmissionPage(submissionLastPage)"
+            >
+              Last
+            </button>
+          </div>
+        </nav>
+
+        <div
+          class="submissions-empty"
+          *ngIf="!submissionsLoading && !submissionsError && !submissions.length"
+        >
+          No form submissions recorded for this product yet.
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <div class="refund-review-overlay" *ngIf="showRefundReviewOverlay">
+    <div class="refund-review-overlay-backdrop" (click)="closeRefundReviewOverlay()"></div>
+    <div class="refund-review-modal" (click)="$event.stopPropagation()">
+      <div class="refund-review-modal-header">
+        <h2 class="refund-review-modal-title">{{ refundReviewOverlayTitle }}</h2>
+        <button
+          type="button"
+          class="refund-review-modal-close"
+          (click)="closeRefundReviewOverlay()"
+          [disabled]="refundReviewSubmitting"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="refund-review-modal-body">
+        <div class="form-row" *ngIf="refundReviewAction === 'accept'">
+          <label for="refund-review-image">Upload image</label>
+          <input
+            id="refund-review-image"
+            type="file"
+            accept="image/*"
+            (change)="onRefundReviewImageSelected($event)"
+            [disabled]="refundReviewSubmitting"
+          />
+          <div class="photo-preview" *ngIf="refundReviewImagePreview">
+            <img [src]="refundReviewImagePreview" alt="Selected image preview" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="refund-review-remark">Remark</label>
+          <textarea
+            id="refund-review-remark"
+            rows="4"
+            placeholder="Enter your remark"
+            [(ngModel)]="refundReviewRemark"
+            [disabled]="refundReviewSubmitting"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="refund-review-modal-footer">
+        <button
+          type="button"
+          class="button button--secondary"
+          (click)="closeRefundReviewOverlay()"
+          [disabled]="refundReviewSubmitting"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="button"
+          [class.button--success]="refundReviewAction === 'accept'"
+          [class.button--danger]="refundReviewAction === 'reject'"
+          (click)="submitRefundReview()"
+          [disabled]="refundReviewSubmitting"
+        >
+          {{ refundReviewSubmitting ? 'Submitting…' : refundReviewOverlayTitle }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="copy-toast"
+  [class.copy-toast--error]="!copyToastSuccess"
+  *ngIf="copyToastVisible"
+  role="status"
+  aria-live="polite"
+>
+  <span class="copy-toast__icon" aria-hidden="true">
+    <i class="fa" [class.fa-check-circle]="copyToastSuccess" [class.fa-exclamation-circle]="!copyToastSuccess"></i>
+  </span>
+  <p class="copy-toast__message">{{ copyToastMessage }}</p>
+  <button
+    type="button"
+    class="copy-toast__close"
+    (click)="dismissCopyToast()"
+    aria-label="Dismiss notification"
+  >
+    &times;
+  </button>
+</div>

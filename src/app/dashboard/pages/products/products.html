@@ -1,0 +1,637 @@
+<ng-template #productsPaginationNav let-p="p">
+  <nav
+    class="products-pagination-bar"
+    [class.products-pagination-bar--top]="p.position === 'top'"
+    [class.products-pagination-bar--bottom]="p.position === 'bottom'"
+    *ngIf="!p.loading && p.total > 0"
+    [attr.aria-label]="'Products pagination ' + p.position"
+  >
+    <div class="pagination-summary">
+      Showing {{ p.showingFrom }}–{{ p.showingTo }} of {{ p.total }}
+      {{ p.itemLabel }}
+    </div>
+
+    <div class="pagination-controls">
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--label"
+        [disabled]="p.currentPage <= 1"
+        (click)="p.goToPage(1)"
+      >
+        First
+      </button>
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--label"
+        [disabled]="p.currentPage <= 1"
+        (click)="p.goToPage(p.currentPage - 1)"
+      >
+        Previous
+      </button>
+
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--page"
+        *ngIf="p.pageNumbers[0] > 1"
+        (click)="p.goToPage(1)"
+      >
+        1
+      </button>
+      <span class="pagination-ellipsis" *ngIf="p.pageNumbers[0] > 2">…</span>
+
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--page"
+        *ngFor="let pageNum of p.pageNumbers"
+        [class.pagination-btn--active]="pageNum === p.currentPage"
+        (click)="p.goToPage(pageNum)"
+        [attr.aria-current]="pageNum === p.currentPage ? 'page' : null"
+      >
+        {{ pageNum }} 
+      </button>
+
+      <span
+        class="pagination-ellipsis"
+        *ngIf="p.pageNumbers[p.pageNumbers.length - 1] < p.lastPage - 1"
+      >
+        …
+      </span>
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--page"
+        *ngIf="p.pageNumbers[p.pageNumbers.length - 1] < p.lastPage"
+        (click)="p.goToPage(p.lastPage)"
+      >
+        {{ p.lastPage }}
+      </button>
+
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--label"
+        [disabled]="p.currentPage >= p.lastPage"
+        (click)="p.goToPage(p.currentPage + 1)"
+      >
+        Next
+      </button>
+      <button
+        type="button"
+        class="pagination-btn pagination-btn--label"
+        [disabled]="p.currentPage >= p.lastPage"
+        (click)="p.goToPage(p.lastPage)"
+      >
+        Last
+      </button>
+    </div>
+
+    <div class="pagination-page-indicator">
+      Page {{ p.currentPage }} of {{ p.lastPage }}
+    </div>
+  </nav>
+</ng-template>
+
+<ng-template #productsViewToggle>
+  <div class="products-view-toggle" role="group" aria-label="Products view">
+    <button
+      type="button"
+      class="view-toggle-btn"
+      [class.view-toggle-btn--active]="viewMode === 'list'"
+      (click)="setViewMode('list')"
+    >
+      <i class="fa fa-th-large" aria-hidden="true"></i>
+      Cards
+    </button>
+    <button
+      type="button"
+      class="view-toggle-btn"
+      [class.view-toggle-btn--active]="viewMode === 'table'"
+      (click)="setViewMode('table')"
+    >
+      <i class="fa fa-table" aria-hidden="true"></i>
+      Table
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #productsFilters>
+  <div class="products-filters" aria-label="Product filters">
+    <label class="products-filter-field">
+      <span class="products-filter-label">Brand</span>
+      <select class="products-filter-input" [(ngModel)]="brandFilter" name="brandFilter">
+        <option value="">All brands</option>
+        <option *ngFor="let b of filterBrandOptions" [value]="b.id">
+          {{ b.brand_name || b.name }}
+        </option>
+      </select>
+    </label>
+
+    <label class="products-filter-field">
+      <span class="products-filter-label">Submissions</span>
+      <select
+        class="products-filter-input"
+        [(ngModel)]="hasSubmissionFilter"
+        name="hasSubmissionFilter"
+      >
+        <option value="">Any</option>
+        <option value="1">Has submissions</option>
+        <option value="0">No submissions</option>
+      </select>
+    </label>
+
+    <label class="products-filter-field">
+      <span class="products-filter-label">Refund</span>
+      <select
+        class="products-filter-input"
+        [(ngModel)]="hasRefundFilter"
+        name="hasRefundFilter"
+      >
+        <option value="">Any</option>
+        <option value="1">Has refund</option>
+        <option value="0">No refund</option>
+      </select>
+    </label>
+
+    <div class="products-filter-actions">
+      <button type="button" class="button button--primary" (click)="applyProductFilters()">
+        <i class="fa fa-filter" aria-hidden="true"></i>
+        Apply
+      </button>
+      <button type="button" class="button button--secondary" (click)="clearProductFilters()">
+        Clear
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #productCatalogCard let-p let-kind="kind">
+  <article
+    class="pcard"
+    role="link"
+    tabindex="0"
+    (click)="viewProductDetails(p)"
+    (keydown.enter)="viewProductDetails(p)"
+  >
+    <div class="pcard__top">
+      <div class="pcard__media">
+        <img *ngIf="p.photo" [src]="imageBaseUrl + 'products/' + p.photo" [alt]="p.name" />
+        <i *ngIf="!p.photo" class="fa fa-cube" aria-hidden="true"></i>
+      </div>
+      <i class="fa fa-heart pcard__heart" aria-hidden="true"></i>
+    </div>
+
+    <h2 class="pcard__name">{{ p.name }}</h2>
+    <p class="pcard__meta">{{ productSubtitle(p) }}</p>
+    <p class="pcard__desc" *ngIf="p.description">{{ p.description }}</p>
+
+    <div class="pcard__stats">
+      <div class="pcard__stat pcard__stat--refund">
+        <span>Refund</span>
+        <strong>{{ productRefund(p) }}</strong>
+      </div>
+      <div class="pcard__stat">
+        <span>Submission limit</span>
+        <strong>{{ submissionLimit(p) }}</strong>
+        <em *ngIf="submissionRemaining(p)">{{ submissionRemaining(p) }}</em>
+      </div>
+      <div class="pcard__stat">
+        <span>Refund count</span>
+        <strong>{{ p.refund_submission_count || 0 }}</strong>
+      </div>
+    </div>
+
+    <p class="pcard__note" *ngIf="p.is_multiple_submission_by_one == 1 || p.is_multiple_submission_by_one === true">
+      Multiple submissions allowed (max {{ p.max_submission_by_one || '∞' }})
+    </p>
+    <p class="pcard__note" *ngIf="kind === 'company'">{{ companyPromotionLabel(p.status) }}</p>
+    <p class="pcard__note" *ngIf="kind === 'mediator'">{{ p.promote_status == 1 ? 'Promoted' : 'Not promoted' }}</p>
+
+    <div class="pcard__actions" (click)="$event.stopPropagation()">
+      <ng-container *ngIf="kind === 'company'">
+        <button type="button" class="pcard__action" *ngIf="p.status !== 2" aria-label="Edit" (click)="editProduct(p.id)">
+          <i class="fa fa-pencil" aria-hidden="true"></i>
+          <span class="pcard__tip">Edit</span>
+        </button>
+        <button type="button" class="pcard__action" *ngIf="p.status === 0" aria-label="Promote" (click)="promoteProduct(p)">
+          <i class="fa fa-level-up" aria-hidden="true"></i>
+          <span class="pcard__tip">Promote</span>
+        </button>
+        <button type="button" class="pcard__action" *ngIf="p.status === 1" aria-label="Demote" (click)="demoteProduct(p)">
+          <i class="fa fa-level-down" aria-hidden="true"></i>
+          <span class="pcard__tip">Demote</span>
+        </button>
+        <button type="button" class="pcard__action" aria-label="Product Form submissions" (click)="viewSubmissions(p)">
+          <i class="fa fa-list-alt" aria-hidden="true"></i>
+          <span class="pcard__tip">Product Form submissions</span>
+        </button>
+        <button type="button" class="pcard__action" *ngIf="p.refund_form_status == 1 || p.refund_submission_count > 0" aria-label="Refund Form submissions" (click)="viewRefundSubmissions(p)">
+          <i class="fa fa-reply" aria-hidden="true"></i>
+          <span class="pcard__tip">Refund Form submissions</span>
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="kind === 'mediator'">
+        <button type="button" class="pcard__action" *ngIf="p.promote_status != 1" aria-label="Promote" (click)="promotedemoteMediatorProduct(p, 1)">
+          <i class="fa fa-level-up" aria-hidden="true"></i>
+          <span class="pcard__tip">Promote</span>
+        </button>
+        <button type="button" class="pcard__action" *ngIf="p.promote_status == 1" aria-label="Demote" (click)="promotedemoteMediatorProduct(p, 2)">
+          <i class="fa fa-level-down" aria-hidden="true"></i>
+          <span class="pcard__tip">Demote</span>
+        </button>
+        <button type="button" class="pcard__action" *ngIf="p.submission_count > 0" aria-label="View submissions" (click)="viewSubmissions(p)">
+          <i class="fa fa-eye" aria-hidden="true"></i>
+          <span class="pcard__tip">View submissions</span>
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="kind === 'user'">
+        <button type="button" class="pcard__action" *ngIf="p.max_submission_by_one > 0 && p.max_submission_by_one > p.submission_count" aria-label="Form" (click)="form(p)">
+          <i class="fa fa-file-text-o" aria-hidden="true"></i>
+          <span class="pcard__tip">Form</span>
+        </button>
+        <button type="button" class="pcard__action" *ngIf="p.submission_count > 0" aria-label="View submissions" (click)="viewSubmissions(p)">
+          <i class="fa fa-eye" aria-hidden="true"></i>
+          <span class="pcard__tip">View submissions</span>
+        </button>
+      </ng-container>
+    </div>
+  </article>
+</ng-template>
+
+<div *ngIf="role==ENTITY_TYPE_IDS.COMPANY">
+<div class="products-page">
+  <header class="products-intro">
+    <p class="products-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Products</span>
+    </p>
+    <div class="products-header">
+      <div class="products-heading">
+        <h1 class="products-title">Products</h1>
+        <p class="products-lede">Products in {{ productsPortalLabel }}</p>
+      </div>
+      <div class="products-header-actions">
+      <ng-container *ngTemplateOutlet="productsViewToggle"></ng-container>
+      <button type="button" class="button button--primary" (click)="openForm()">Add product</button>
+    </div>
+    </div>
+  </header>
+
+  <ng-container *ngTemplateOutlet="productsFilters"></ng-container>
+  <p class="products-result" *ngIf="!productsLoading && totalProducts">{{ products.length }} of {{ totalProducts }} products</p>
+
+  <!-- Overlay product form -->
+  <div class="products-overlay" *ngIf="showForm">
+    <div class="products-overlay-backdrop" (click)="closeForm()"></div>
+    <div class="products-modal" (click)="$event.stopPropagation()">
+      <div class="products-modal-header">
+        <h2 class="products-modal-title">Add product</h2>
+        <button type="button" class="products-modal-close" (click)="closeForm()">&times;</button>
+      </div>
+      <div class="products-modal-body">
+        <form class="products-form" [formGroup]="productForm">
+          <div class="form-row">
+            <label>Brand</label>
+            <select formControlName="brand_id">
+              <option value="" disabled selected>Select brand</option>
+              <option *ngFor="let b of brandOptions" [value]="b.id">
+                {{ b.brand_name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Name</label>
+            <input type="text" formControlName="name" placeholder="Product name" />
+          </div>
+
+          <div class="form-row">
+            <label>Photo</label>
+            <input #photoInput type="file" accept="image/*" (change)="onPhotoSelected($event)" />
+            <div class="photo-preview" *ngIf="photoPreview">
+              <img [src]="photoPreview" alt="Selected photo preview" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Order limit</label>
+            <input type="number" formControlName="order_limit" min="1" placeholder="Max orders" />
+          </div>
+
+          <div class="form-row form-row--inline">
+            <label>
+              <input type="checkbox" formControlName="is_multiple_submission_by_one" />
+              Allow multiple submissions by one
+            </label>
+          </div>
+
+          <div class="form-row" *ngIf="productForm.get('is_multiple_submission_by_one')?.value">
+            <label>Max submission by one</label>
+            <input type="number" formControlName="max_submission_by_one" min="1" value="1" placeholder="e.g. 3" />
+          </div>
+
+          <div class="form-row">
+            <label>Default completed order</label>
+            <input type="number" formControlName="default_completed_order" min="0" placeholder="e.g. 0" />
+          </div>
+
+          <div class="form-row">
+            <label>Google Sheet url</label>
+            <input type="url" formControlName="googlesheet_url" placeholder="https://docs.google.com/spreadsheets/..." />
+          </div>
+        </form>
+      </div>
+      <div class="products-modal-footer">
+        <button type="button" class="button button--secondary" (click)="closeForm()">Cancel</button>
+        <button type="button" class="button button--primary" (click)="saveProduct()">Save product</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="products-loading" *ngIf="productsLoading">
+  Loading products…
+</div>
+
+<div class="products-list" *ngIf="!productsLoading && products.length && viewMode === 'list'">
+  <ng-container *ngFor="let p of products">
+    <ng-container *ngTemplateOutlet="productCatalogCard; context: { $implicit: p, kind: 'company' }"></ng-container>
+  </ng-container>
+</div>
+
+<div class="table-wrap" *ngIf="!productsLoading && products.length && viewMode === 'table'">
+  <table class="data-table products-data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Brand</th>
+        <th>Order limit</th>
+        <th>Multiple submissions</th>
+        <th>Max submission by one</th>
+        <th>Default completed</th>
+        <th>Submissions</th>
+        <th>Refund</th>
+        <th>Status</th>
+        <th class="cell-actions-header">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let p of products; let i = index"
+        class="products-table-row"
+        (click)="viewProductDetails(p)"
+        (keydown.enter)="viewProductDetails(p)"
+        tabindex="0"
+      >
+        <td class="cell-index">{{ i + 1 }}</td>
+        <td class="cell-photo">
+          <img
+            *ngIf="p.photo"
+            [src]="imageBaseUrl + 'products/' + p.photo"
+            [alt]="p.name"
+            class="product-table-photo"
+          />
+          <span *ngIf="!p.photo" class="product-table-photo product-table-photo--empty" aria-hidden="true">
+            <i class="fa fa-cube"></i>
+          </span>
+        </td>
+        <td class="cell-name">{{ p.name }}</td>
+        <td class="cell-muted">{{ p.brand_name || ('#' + p.brand_id) }}</td>
+        <td class="cell-num">{{ p.order_limit || '—' }}</td>
+        <td>
+          <span class="table-flag" [class.table-flag--yes]="formatMultipleSubmission(p.is_multiple_submission_by_one) === 'Yes'">
+            {{ formatMultipleSubmission(p.is_multiple_submission_by_one) }}
+          </span>
+        </td>
+        <td class="cell-num">{{ formatMaxSubmissionByOne(p) }}</td>
+        <td class="cell-num">{{ p.default_completed_order ?? '—' }}</td>
+        <td class="cell-num">{{ p.submission_count || 0 }}</td>
+        <td class="cell-num cell-refund">{{ p.refund_submission_count || 0 }}</td>
+        <td>
+          <span
+            class="table-status"
+            [class.table-status--on]="p.status === 1"
+            [class.table-status--off]="p.status === 2"
+          >{{ companyPromotionLabel(p.status) }}</span>
+        </td>
+        <td class="cell-actions" (click)="$event.stopPropagation()">
+          <div class="actions-cell">
+            <button
+              type="button"
+              class="table-icon-btn"
+              *ngIf="p.status !== 2"
+              aria-label="Edit"
+              (click)="editProduct(p.id)"
+            >
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+              <span class="table-tip">Edit</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-container
+  *ngTemplateOutlet="productsPaginationNav; context: { p: companyPaginator('bottom') }"
+></ng-container>
+
+<div class="brands-empty" *ngIf="!productsLoading && !products.length">
+  No products yet. Click “Add product” to create one.
+</div>
+</div>
+
+<div *ngIf="role==ENTITY_TYPE_IDS.MEDIATOR">
+  <div class="products-page">
+    <header class="products-intro">
+      <p class="products-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Products</span>
+      </p>
+      <div class="products-header">
+        <div class="products-heading">
+          <h1 class="products-title">Products</h1>
+          <p class="products-lede">Products in {{ productsPortalLabel }}</p>
+        </div>
+        <ng-container *ngTemplateOutlet="productsViewToggle"></ng-container>
+      </div>
+    </header>
+
+    <ng-container *ngTemplateOutlet="productsFilters"></ng-container>
+    <p class="products-result" *ngIf="!mediatorProductsLoading && mediatorTotalProducts">{{ mediatorProducts.length }} of {{ mediatorTotalProducts }} products</p>
+  </div>
+
+  <div class="products-loading" *ngIf="mediatorProductsLoading">
+    Loading products…
+  </div>
+
+  <div class="products-list mediator-products-list" *ngIf="!mediatorProductsLoading && mediatorProducts.length && viewMode === 'list'">
+    <ng-container *ngFor="let p of mediatorProducts">
+      <ng-container *ngTemplateOutlet="productCatalogCard; context: { $implicit: p, kind: 'mediator' }"></ng-container>
+    </ng-container>
+  </div>
+
+  <div class="table-wrap" *ngIf="!mediatorProductsLoading && mediatorProducts.length && viewMode === 'table'">
+    <table class="data-table products-data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Brand</th>
+          <th>Order limit</th>
+          <th>Multiple submissions</th>
+          <th>Max submission by one</th>
+          <th>Default completed</th>
+          <th>Submissions</th>
+          <th>Refund</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let p of mediatorProducts; let i = index"
+          class="products-table-row"
+          (click)="viewProductDetails(p)"
+          (keydown.enter)="viewProductDetails(p)"
+          tabindex="0"
+        >
+          <td class="cell-index">{{ i + 1 }}</td>
+          <td class="cell-photo">
+            <img
+              *ngIf="p.photo"
+              [src]="imageBaseUrl + 'products/' + p.photo"
+              [alt]="p.name"
+              class="product-table-photo"
+            />
+            <span *ngIf="!p.photo" class="product-table-photo product-table-photo--empty" aria-hidden="true">
+              <i class="fa fa-cube"></i>
+            </span>
+          </td>
+          <td class="cell-name">{{ p.name }}</td>
+          <td class="cell-muted">{{ p.brand_name || ('#' + p.brand_id) }}</td>
+          <td class="cell-num">{{ p.order_limit || '—' }}</td>
+          <td>
+            <span class="table-flag" [class.table-flag--yes]="formatMultipleSubmission(p.is_multiple_submission_by_one) === 'Yes'">
+              {{ formatMultipleSubmission(p.is_multiple_submission_by_one) }}
+            </span>
+          </td>
+          <td class="cell-num">{{ formatMaxSubmissionByOne(p) }}</td>
+          <td class="cell-num">{{ p.default_completed_order ?? '—' }}</td>
+          <td class="cell-num">{{ p.submission_count || 0 }}</td>
+          <td class="cell-num cell-refund">{{ p.refund_submission_count || 0 }}</td>
+          <td>
+            <span class="table-status" [class.table-status--on]="p.promote_status == 1">
+              {{ mediatorPromotionLabel(p.promote_status) }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-container
+    *ngTemplateOutlet="productsPaginationNav; context: { p: mediatorPaginator('bottom') }"
+  ></ng-container>
+
+  <div class="brands-empty" *ngIf="!mediatorProductsLoading && !mediatorProducts.length">
+    No products available to promote right now.
+  </div>
+</div>
+
+<div *ngIf="role==ENTITY_TYPE_IDS.USER">
+  <div class="products-page">
+    <header class="products-intro">
+      <p class="products-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Products</span>
+      </p>
+      <div class="products-header">
+        <div class="products-heading">
+          <h1 class="products-title">Products</h1>
+          <p class="products-lede">Products in {{ productsPortalLabel }}</p>
+        </div>
+        <ng-container *ngTemplateOutlet="productsViewToggle"></ng-container>
+      </div>
+    </header>
+
+    <ng-container *ngTemplateOutlet="productsFilters"></ng-container>
+    <p class="products-result" *ngIf="!userProductsLoading && userTotalProducts">{{ userProducts.length }} of {{ userTotalProducts }} products</p>
+
+    <div class="products-loading" *ngIf="userProductsLoading">
+      Loading products…
+    </div>
+
+    <div class="products-list user-products-list" *ngIf="!userProductsLoading && userProducts.length && viewMode === 'list'">
+      <ng-container *ngFor="let p of userProducts">
+        <ng-container *ngTemplateOutlet="productCatalogCard; context: { $implicit: p, kind: 'user' }"></ng-container>
+      </ng-container>
+    </div>
+
+    <div class="table-wrap" *ngIf="!userProductsLoading && userProducts.length && viewMode === 'table'">
+      <table class="data-table products-data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Brand</th>
+            <th>Order limit</th>
+            <th>Submissions</th>
+            <th>Refund</th>
+            <th>Multiple submissions</th>
+            <th>Max submission by one</th>
+            <th>Default completed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let p of userProducts; let i = index"
+            class="products-table-row"
+            (click)="viewProductDetails(p)"
+            (keydown.enter)="viewProductDetails(p)"
+            tabindex="0"
+          >
+            <td class="cell-index">{{ i + 1 }}</td>
+            <td class="cell-photo">
+              <img
+                *ngIf="p.photo"
+                [src]="imageBaseUrl + 'products/' + p.photo"
+                [alt]="p.name"
+                class="product-table-photo"
+              />
+              <span *ngIf="!p.photo" class="product-table-photo product-table-photo--empty" aria-hidden="true">
+                <i class="fa fa-cube"></i>
+              </span>
+            </td>
+            <td class="cell-name">{{ p.name }}</td>
+            <td class="cell-muted">{{ p.brand_name || ('#' + p.brand_id) }}</td>
+            <td class="cell-num">{{ p.order_limit || '—' }}</td>
+            <td class="cell-num">{{ p.submission_count || 0 }}</td>
+            <td class="cell-num cell-refund">{{ p.refund_submission_count || 0 }}</td>
+            <td>
+              <span class="table-flag" [class.table-flag--yes]="formatMultipleSubmission(p.is_multiple_submission_by_one) === 'Yes'">
+                {{ formatMultipleSubmission(p.is_multiple_submission_by_one) }}
+              </span>
+            </td>
+            <td class="cell-num">{{ formatMaxSubmissionByOne(p) }}</td>
+            <td class="cell-num">{{ p.default_completed_order ?? '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-container
+      *ngTemplateOutlet="productsPaginationNav; context: { p: userPaginator('bottom') }"
+    ></ng-container>
+
+    <div class="brands-empty" *ngIf="!userProductsLoading && !userProducts.length">
+      No products available right now.
+    </div>
+  </div>
+</div>
