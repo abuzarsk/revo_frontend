@@ -1,0 +1,51 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Help &amp; Support</span>
+      </p>
+      <h1 class="mp-title">Help &amp; Support</h1>
+      <p class="mp-lede">Keep a note of what you need help with.</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="mp-split mp-split--support">
+    <form class="mp-panel" (ngSubmit)="submit()">
+      <h2>Contact support</h2>
+      <p class="mp-hint">Saved on this device until a support inbox is connected.</p>
+      <label class="mp-field" style="margin-top: 1rem">Subject
+        <input [(ngModel)]="subject" name="subject" maxlength="100" required />
+      </label>
+      <label class="mp-field" style="margin-top: 0.85rem">How can we help?
+        <textarea [(ngModel)]="details" name="details" rows="5" maxlength="1500" required></textarea>
+      </label>
+      <button type="submit" class="mp-btn mp-btn--brand" style="margin-top: 1rem">Create support request</button>
+      @if (error) { <p class="mp-note mp-note--warn">{{ error }}</p> }
+      @if (message) { <p class="mp-note">{{ message }}</p> }
+    </form>
+
+    <section class="mp-panel">
+      <h2>Your requests</h2>
+      <p class="mp-hint">{{ tickets.length }} {{ tickets.length === 1 ? 'request' : 'requests' }}</p>
+      @if (!tickets.length) {
+        <div class="mp-empty" style="margin-top: 1rem">No support requests yet.</div>
+      } @else {
+        <div class="mp-list">
+          @for (ticket of tickets; track ticket.id) {
+            <article class="mp-row" style="align-items: flex-start">
+              <div class="mp-row__copy">
+                <p class="mp-row__title">{{ ticket.subject }}</p>
+                <p class="mp-row__meta">{{ ticket.id }} · {{ ticket.at | date: 'd MMM y' }}</p>
+                <p class="mp-hint" style="white-space: normal">{{ ticket.details }}</p>
+              </div>
+              <span class="mp-badge mp-badge--open">{{ ticket.status }}</span>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

@@ -8,7 +8,7 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-mediators',
   imports: [CommonModule],
   templateUrl: './mediators.html',
-  styleUrl: './mediators.css',
+  styleUrls: ['../company-portal/company-portal.css', './mediators.css'],
 })
 export class Mediators {
 

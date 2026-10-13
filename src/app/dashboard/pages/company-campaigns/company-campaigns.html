@@ -1,4 +1,4 @@
-<div class="cp-page">
+<div class="cp-page cc-page">
   <header class="cp-intro">
     <div>
       <p class="cp-crumbs">
@@ -14,58 +14,81 @@
 
   <div class="cp-stats cp-stats--3">
     <article class="cp-stat">
-      <p class="cp-label">Campaigns</p>
-      <p class="cp-value">{{ campaigns.length }}</p>
+      <p class="cp-label">Active campaigns</p>
+      <p class="cp-value">{{ activeCount }}</p>
     </article>
     <article class="cp-stat">
-      <p class="cp-label">Orders used</p>
+      <p class="cp-label">Filled slots</p>
       <p class="cp-value">{{ filledSlots }}</p>
     </article>
     <article class="cp-stat">
-      <p class="cp-label">Remaining</p>
-      <p class="cp-value">{{ remainingOrders }}</p>
+      <p class="cp-label">Planned budget</p>
+      <p class="cp-value">{{ plannedBudget }}</p>
     </article>
   </div>
 
-  <section class="cp-panel">
-    <div class="cp-campaigns-head">
-      <h2 class="cp-section-title">All campaigns</h2>
-      <p class="cp-hint">Each product is a campaign. The bar shows orders used against the max order limit.</p>
+  <section class="cp-panel cc-panel">
+    <div class="cc-head">
+      <div>
+        <h2 class="cc-title">Campaign management</h2>
+        <p class="cp-hint">Preview campaigns stored in this browser.</p>
+      </div>
+      <button type="button" class="cc-new" (click)="createCampaign()">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+        New campaign
+      </button>
     </div>
 
     @if (loading) {
       <p class="cp-empty">Loading campaigns…</p>
-    } @else if (loadError) {
+    } @else if (loadError && !campaigns.length) {
       <p class="cp-empty">{{ loadError }}</p>
     } @else if (!campaigns.length) {
       <p class="cp-empty">No campaigns yet.</p>
     } @else {
-      @for (campaign of campaigns; track campaign.id) {
-        <article
-          class="cp-campaign"
-          role="link"
-          tabindex="0"
-          (click)="openProduct(campaign)"
-          (keydown.enter)="openProduct(campaign)"
-        >
-          <div class="cp-campaign__main">
-            <span class="cp-icon" aria-hidden="true"><i class="fa fa-bullhorn"></i></span>
-            <div class="cp-campaign__copy">
-              <h3>{{ campaign.name }}</h3>
-              @if (campaign.brand) {
-                <p class="cp-hint">{{ campaign.brand }}</p>
-              }
+      <div class="cc-list">
+        @for (campaign of campaigns; track campaign.id) {
+          <article class="cc-card">
+            <div class="cc-row">
+              <span class="cc-icon" aria-hidden="true"><i class="fa fa-bullhorn"></i></span>
+              <div class="cc-copy">
+                <h3>{{ campaign.name }}</h3>
+                <p>{{ subtitle(campaign) }}</p>
+              </div>
+              <span class="cc-badge" [ngClass]="badgeClass(campaign)">{{ effectiveStatus(campaign) }}</span>
+              <button type="button" class="cc-outline" (click)="changeStatus(campaign)">
+                {{ actionLabel(campaign) }}
+              </button>
             </div>
-            <span class="cp-badge" [ngClass]="statusClass(campaign)">{{ statusLabel(campaign) }}</span>
-          </div>
-          <div class="cp-meter">
-            <div class="cp-meter__track">
-              <div class="cp-meter__fill" [style.width]="fillWidth(campaign)"></div>
+
+            <div class="cc-dates">
+              <label class="cc-field">
+                Start date
+                <input
+                  type="date"
+                  [ngModel]="campaign.startDate"
+                  (ngModelChange)="updateDate(campaign, 'startDate', $event)"
+                />
+              </label>
+              <label class="cc-field">
+                End date
+                <input
+                  type="date"
+                  [ngModel]="campaign.endDate"
+                  (ngModelChange)="updateDate(campaign, 'endDate', $event)"
+                />
+              </label>
             </div>
-            <span class="cp-hint">{{ campaign.filled }}/{{ campaign.limit }}</span>
-          </div>
-        </article>
-      }
+
+            <div class="cp-meter">
+              <div class="cp-meter__track">
+                <div class="cp-meter__fill" [style.width]="fillWidth(campaign)"></div>
+              </div>
+              <span class="cc-fill">{{ campaign.filled }}/{{ campaign.limit }} filled</span>
+            </div>
+          </article>
+        }
+      </div>
     }
   </section>
 </div>

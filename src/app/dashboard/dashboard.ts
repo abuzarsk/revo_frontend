@@ -19,6 +19,7 @@ interface SidebarMenuItem {
   label: string;
   route: string;
   icon: string;
+  section?: string;
 }
 
 const SIDEBAR_COLLAPSED_KEY = 'dashboard_sidebar_collapsed';
@@ -202,6 +203,20 @@ export class Dashboard implements OnInit, OnDestroy {
     this.workspaceMenuOpen = false;
   }
 
+  protected get sidebarGroups(): { title: string; items: SidebarMenuItem[] }[] {
+    const groups: { title: string; items: SidebarMenuItem[] }[] = [];
+    for (const item of this.sidebarMenu) {
+      const title = item.section || 'Main';
+      const group = groups.find((entry) => entry.title === title);
+      if (group) {
+        group.items.push(item);
+      } else {
+        groups.push({ title, items: [item] });
+      }
+    }
+    return groups;
+  }
+
   protected get sidebarSubtitle(): string {
     if (this.role === 1) {
       return 'Enterprise Control';
@@ -312,9 +327,17 @@ export class Dashboard implements OnInit, OnDestroy {
       bank: 'fa-university',
       orders: 'fa-shopping-bag',
       submissions: 'fa-file-text-o',
+      notifications: 'fa-bell-o',
+      messages: 'fa-comments-o',
+      announcements: 'fa-bullhorn',
+      payouts: 'fa-credit-card',
+      profile: 'fa-user-o',
+      security: 'fa-lock',
+      help: 'fa-life-ring',
       refunds: 'fa-undo',
       campaigns: 'fa-bullhorn',
       analytics: 'fa-bar-chart',
+      settings: 'fa-cog',
     };
     return map[icon] ?? 'fa-circle';
   }

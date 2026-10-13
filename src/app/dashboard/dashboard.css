@@ -126,6 +126,14 @@
   color: #6f7688;
 }
 
+.sidebar-nav .sidebar-section {
+  margin: 1rem 0.4rem 0.3rem;
+}
+
+.sidebar-nav .sidebar-section:first-child {
+  margin-top: 0.15rem;
+}
+
 .sidebar-nav {
   flex: 1;
   display: flex;

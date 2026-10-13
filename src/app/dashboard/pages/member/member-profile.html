@@ -1,0 +1,63 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Profile</span>
+      </p>
+      <h1 class="mp-title">Profile</h1>
+      <p class="mp-lede">Your member details, saved in this browser.</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <form class="mp-panel" style="max-width: 48rem" (ngSubmit)="save()">
+    <div class="mp-profile-head">
+      <div class="mp-avatar">
+        <span class="mp-avatar__face">
+          @if (profile.avatar) {
+            <img [src]="profile.avatar" alt="" />
+          } @else {
+            {{ initials }}
+          }
+        </span>
+        <button type="button" class="mp-avatar__btn" aria-label="Upload profile photo" (click)="photo.click()">
+          <i class="fa fa-camera" aria-hidden="true"></i>
+        </button>
+        <input #photo hidden type="file" accept="image/*" aria-label="Choose profile photo" (change)="onPhoto($event)" />
+      </div>
+      <div style="flex: 1; min-width: 12rem">
+        <h2>Workspace profile</h2>
+        <p class="mp-hint">Saved on this device. It is not sent to the account service.</p>
+        <div class="mp-bar">
+          <div class="mp-bar__track"><div class="mp-bar__fill" [style.width.%]="completion"></div></div>
+          <span class="mp-hint">{{ completion }}% complete</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mp-grid-2">
+      <label class="mp-field">Display name<input [(ngModel)]="profile.name" name="name" maxlength="80" /></label>
+      <label class="mp-field">Email address<input [(ngModel)]="profile.email" name="email" type="email" maxlength="120" /></label>
+      <label class="mp-field">Phone number<input [(ngModel)]="profile.phone" name="phone" maxlength="20" /></label>
+      <label class="mp-field">Organization<input [(ngModel)]="profile.organization" name="organization" maxlength="80" /></label>
+      <label class="mp-field">Location<input [(ngModel)]="profile.location" name="location" maxlength="80" /></label>
+      <label class="mp-field">Interests<input [(ngModel)]="profile.interests" name="interests" maxlength="160" placeholder="Reviews, gadgets" /></label>
+    </div>
+    <label class="mp-field" style="margin-top: 1rem">Bio
+      <textarea [(ngModel)]="profile.bio" name="bio" rows="4" maxlength="500"></textarea>
+    </label>
+
+    @if (profile.avatar) {
+      <button type="button" class="mp-btn" style="margin-top: 0.75rem" (click)="clearPhoto()">Remove photo</button>
+    }
+
+    <div class="mp-actions">
+      <span class="mp-hint">{{ dirty ? 'Unsaved changes' : 'All changes saved' }}</span>
+      <button type="submit" class="mp-btn mp-btn--brand" [disabled]="!dirty">Save profile</button>
+    </div>
+    @if (error) { <p class="mp-note mp-note--warn">{{ error }}</p> }
+    @if (message) { <p class="mp-note">{{ message }}</p> }
+  </form>
+</div>

@@ -1,0 +1,48 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Settings</span>
+      </p>
+      <h1 class="mp-title">Settings</h1>
+      <p class="mp-lede">How this member workspace behaves on this device.</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <section class="mp-panel" style="max-width: 42rem">
+    <h2>Notifications</h2>
+    <label class="mp-switch">
+      <span>
+        <strong style="display: block; font-size: 0.875rem">Email notices</strong>
+        <span class="mp-hint">Order and payout updates by email.</span>
+      </span>
+      <input type="checkbox" [checked]="settings.emailNotices" (change)="update('emailNotices', $any($event.target).checked)" />
+    </label>
+    <label class="mp-switch">
+      <span>
+        <strong style="display: block; font-size: 0.875rem">Product announcements</strong>
+        <span class="mp-hint">New products and workspace changes.</span>
+      </span>
+      <input type="checkbox" [checked]="settings.productUpdates" (change)="update('productUpdates', $any($event.target).checked)" />
+    </label>
+    <label class="mp-switch">
+      <span>
+        <strong style="display: block; font-size: 0.875rem">Compact layout</strong>
+        <span class="mp-hint">Tighter spacing on lists.</span>
+      </span>
+      <input type="checkbox" [checked]="settings.compactView" (change)="update('compactView', $any($event.target).checked)" />
+    </label>
+    <label class="mp-field" style="margin-top: 1rem">Language
+      <select [ngModel]="settings.language" (ngModelChange)="setLanguage($event)" name="language">
+        <option>English</option>
+        <option>हिन्दी</option>
+      </select>
+    </label>
+    @if (message) {
+      <p class="mp-note">{{ message }}</p>
+    }
+  </section>
+</div>

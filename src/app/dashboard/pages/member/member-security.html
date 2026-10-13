@@ -1,0 +1,56 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Security</span>
+      </p>
+      <h1 class="mp-title">Security</h1>
+      <p class="mp-lede">Sign-in preferences for this browser.</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="mp-split">
+    <section class="mp-panel">
+      <div class="mp-profile-head" style="margin-bottom: 0.5rem">
+        <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-shield"></i></span>
+        <div>
+          <h2>Account protection</h2>
+          <p class="mp-hint">Controls stored on this device.</p>
+        </div>
+      </div>
+      <label class="mp-switch">
+        <span>
+          <strong style="display: block; font-size: 0.875rem">Two-step verification</strong>
+          <span class="mp-hint">Ask for an extra step when signing in. This preference is saved here only.</span>
+        </span>
+        <input type="checkbox" [checked]="twoStep" aria-label="Two-step verification" (change)="toggleTwoStep($any($event.target).checked)" />
+      </label>
+      <div class="mp-switch">
+        <span>
+          <strong style="display: block; font-size: 0.875rem">Password</strong>
+          <span class="mp-hint">Password changes are not available from this screen.</span>
+        </span>
+        <i class="fa fa-lock" aria-hidden="true"></i>
+      </div>
+      @if (message) {
+        <p class="mp-note">{{ message }}</p>
+      }
+    </section>
+
+    <section class="mp-panel">
+      <h2>Active sessions</h2>
+      <p class="mp-hint">The browser you are using now.</p>
+      <div class="mp-row">
+        <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-laptop"></i></span>
+        <div class="mp-row__copy">
+          <p class="mp-row__title">This device</p>
+          <p class="mp-row__meta">Current browser · Active now</p>
+        </div>
+        <span class="mp-badge mp-badge--paid">Current</span>
+      </div>
+    </section>
+  </div>
+</div>

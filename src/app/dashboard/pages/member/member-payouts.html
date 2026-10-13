@@ -1,0 +1,96 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Payouts</span>
+      </p>
+      <h1 class="mp-title">Payouts</h1>
+      <p class="mp-lede">Paid orders on your account.</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="mp-metrics">
+    <article class="mp-panel mp-metric">
+      <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-money"></i></span>
+      <p>Available balance</p>
+      <strong>{{ inr(available) }}</strong>
+    </article>
+    <article class="mp-panel mp-metric">
+      <span class="mp-metric__icon mp-metric__icon--warn" aria-hidden="true"><i class="fa fa-clock-o"></i></span>
+      <p>Pending earnings</p>
+      <strong>{{ inr(pending) }}</strong>
+    </article>
+    <article class="mp-panel mp-metric">
+      <span class="mp-metric__icon mp-metric__icon--ok" aria-hidden="true"><i class="fa fa-arrow-up"></i></span>
+      <p>Lifetime earnings</p>
+      <strong>{{ inr(lifetime) }}</strong>
+    </article>
+  </div>
+
+  <section class="mp-panel mp-schedule">
+    <div>
+      <h2>Payout schedule</h2>
+      <p class="mp-hint">
+        Next payout: <strong>{{ nextPayout }}</strong> · {{ cadenceLabel[cadence] }}
+      </p>
+      <div class="mp-segment" style="margin-top: 0.85rem" role="radiogroup" aria-label="Payout frequency">
+        @for (option of cadenceOptions; track option) {
+          <button type="button" role="radio" [attr.aria-checked]="cadence === option" [class.is-active]="cadence === option" (click)="setCadence(option)">
+            {{ option }}
+          </button>
+        }
+      </div>
+    </div>
+    <button type="button" class="mp-btn mp-btn--brand" (click)="requestPayout()">Request payout</button>
+  </section>
+
+  @if (notice) {
+    <p class="mp-note">{{ notice }}</p>
+  }
+
+  <section class="mp-panel">
+    <div class="mp-toolbar">
+      <h2 style="margin-right: auto">Transaction ledger</h2>
+      <label class="mp-search" style="flex: 0 1 14rem">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        <input [(ngModel)]="query" type="search" placeholder="Search ledger" aria-label="Search ledger" />
+      </label>
+      <div class="mp-segment">
+        @for (option of ['all', 'credit', 'debit']; track option) {
+          <button type="button" [class.is-active]="type === option" (click)="type = $any(option)">{{ option }}</button>
+        }
+      </div>
+      <button type="button" class="mp-btn" (click)="exportCsv()">
+        <i class="fa fa-download" aria-hidden="true"></i> Export CSV
+      </button>
+    </div>
+
+    @if (loading) {
+      <p class="mp-hint" style="margin-top: 1rem">Loading payouts…</p>
+    } @else if (error) {
+      <div class="mp-empty" style="margin-top: 1rem"><strong>Could not load payouts</strong>{{ error }}</div>
+    } @else if (!filtered.length) {
+      <div class="mp-empty" style="margin-top: 1rem">
+        <strong>No transactions found</strong>
+        Paid orders will appear in this ledger.
+      </div>
+    } @else {
+      <div class="mp-list">
+        @for (row of filtered; track row.id + row.at) {
+          <div class="mp-row">
+            <span class="mp-metric__icon mp-metric__icon--ok" aria-hidden="true"><i class="fa fa-arrow-down"></i></span>
+            <div class="mp-row__copy">
+              <p class="mp-row__title">{{ row.description }}</p>
+              <p class="mp-row__meta">{{ row.counterparty }}@if (row.at) { · {{ row.at | date: 'd MMM' }} }</p>
+            </div>
+            <span class="mp-badge mp-badge--paid">{{ row.status }}</span>
+            <span class="mp-amount mp-amount--credit">+{{ inr(row.amount) }}</span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

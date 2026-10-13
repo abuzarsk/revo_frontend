@@ -63,7 +63,7 @@ interface ProductRecord {
   selector: 'app-company-analytics',
   imports: [CommonModule, FormsModule],
   templateUrl: './company-analytics.html',
-  styleUrls: ['../company-portal/company-portal.css'],
+  styleUrls: ['../company-portal/company-portal.css', './company-analytics.css'],
 })
 export class CompanyAnalytics implements OnInit {
   period = 'all';
@@ -209,7 +209,7 @@ export class CompanyAnalytics implements OnInit {
       all: 'All time',
     };
     if (this.period === 'all') {
-      return 'Monthly totals for the last 12 months';
+      return 'Monthly totals for the rolling 12-month view';
     }
     return `Activity in the last ${(labels[this.period] ?? this.period).toLowerCase()}`;
   }
@@ -253,20 +253,11 @@ export class CompanyAnalytics implements OnInit {
 
   barHeight(value: number): number {
     const max = Math.max(1, ...this.buckets.map((bucket) => bucket.value));
-    return Math.max(value > 0 ? 4 : 0, (value / max) * 100);
+    return Math.max(4, (value / max) * 100);
   }
 
   bucketLabel(value: number): string {
-    if (this.metric === 'submissions') {
-      return this.formatCount(value);
-    }
-    if (value >= 100000) {
-      return `₹${(value / 100000).toFixed(1)}L`;
-    }
-    if (value >= 1000) {
-      return `₹${Math.round(value / 1000)}k`;
-    }
-    return this.inr(value);
+    return this.metric === 'submissions' ? this.formatCount(value) : this.inr(value);
   }
 
   inr(amount: number): string {

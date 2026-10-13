@@ -1,0 +1,180 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">{{ title }}</span>
+      </p>
+      <h1 class="mp-title">{{ title }}</h1>
+      <p class="mp-lede">{{ lede }}</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  @if (kind === 'notifications') {
+    <section class="mp-panel">
+      <div class="mp-toolbar">
+        <div class="mp-segment" role="tablist" aria-label="Notification filter">
+          <button type="button" [class.is-active]="filter === 'all'" (click)="filter = 'all'">All</button>
+          <button type="button" [class.is-active]="filter === 'unread'" (click)="filter = 'unread'">
+            Unread@if (unreadCount) { ({{ unreadCount }}) }
+          </button>
+        </div>
+        <button type="button" class="mp-btn" style="margin-left: auto" [disabled]="!unreadCount" (click)="markAllRead()">
+          <i class="fa fa-check" aria-hidden="true"></i> Mark all read
+        </button>
+        <button type="button" class="mp-btn" [disabled]="!notices.length" (click)="clearNotices()">
+          <i class="fa fa-trash-o" aria-hidden="true"></i> Clear all
+        </button>
+      </div>
+
+      @if (!visibleNotices.length) {
+        <div class="mp-empty" style="margin-top: 1rem">
+          <strong>{{ filter === 'unread' ? 'No unread notifications' : 'No notifications yet' }}</strong>
+          Updates about payouts, submissions, and messages will show up here.
+        </div>
+      } @else {
+        <div class="mp-list" style="margin-top: 0.5rem">
+          @for (notice of visibleNotices; track notice.id) {
+            <button type="button" class="mp-notice" [class.is-unread]="!notice.read" (click)="openNotice(notice)">
+              <span class="mp-metric__icon" aria-hidden="true"><i class="fa" [ngClass]="noticeIcon(notice.kind)"></i></span>
+              <span class="mp-row__copy">
+                <p class="mp-row__title">
+                  {{ notice.title }}
+                  @if (!notice.read) { <span class="mp-dot" aria-label="Unread"></span> }
+                </p>
+                <p class="mp-row__meta" style="white-space: normal">{{ notice.body }}</p>
+                <p class="mp-row__meta">{{ ago(notice.at) }}</p>
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  @if (kind === 'messages') {
+    <section class="mp-panel mp-messages">
+      <aside class="mp-messages__side">
+        <label class="mp-search">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <input [(ngModel)]="query" type="search" placeholder="Search conversations" aria-label="Search conversations" />
+        </label>
+        @if (!visibleThreads.length) {
+          <div class="mp-empty" style="margin-top: 1rem">
+            <strong>No conversations</strong>
+            No one matches that search.
+          </div>
+        } @else {
+          <div class="mp-thread-list">
+            @for (thread of visibleThreads; track thread.id) {
+              <button type="button" class="mp-thread" [class.is-active]="thread.id === activeThreadId" (click)="openThread(thread.id)">
+                <span class="mp-avatar-pill">{{ thread.avatar }}</span>
+                <span class="mp-row__copy">
+                  <p class="mp-row__title">
+                    {{ thread.name }}
+                    <span class="mp-row__meta" style="margin-left: auto">{{ threadAgo(thread) }}</span>
+                  </p>
+                  <p class="mp-row__meta">
+                    @if (lastMessage(thread); as last) {
+                      {{ last.from === 'me' ? 'You: ' : '' }}{{ last.text }}
+                    }
+                  </p>
+                </span>
+                @if (thread.unread) {
+                  <span class="mp-unread-count">{{ thread.unread }}</span>
+                }
+              </button>
+            }
+          </div>
+        }
+      </aside>
+
+      <div class="mp-messages__main">
+        @if (activeThread; as thread) {
+          <header class="mp-messages__head">
+            <span class="mp-avatar-pill">{{ thread.avatar }}</span>
+            <div>
+              <p class="mp-row__title">{{ thread.name }}</p>
+              <p class="mp-row__meta">{{ thread.subtitle }}</p>
+            </div>
+          </header>
+          <div class="mp-chat">
+            @for (message of thread.messages; track message.id) {
+              <div class="mp-bubble" [class.mp-bubble--me]="message.from === 'me'">
+                <p>{{ message.text }}</p>
+                <span class="mp-bubble__time">{{ ago(message.at) }}</span>
+              </div>
+            }
+          </div>
+          <form class="mp-compose" (ngSubmit)="send()">
+            <textarea
+              [(ngModel)]="draft"
+              name="draft"
+              rows="1"
+              maxlength="1000"
+              placeholder="Write a message… (Enter to send)"
+              aria-label="Message"
+              (keydown)="onDraftKeydown($event)"
+            ></textarea>
+            <button type="submit" class="mp-btn mp-btn--brand" [disabled]="!draft.trim()" aria-label="Send message">
+              <i class="fa fa-paper-plane" aria-hidden="true"></i>
+            </button>
+          </form>
+        } @else {
+          <div class="mp-empty" style="margin: auto">
+            <strong>Select a conversation</strong>
+            Choose a thread to read and reply.
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  @if (kind === 'announcements') {
+    <section class="mp-panel">
+      <div class="mp-toolbar">
+        <div>
+          <h2>Workspace announcements</h2>
+          <p class="mp-hint">Updates published for the member workspace.</p>
+        </div>
+        <div class="mp-chips" style="margin-left: auto">
+          @for (category of categories; track category) {
+            <button
+              type="button"
+              class="mp-chip"
+              [class.is-active]="filter === category || (filter === 'all' && category === 'All')"
+              (click)="filter = category"
+            >
+              {{ category }}
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="mp-announcements">
+      @for (item of visibleAnnouncements; track item.id) {
+        <article class="mp-panel mp-announcement">
+          <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-bullhorn"></i></span>
+          <div class="mp-row__copy" style="white-space: normal">
+            <p class="mp-row__title" style="white-space: normal">
+              {{ item.title }}
+              @if (!item.read) { <span class="mp-new">New</span> }
+            </p>
+            <p class="mp-row__meta">{{ item.category }} · {{ item.date }}</p>
+            <p class="mp-hint" style="margin-top: 0.65rem; font-size: 0.875rem; line-height: 1.5">{{ item.body }}</p>
+          </div>
+          <button type="button" class="mp-btn" (click)="markAnnouncement(item.id)">
+            @if (item.read) {
+              <i class="fa fa-check" aria-hidden="true"></i> Read
+            } @else {
+              Mark read
+            }
+          </button>
+        </article>
+      }
+    </div>
+  }
+</div>

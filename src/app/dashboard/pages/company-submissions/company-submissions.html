@@ -22,7 +22,7 @@
       <section class="cp-panel cp-detail-main">
         <div class="cp-detail-head">
           <div>
-            <h2>{{ selected.id }}</h2>
+            <h2>{{ selected.product_name || 'Submission' }}</h2>
             <p>
               {{ selected.product_name || 'Product' }} · {{ selected.company_name || 'Company' }} · by
               {{ selected.revo_user_name || 'Member' }}
@@ -192,7 +192,7 @@
       <i class="fa fa-search" aria-hidden="true"></i>
       <input
         type="search"
-        placeholder="Search by ID, product, member or company"
+        placeholder="Search by product, member or company"
         [(ngModel)]="query"
         (ngModelChange)="onSearchChange()"
         aria-label="Search submissions"
@@ -225,7 +225,6 @@
         <table class="cp-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Product</th>
               <th>Member</th>
               <th>Company</th>
@@ -238,7 +237,6 @@
           <tbody>
             @for (row of rows; track row.id) {
               <tr>
-                <td class="cp-id">{{ row.id }}</td>
                 <td>{{ row.product_name || '—' }}</td>
                 <td>{{ row.revo_user_name || '—' }}</td>
                 <td>{{ row.company_name || '—' }}</td>

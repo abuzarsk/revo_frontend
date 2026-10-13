@@ -22,6 +22,13 @@ import { CompanyAnalytics } from './dashboard/pages/company-analytics/company-an
 import { BuilderPageComponent } from './forms/builder-page.component';
 import { PreviewPageComponent } from './forms/preview-page.component';
 import { FormLoadingPageComponent } from './dashboard/pages/form-loading/form-loading';
+import { MemberSubmissions } from './dashboard/pages/member/member-submissions';
+import { MemberInbox } from './dashboard/pages/member/member-inbox';
+import { MemberPayouts } from './dashboard/pages/member/member-payouts';
+import { MemberProfile } from './dashboard/pages/member/member-profile';
+import { MemberSecurity } from './dashboard/pages/member/member-security';
+import { MemberSupport } from './dashboard/pages/member/member-support';
+import { MemberSettings } from './dashboard/pages/member/member-settings';
 
 export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [guestGuard] },
@@ -50,8 +57,16 @@ export const routes: Routes = [
       { path: 'campaigns', component: CompanyCampaigns },
       { path: 'analytics', component: CompanyAnalytics },
       { path: 'builder/:id', component: BuilderPageComponent },
+      { path: 'my-submissions', component: MemberSubmissions },
+      { path: 'notifications', component: MemberInbox, data: { kind: 'notifications' } },
+      { path: 'messages', component: MemberInbox, data: { kind: 'messages' } },
+      { path: 'announcements', component: MemberInbox, data: { kind: 'announcements' } },
+      { path: 'payouts', component: MemberPayouts },
+      { path: 'profile', component: MemberProfile },
+      { path: 'security', component: MemberSecurity },
+      { path: 'help', component: MemberSupport },
+      { path: 'settings', component: MemberSettings },
     ],
-
   },
   { path: 'preview/:id', component: PreviewPageComponent },
   { path: 'form/:id', component: FormLoadingPageComponent},

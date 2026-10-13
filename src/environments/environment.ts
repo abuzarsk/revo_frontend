@@ -17,6 +17,7 @@ export const environment = {
    * Centralized list of REST endpoints that the UI can reference.
    * Keep paths relative so they can be composed with apiBaseUrl.
    */
+ 
   apis: {
     signup: 'auth/signup',
     login: 'auth/login',

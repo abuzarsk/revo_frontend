@@ -1,4 +1,4 @@
-<div class="cp-page">
+<div class="cp-page cp-analytics">
   <header class="cp-intro">
     <div>
       <p class="cp-crumbs">
@@ -12,7 +12,7 @@
     <span class="cp-status"><span class="cp-status__dot" aria-hidden="true"></span>All systems operational</span>
   </header>
 
-  <section class="cp-panel cp-toolbar">
+  <section class="cp-panel cp-analytics-head">
     <div>
       <p class="cp-kicker">Business performance</p>
       <h2 class="cp-section-title cp-section-title--lg">Company analytics</h2>
@@ -26,8 +26,8 @@
         }
       </p>
     </div>
-    <div class="cp-toolbar">
-      <select class="cp-select" [(ngModel)]="period" aria-label="Analytics date range">
+    <div class="cp-analytics-tools">
+      <select id="analytics-period" class="cp-select" [(ngModel)]="period" aria-label="Analytics date range">
         @for (item of periods; track item.value) {
           <option [value]="item.value">{{ item.label }}</option>
         }
@@ -53,15 +53,21 @@
   </div>
 
   <div class="cp-split">
-    <div>
-      <div class="cp-toolbar" style="margin-bottom: 0.75rem">
-        <h3 class="cp-section-title" style="margin: 0">
+    <div class="cp-analytics-trend">
+      <div class="cp-analytics-trend-head">
+        <h3 class="cp-analytics-trend-title">
           <i class="fa fa-bar-chart" aria-hidden="true"></i>
           Performance trend
         </h3>
         <div class="cp-pills" role="group" aria-label="Analytics trend metric">
           @for (item of metrics; track item.value) {
-            <button type="button" class="cp-pill" [class.is-active]="metric === item.value" (click)="metric = item.value">
+            <button
+              type="button"
+              class="cp-pill"
+              [class.is-active]="metric === item.value"
+              [attr.aria-pressed]="metric === item.value"
+              (click)="metric = item.value"
+            >
               {{ item.label }}
             </button>
           }
@@ -70,21 +76,30 @@
       <section class="cp-panel">
         <div class="cp-chart-head">
           <div>
-            <h2 class="cp-section-title" style="margin: 0">{{ chartTitle }} trend</h2>
+            <h2 class="cp-analytics-card-title">{{ chartTitle }} trend</h2>
             <p class="cp-hint">{{ chartNote }}</p>
           </div>
-          <div>
-            <p class="cp-hint" style="text-align: right">Chart total</p>
+          <div class="cp-chart-total-wrap">
+            <p class="cp-chart-kicker">Chart total</p>
             <p class="cp-chart-total">{{ chartTotal }}</p>
           </div>
         </div>
         <div class="cp-bars-wrap">
-          <div class="cp-bars" [style.grid-template-columns]="'repeat(' + buckets.length + ', minmax(0, 1fr))'" role="img" [attr.aria-label]="chartTitle + ' trend chart'">
+          <div
+            class="cp-bars"
+            [style.grid-template-columns]="'repeat(' + buckets.length + ', minmax(0, 1fr))'"
+            role="img"
+            [attr.aria-label]="chartTitle + ' trend chart'"
+          >
             @for (bucket of buckets; track $index) {
               <div class="cp-bar">
                 <span class="cp-bar__value">{{ bucketLabel(bucket.value) }}</span>
                 <div class="cp-bar__track">
-                  <div class="cp-bar__fill" [style.height.%]="barHeight(bucket.value)"></div>
+                  <div
+                    class="cp-bar__fill"
+                    [style.height.%]="barHeight(bucket.value)"
+                    [attr.title]="bucket.label + ': ' + bucketLabel(bucket.value)"
+                  ></div>
                 </div>
                 <span class="cp-bar__label">{{ bucket.label }}</span>
               </div>
@@ -97,80 +112,95 @@
     <section class="cp-panel">
       <div class="cp-stat__top">
         <div>
-          <h3 class="cp-section-title" style="margin: 0">Submission status</h3>
+          <h3 class="cp-analytics-card-title">Submission status</h3>
           <p class="cp-hint">{{ submissionTotal }} records in range</p>
         </div>
         <span class="cp-icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
       </div>
-      <div class="cp-mix" role="img" aria-label="Submission status distribution">
-        @for (row of statuses; track row.key) {
-          <div class="cp-mix__seg" [ngClass]="'cp-mix__seg--' + row.key" [style.width.%]="share(row.count)"></div>
-        }
-      </div>
-      <div class="cp-mix-list">
-        @for (row of statuses; track row.key) {
-          <div class="cp-mix-row">
-            <span class="cp-mix-row__name">
-              <span class="cp-dot" [ngClass]="'cp-dot--' + row.key"></span>
-              {{ row.label }}
-            </span>
-            <span>
-              <strong>{{ row.count }}</strong>
-              <span class="cp-hint">{{ share(row.count) }}%</span>
-            </span>
-          </div>
-        }
-      </div>
+      @if (submissionTotal) {
+        <div class="cp-mix" role="img" aria-label="Submission status distribution">
+          @for (row of statuses; track row.key) {
+            @if (row.count) {
+              <div
+                class="cp-mix__seg"
+                [ngClass]="'cp-mix__seg--' + row.key"
+                [style.width.%]="(row.count / submissionTotal) * 100"
+                [attr.title]="row.label + ': ' + row.count"
+              ></div>
+            }
+          }
+        </div>
+        <div class="cp-mix-list">
+          @for (row of statuses; track row.key) {
+            @if (row.count) {
+              <div class="cp-mix-row">
+                <span class="cp-mix-row__name">
+                  <span class="cp-dot" [ngClass]="'cp-dot--' + row.key"></span>
+                  {{ row.label }}
+                </span>
+                <span class="cp-mix-row__count">
+                  {{ row.count }}
+                  <span>{{ share(row.count) }}%</span>
+                </span>
+              </div>
+            }
+          }
+        </div>
+      } @else {
+        <div class="cp-empty">No submission records in this date range.</div>
+      }
       <div class="cp-queue">
-        <p class="cp-section-title" style="margin: 0; font-size: 12px">Review queue</p>
+        <p class="cp-queue__title">Review queue</p>
         <p>{{ pendingReview }} submitted or under-review records are still open.</p>
       </div>
     </section>
   </div>
 
   <section class="cp-panel">
-    <div class="cp-toolbar">
+    <div class="cp-analytics-table-head">
       <div>
-        <h3 class="cp-section-title" style="margin: 0">Product performance</h3>
+        <h3 class="cp-analytics-card-title">Product performance</h3>
         <p class="cp-hint">Ranked by submissions, then order value.</p>
       </div>
-      <span class="cp-hint">{{ products.length }} products tracked</span>
+      <span class="cp-analytics-tracked">
+        <i class="fa fa-users" aria-hidden="true"></i>
+        {{ products.length }} products tracked
+      </span>
     </div>
-    <div class="cp-table-wrap">
-      <table class="cp-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Listing</th>
-            <th>Submissions</th>
-            <th>Approval rate</th>
-            <th class="is-right">Order value</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (!products.length) {
+    @if (products.length) {
+      <div class="cp-table-wrap">
+        <table class="cp-table cp-analytics-table">
+          <thead>
             <tr>
-              <td colspan="5">No products in this period.</td>
+              <th>Product</th>
+              <th>Listing</th>
+              <th>Submissions</th>
+              <th>Approval rate</th>
+              <th class="is-right">Order value</th>
             </tr>
-          }
-          @for (row of products; track row.id) {
-            <tr>
-              <td>
-                <span class="cp-product">{{ row.name }}</span>
-                <span class="cp-brand">{{ row.brand }}</span>
-              </td>
-              <td>
-                <span class="cp-badge" [ngClass]="row.listing === 'active' ? 'cp-badge--active' : 'cp-badge--muted'">
-                  {{ row.listing }}
-                </span>
-              </td>
-              <td>{{ row.submissions }}</td>
-              <td>{{ row.rate }}%</td>
-              <td class="is-right">{{ inr(row.value) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (row of products; track row.id) {
+              <tr>
+                <td>
+                  <span class="cp-product">{{ row.name }}</span>
+                  <span class="cp-brand">{{ row.brand }}</span>
+                </td>
+                <td>
+                  <span class="cp-badge" [ngClass]="row.listing === 'active' ? 'cp-badge--active' : 'cp-badge--muted'">
+                    {{ row.listing }}
+                  </span>
+                </td>
+                <td>{{ row.submissions }}</td>
+                <td>{{ row.rate }}%</td>
+                <td class="is-right cp-analytics-value">{{ inr(row.value) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="cp-empty">No products match this workspace.</div>
+    }
   </section>
 </div>

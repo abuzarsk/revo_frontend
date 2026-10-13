@@ -1,0 +1,76 @@
+<div class="mp-page">
+  <header class="mp-intro">
+    <div>
+      <p class="mp-crumbs">
+        <span>Member Portal</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">My Submissions</span>
+      </p>
+      <h1 class="mp-title">My Submissions</h1>
+      <p class="mp-lede">Forms you have sent to brands.</p>
+    </div>
+    <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <section class="mp-panel">
+    <div class="mp-toolbar">
+      <label class="mp-search">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        <input [(ngModel)]="query" type="search" placeholder="Search submissions" aria-label="Search submissions" />
+      </label>
+    </div>
+    <div class="mp-pills" style="margin-top: 0.85rem">
+      @for (item of statuses; track item) {
+        <button type="button" class="mp-pill" [class.is-active]="status === item" (click)="status = item">
+          {{ item === 'all' ? 'All' : item }}
+        </button>
+      }
+    </div>
+
+    @if (loading) {
+      <p class="mp-hint" style="margin-top: 1rem">Loading submissions…</p>
+    } @else if (error) {
+      <div class="mp-empty" style="margin-top: 1rem">
+        <strong>Could not load submissions</strong>
+        {{ error }}
+      </div>
+    } @else if (!visible.length) {
+      <div class="mp-empty" style="margin-top: 1rem">
+        <strong>No submissions yet</strong>
+        Forms you complete will show up here.
+      </div>
+    } @else {
+      <div class="mp-list">
+        @for (row of visible; track row.id + row.product) {
+          @if (row.id) {
+          <a class="mp-row" [routerLink]="['/submission', row.id]">
+            <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
+            <span class="mp-row__copy">
+              <p>{{ row.product }}</p>
+              <p class="mp-row__meta">{{ row.company }}@if (row.when) { · {{ row.when }} }</p>
+            </span>
+            <span [class]="badgeClass(row.status)">{{ row.status }}</span>
+          </a>
+          } @else {
+          <div class="mp-row">
+            <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
+            <span class="mp-row__copy">
+              <p>{{ row.product }}</p>
+              <p class="mp-row__meta">{{ row.company }}@if (row.when) { · {{ row.when }} }</p>
+            </span>
+            <span [class]="badgeClass(row.status)">{{ row.status }}</span>
+          </div>
+          }
+        }
+      </div>
+    }
+
+    @if (lastPage > 1) {
+      <div class="mp-actions">
+        <button type="button" class="mp-btn" [disabled]="page <= 1 || loading" (click)="load(page - 1)">Previous</button>
+        <span class="mp-hint">Page {{ page }} of {{ lastPage }}</span>
+        <button type="button" class="mp-btn" [disabled]="page >= lastPage || loading" (click)="load(page + 1)">Next</button>
+      </div>
+    }
+  </section>
+</div>
