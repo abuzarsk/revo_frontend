@@ -210,23 +210,6 @@ export class OrderHistory implements OnInit {
     return tone.charAt(0).toUpperCase() + tone.slice(1);
   }
 
-  statusIcon(order: OrderHistoryRow): string {
-    const tone = this.orderTone(order);
-    if (tone === 'delivered') {
-      return 'fa-check';
-    }
-    if (tone === 'cancelled') {
-      return 'fa-times-circle';
-    }
-    if (tone === 'shipped') {
-      return 'fa-truck';
-    }
-    if (tone === 'refunded') {
-      return 'fa-undo';
-    }
-    return 'fa-history';
-  }
-
   get totalSpent(): number {
     if (this.paidAmount > 0) {
       return this.paidAmount;
@@ -288,8 +271,19 @@ export class OrderHistory implements OnInit {
     return parts.join(' · ');
   }
 
-  toggleOrder(order: OrderHistoryRow): void {
-    this.expandedOrderId = this.expandedOrderId === order.id ? null : order.id;
+  openOrder(order: OrderHistoryRow): void {
+    this.expandedOrderId = order.id;
+  }
+
+  closeOrder(): void {
+    this.expandedOrderId = null;
+  }
+
+  get openOrderRow(): OrderHistoryRow | null {
+    if (this.expandedOrderId == null) {
+      return null;
+    }
+    return this.orders.find((order) => order.id === this.expandedOrderId) ?? null;
   }
 
   orderAmount(order: OrderHistoryRow): number | null {
@@ -345,7 +339,7 @@ export class OrderHistory implements OnInit {
     if (Number.isNaN(date.getTime())) {
       return String(value);
     }
-    return new Intl.DateTimeFormat('en-GB', {
+    return new Intl.DateTimeFormat('en-IN', {
       day: 'numeric',
       month: 'short',
     }).format(date);

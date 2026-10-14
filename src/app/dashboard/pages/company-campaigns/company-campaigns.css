@@ -30,27 +30,6 @@
   margin: 0;
 }
 
-.cc-new {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: 2.25rem;
-  margin-left: auto;
-  padding: 0 1rem;
-  border: 0;
-  border-radius: calc(1.125rem - 2px);
-  background: linear-gradient(120deg, oklch(0.54 0.22 285), oklch(0.62 0.22 305));
-  color: #fff;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.cc-new .fa {
-  font-size: 16px;
-}
-
 .cc-list {
   display: flex;
   flex-direction: column;
@@ -146,41 +125,9 @@
   cursor: pointer;
 }
 
-.cc-dates {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.cc-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.cc-field input {
-  height: 2.25rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--cp-border);
-  border-radius: calc(1.125rem - 2px);
-  background: #fff;
-  box-shadow: var(--cp-shadow-sm);
-  color: var(--cp-fg);
-  font: inherit;
-  font-size: 14px;
-}
-
 @media (min-width: 640px) {
-  .cc-page .cp-stats--3,
-  .cc-dates {
+  .cc-page .cp-stats--3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .cc-dates {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .cc-panel {

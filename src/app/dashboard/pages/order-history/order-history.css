@@ -1035,9 +1035,13 @@
   margin-left: 0;
 }
 
-.oh-export .fa,
-.oh-row__icon .fa {
+.oh-export .fa {
   font-size: 16px;
+}
+
+.oh-row__icon svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .oh-rows {
@@ -1222,6 +1226,71 @@
 .oh-row__actions .oh-action-pill {
   width: auto;
   padding: 0.4rem 0.85rem;
+}
+
+.oh-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(16, 18, 24, 0.48);
+}
+
+.oh-dialog {
+  width: min(28rem, 100%);
+  padding: 1.25rem 1.35rem 1.35rem;
+  border: 1px solid var(--oh-border);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: var(--oh-shadow);
+  color: var(--oh-fg);
+}
+
+.oh-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.oh-dialog__head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.oh-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--oh-muted-fg);
+  cursor: pointer;
+}
+
+.oh-dialog__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  font-size: 14px;
+}
+
+.oh-dialog__row > span:first-child {
+  color: var(--oh-muted-fg);
+}
+
+.oh-dialog__row .is-refund {
+  color: var(--oh-success);
 }
 
 .oh-product-link {

@@ -33,10 +33,6 @@
         <h2 class="cc-title">Campaign management</h2>
         <p class="cp-hint">Preview campaigns stored in this browser.</p>
       </div>
-      <button type="button" class="cc-new" (click)="createCampaign()">
-        <i class="fa fa-plus" aria-hidden="true"></i>
-        New campaign
-      </button>
     </div>
 
     @if (loading) {
@@ -59,25 +55,6 @@
               <button type="button" class="cc-outline" (click)="changeStatus(campaign)">
                 {{ actionLabel(campaign) }}
               </button>
-            </div>
-
-            <div class="cc-dates">
-              <label class="cc-field">
-                Start date
-                <input
-                  type="date"
-                  [ngModel]="campaign.startDate"
-                  (ngModelChange)="updateDate(campaign, 'startDate', $event)"
-                />
-              </label>
-              <label class="cc-field">
-                End date
-                <input
-                  type="date"
-                  [ngModel]="campaign.endDate"
-                  (ngModelChange)="updateDate(campaign, 'endDate', $event)"
-                />
-              </label>
             </div>
 
             <div class="cp-meter">

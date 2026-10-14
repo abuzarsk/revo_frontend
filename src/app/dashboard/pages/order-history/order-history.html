@@ -91,7 +91,23 @@
           <article class="oh-row">
             <div class="oh-row__main">
               <span class="oh-row__icon" [ngClass]="'oh-row__icon--' + orderTone(order)" aria-hidden="true">
-                <i class="fa" [ngClass]="statusIcon(order)"></i>
+                @switch (orderTone(order)) {
+                  @case ('delivered') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  }
+                  @case ('shipped') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+                  }
+                  @case ('refunded') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  }
+                  @case ('cancelled') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                  }
+                  @default {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                  }
+                }
               </span>
               <div class="oh-row__copy">
                 <p class="oh-row__title">
@@ -106,41 +122,8 @@
             <div class="oh-row__side">
               <span class="oh-status-text" [ngClass]="'oh-status-text--' + orderTone(order)">{{ orderStatusText(order) }}</span>
               <span class="oh-row__amount">{{ orderAmount(order) !== null ? formatCurrency(orderAmount(order)!) : '' }}</span>
-              <button type="button" class="oh-view" (click)="toggleOrder(order)">
-                {{ expandedOrderId === order.id ? 'Hide' : 'View' }}
-              </button>
+              <button type="button" class="oh-view" (click)="openOrder(order)">View</button>
             </div>
-            @if (expandedOrderId === order.id) {
-              <div class="oh-row__detail">
-                @if (order.productLink) {
-                  <button type="button" class="oh-product-link" (click)="openProductLink(order.productLink)">
-                    <i class="fa fa-link" aria-hidden="true"></i> Open link
-                  </button>
-                }
-                <div class="oh-row__fields">
-                  <div>
-                    <p class="oh-row__field-label">Form submission</p>
-                    <ng-container *ngTemplateOutlet="submissionFieldsTpl; context: { order: order, type: 'submission' }" />
-                  </div>
-                  <div>
-                    <p class="oh-row__field-label">Refund submission</p>
-                    <ng-container *ngTemplateOutlet="submissionFieldsTpl; context: { order: order, type: 'refund' }" />
-                  </div>
-                </div>
-                <div class="oh-row__actions">
-                  @if (canRequestRefund(order)) {
-                    <button type="button" class="oh-action-pill oh-action-pill--primary" (click)="refundSubmission(order)">
-                      Refund
-                    </button>
-                  }
-                  @if (canViewRefund(order)) {
-                    <button type="button" class="oh-action-pill oh-action-pill--secondary" (click)="viewRefundSubmission(order)">
-                      View refund
-                    </button>
-                  }
-                </div>
-              </div>
-            }
           </article>
         }
       </div>
@@ -184,6 +167,44 @@
     }
   </section>
 </div>
+
+@if (openOrderRow; as order) {
+  <div class="oh-dialog-backdrop" (click)="closeOrder()">
+    <div class="oh-dialog" role="dialog" aria-modal="true" [attr.aria-label]="'Order ' + orderMeta(order)" (click)="$event.stopPropagation()">
+      <div class="oh-dialog__head">
+        <h3>Order {{ order.productCode !== '—' ? order.productCode : order.id }}</h3>
+        <button type="button" class="oh-dialog__close" (click)="closeOrder()" aria-label="Close">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="oh-dialog__row"><span>Product</span><strong>{{ order.productName }} · {{ order.brandName }}</strong></div>
+      <div class="oh-dialog__row"><span>Company</span><span>{{ order.companyName }}</span></div>
+      <div class="oh-dialog__row"><span>Channel</span><span>{{ order.platform }}</span></div>
+      <div class="oh-dialog__row"><span>Ordered</span><span>{{ order.submittedAt }}</span></div>
+      <div class="oh-dialog__row"><span>Amount</span><strong>{{ orderAmount(order) !== null ? formatCurrency(orderAmount(order)!) : '—' }}</strong></div>
+      @if (refundAmount(order) !== null) {
+        <div class="oh-dialog__row"><span>Refund</span><strong class="is-refund">{{ formatCurrency(refundAmount(order)!) }}</strong></div>
+      }
+      <div class="oh-dialog__row">
+        <span>Status</span>
+        <span class="oh-status-text" [ngClass]="'oh-status-text--' + orderTone(order)">{{ orderStatusText(order) }}</span>
+      </div>
+      @if (order.productLink) {
+        <button type="button" class="oh-product-link" (click)="openProductLink(order.productLink)">
+          <i class="fa fa-link" aria-hidden="true"></i> Open link
+        </button>
+      }
+      <div class="oh-row__actions">
+        @if (canRequestRefund(order)) {
+          <button type="button" class="oh-action-pill oh-action-pill--primary" (click)="refundSubmission(order)">Refund</button>
+        }
+        @if (canViewRefund(order)) {
+          <button type="button" class="oh-action-pill oh-action-pill--secondary" (click)="viewRefundSubmission(order)">View refund</button>
+        }
+      </div>
+    </div>
+  </div>
+}
 
 <ng-template #submissionFieldsTpl let-order="order" let-type="type">
   @if (hasSubmissionFields(order, type)) {

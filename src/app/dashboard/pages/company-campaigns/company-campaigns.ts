@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   ENTITY_TYPE_IDS,
@@ -9,7 +8,7 @@ import {
 } from '../../../../constants/app.constants';
 import { Apiservice } from '../../../../services/apiservice';
 
-type CampaignStatus = 'draft' | 'active' | 'paused' | 'scheduled' | 'completed';
+type CampaignStatus = 'draft' | 'active' | 'paused';
 
 interface Campaign {
   id: string;
@@ -20,15 +19,13 @@ interface Campaign {
   filled: number;
   limit: number;
   status: CampaignStatus;
-  startDate: string;
-  endDate: string;
   formStatus: number;
   localOnly: boolean;
 }
 
 @Component({
   selector: 'app-company-campaigns',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './company-campaigns.html',
   styleUrls: ['../company-portal/company-portal.css', './company-campaigns.css'],
 })
@@ -70,31 +67,18 @@ export class CompanyCampaigns implements OnInit {
   }
 
   effectiveStatus(campaign: Campaign): CampaignStatus {
-    if (campaign.status === 'draft') {
-      return 'draft';
-    }
-    const today = this.dateOffset(0);
-    if (campaign.endDate && campaign.endDate < today) {
-      return 'completed';
-    }
-    if (campaign.status === 'active' || campaign.status === 'scheduled') {
-      return campaign.startDate && campaign.startDate > today ? 'scheduled' : 'active';
-    }
     return campaign.status;
   }
 
   actionLabel(campaign: Campaign): string {
     const status = this.effectiveStatus(campaign);
-    if (status === 'active' || status === 'scheduled') {
+    if (status === 'active') {
       return 'Pause';
-    }
-    if (status === 'completed') {
-      return 'Schedule again';
     }
     if (status === 'paused') {
       return 'Resume';
     }
-    return 'Schedule';
+    return 'Activate';
   }
 
   badgeClass(campaign: Campaign): string {
@@ -104,9 +88,6 @@ export class CompanyCampaigns implements OnInit {
     }
     if (status === 'paused') {
       return 'cc-badge--paused';
-    }
-    if (status === 'completed') {
-      return 'cc-badge--completed';
     }
     return 'cc-badge--muted';
   }
@@ -124,46 +105,13 @@ export class CompanyCampaigns implements OnInit {
     return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(amount)}`;
   }
 
-  createCampaign(): void {
-    const count = this.campaigns.length + 1;
-    this.campaigns = [
-      {
-        id: `draft-${Date.now()}`,
-        productId: null,
-        name: `Untitled campaign ${count}`,
-        channel: 'Member portal',
-        budget: 25000,
-        filled: 0,
-        limit: 50,
-        status: 'draft',
-        startDate: this.dateOffset(1),
-        endDate: this.dateOffset(31),
-        formStatus: 0,
-        localOnly: true,
-      },
-      ...this.campaigns,
-    ];
-  }
-
-  updateDate(campaign: Campaign, field: 'startDate' | 'endDate', value: string): void {
-    this.campaigns = this.campaigns.map((item) =>
-      item.id === campaign.id ? { ...item, [field]: value } : item,
-    );
-  }
-
   changeStatus(campaign: Campaign): void {
     const status = this.effectiveStatus(campaign);
-    if (status === 'active' || status === 'scheduled') {
+    if (status === 'active') {
       this.setStatus(campaign, 'paused', 0);
       return;
     }
-    const issue = this.validateDates(campaign.startDate, campaign.endDate);
-    if (issue) {
-      window.alert(issue);
-      return;
-    }
-    const next = campaign.startDate > this.dateOffset(0) ? 'scheduled' : 'active';
-    this.setStatus(campaign, next, 1);
+    this.setStatus(campaign, 'active', 1);
   }
 
   private setStatus(campaign: Campaign, next: CampaignStatus, apiStatus: number): void {
@@ -188,30 +136,6 @@ export class CompanyCampaigns implements OnInit {
         window.alert('Could not update this campaign.');
       },
     });
-  }
-
-  private validateDates(startDate: string, endDate: string): string | null {
-    if (!startDate || !endDate) {
-      return 'Choose both a start date and an end date.';
-    }
-    if (!this.isValidDate(startDate) || !this.isValidDate(endDate)) {
-      return 'Enter valid campaign dates.';
-    }
-    if (startDate >= endDate) {
-      return 'The end date must be after the start date.';
-    }
-    if (endDate < this.dateOffset(0)) {
-      return 'The campaign end date has already passed.';
-    }
-    return null;
-  }
-
-  private isValidDate(value: string): boolean {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      return false;
-    }
-    const parsed = new Date(`${value}T00:00:00`);
-    return !Number.isNaN(parsed.getTime()) && this.dateOffset(0, parsed) === value;
   }
 
   private loadPage(page: number, collected: Campaign[]): void {
@@ -259,8 +183,6 @@ export class CompanyCampaigns implements OnInit {
       filled: Number(product.submission_count || 0),
       limit: Number(product.order_limit || 0),
       status,
-      startDate: this.dateOffset(status === 'draft' ? 7 : -5),
-      endDate: this.dateOffset(status === 'draft' ? 37 : 25),
       formStatus: Number(product.form_status || 0),
       localOnly: false,
     };
@@ -274,13 +196,5 @@ export class CompanyCampaigns implements OnInit {
       return 'paused';
     }
     return 'draft';
-  }
-
-  private dateOffset(offsetDays: number, from = new Date()): string {
-    const date = new Date(from);
-    date.setDate(date.getDate() + offsetDays);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${date.getFullYear()}-${month}-${day}`;
   }
 }
