@@ -259,7 +259,7 @@ export class DashboardWelcome implements OnInit, OnDestroy {
       return this.welcomeMessage;
     }
     if (this.role === ENTITY_TYPE_IDS.COMPANY) {
-      return 'Welcome to your brand center.';
+      return 'Dashboard in Brand Center';
     }
     if (this.role === ENTITY_TYPE_IDS.MEDIATOR) {
       return 'Welcome to your partner hub.';
@@ -289,13 +289,16 @@ export class DashboardWelcome implements OnInit, OnDestroy {
   }
 
   protected get heroLead(): string {
+    if (this.isCompany) {
+      return 'Monitor submissions by product, spot reviews that need attention, and keep your campaigns moving.';
+    }
     if (this.isUser) {
       return 'Track your applications and find products with open sample slots.';
     }
     if (Number(this.role) === ENTITY_TYPE_IDS.MEDIATOR) {
       return 'Review product applications and keep your partner network moving.';
     }
-    return 'Monitor submissions by product, spot reviews that need attention, and keep your campaigns moving.';
+    return 'Monitor workspace records, review activity, and platform operations.';
   }
 
   protected get heroTitle(): string {
@@ -312,10 +315,116 @@ export class DashboardWelcome implements OnInit, OnDestroy {
   }
 
   protected get activityCount(): number {
+    if (this.isCompany && this.companySubmissions.length) {
+      return this.companySubmissions.length;
+    }
     return this.statusCount('form_submissions');
   }
 
+  protected get reviewQueue(): number {
+    if (this.isCompany && this.companySubmissions.length) {
+      return this.awaitingReview;
+    }
+    return this.statusCount('pending_refunds');
+  }
+
+  private get companySubmissions(): any[] {
+    return this.homeSubmissions.filter((row) => row.status !== 'draft');
+  }
+
+  protected get companyBuckets(): { label: string; count: number }[] {
+    const today = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const end = new Date(today);
+      end.setHours(23, 59, 59, 999);
+      end.setDate(today.getDate() - (5 - index) * 14);
+      const start = new Date(end);
+      start.setDate(end.getDate() - 14);
+      start.setHours(0, 0, 0, 0);
+      const count = this.companySubmissions.filter((row) => {
+        const date = new Date(String(row.created_on || row.updated_on || '').replace(' ', 'T'));
+        return !Number.isNaN(date.getTime()) && date >= start && date <= end;
+      }).length;
+      return {
+        label: start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+        count,
+      };
+    });
+  }
+
+  protected get portfolio(): { product: any; total: number; pending: number; approval: number }[] {
+    return this.homeProducts
+      .map((product) => {
+        const id = String(product.product_id || product.id);
+        const associated = this.companySubmissions.filter(
+          (row) => String(row.product_id || row.productId) === id,
+        );
+        const reviewed = associated.filter((row) =>
+          ['approved', 'paid', 'rejected'].includes(String(row.status)),
+        );
+        const approved = reviewed.filter(
+          (row) => row.status === 'approved' || row.status === 'paid',
+        ).length;
+        return {
+          product,
+          total: associated.length,
+          pending: associated.filter(
+            (row) => row.status === 'submitted' || row.status === 'under_review',
+          ).length,
+          approval: reviewed.length ? Math.round((approved / reviewed.length) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.pending - a.pending || b.total - a.total)
+      .slice(0, 5);
+  }
+
   protected get homeMetrics(): { label: string; value: string; detail: string; icon: string; route: string }[] {
+    if (this.isCompany) {
+      const submissions = this.companySubmissions;
+      const awaiting = submissions.filter(
+        (row) => row.status === 'submitted' || row.status === 'under_review',
+      ).length;
+      const reviewed = submissions.filter((row) =>
+        ['approved', 'paid', 'rejected'].includes(String(row.status)),
+      );
+      const approved = reviewed.filter(
+        (row) => row.status === 'approved' || row.status === 'paid',
+      ).length;
+      const rate = reviewed.length ? Math.round((approved / reviewed.length) * 100) : 0;
+      const active = this.homeProducts.filter((product) => this.isActiveProduct(product)).length;
+      const listed = this.homeProducts.length || this.statusCount('products');
+      const slots = this.homeProducts.reduce((total, product) => total + this.slotsLeft(product), 0);
+      return [
+        {
+          label: 'Active products',
+          value: String(active || this.statusCount('active_promoted_products')),
+          detail: `${listed} total listings`,
+          icon: 'package',
+          route: '/products',
+        },
+        {
+          label: 'Awaiting review',
+          value: String(submissions.length ? awaiting : this.statusCount('pending_refunds')),
+          detail: 'Submitted or in review',
+          icon: 'clipboard-check',
+          route: '/submissions',
+        },
+        {
+          label: 'Approval rate',
+          value: `${rate}%`,
+          detail: `${approved} approved or paid`,
+          icon: 'trending-up',
+          route: '/analytics',
+        },
+        {
+          label: 'Completed debits',
+          value: this.formatInr(this.earnedAmount),
+          detail: `${slots} listed slots currently open`,
+          icon: 'wallet',
+          route: '/payouts',
+        },
+      ];
+    }
     if (this.isUser) {
       const needs = this.statusCount('pending_refunds') + this.statusCount('rejected_refunds');
       return [
@@ -323,28 +432,28 @@ export class DashboardWelcome implements OnInit, OnDestroy {
           label: 'Available products',
           value: String(this.statusCount('products') || this.totalProducts),
           detail: 'Products you can open',
-          icon: 'fa-cube',
+          icon: 'package',
           route: '/products',
         },
         {
           label: 'My submissions',
           value: String(this.statusCount('form_submissions')),
           detail: `${this.statusCount('refund_submissions')} refund forms`,
-          icon: 'fa-clipboard',
+          icon: 'clipboard-check',
           route: '/order-history',
         },
         {
           label: 'Needs attention',
           value: String(needs),
           detail: 'Pending or rejected refunds',
-          icon: 'fa-check',
+          icon: 'check',
           route: '/order-history',
         },
         {
           label: 'Refunds paid',
           value: String(this.statusCount('accepted_refunds')),
           detail: 'Accepted refund submissions',
-          icon: 'fa-credit-card',
+          icon: 'wallet',
           route: '/order-history',
         },
       ];
@@ -388,6 +497,7 @@ export class DashboardWelcome implements OnInit, OnDestroy {
 
   protected get pipeline(): { key: string; label: string; count: number }[] {
     const keys = [
+      { key: 'draft', label: 'Draft' },
       { key: 'submitted', label: 'Submitted' },
       { key: 'under_review', label: 'Under review' },
       { key: 'approved', label: 'Approved' },
@@ -435,10 +545,10 @@ export class DashboardWelcome implements OnInit, OnDestroy {
   protected get quickLinks(): { label: string; route: string }[] {
     if (this.isUser) {
       return [
-        { label: 'Products', route: '/products' },
-        { label: 'Companies', route: '/usercompanies' },
-        { label: 'Order history', route: '/order-history' },
-        { label: 'Bank & UPI', route: '/bank-upi' },
+        { label: 'Recommended Products', route: '/products' },
+        { label: 'My Submissions', route: '/my-submissions' },
+        { label: 'Saved Products', route: '/products' },
+        { label: 'Order History', route: '/order-history' },
       ];
     }
     if (Number(this.role) === ENTITY_TYPE_IDS.MEDIATOR) {
@@ -460,9 +570,27 @@ export class DashboardWelcome implements OnInit, OnDestroy {
     return this.orderStatuses.find((status) => status.key === key)?.count ?? 0;
   }
 
-  protected barHeight(count: number): number {
-    const max = Math.max(1, ...this.activityBuckets.map((bucket) => bucket.count));
-    return Math.max(count > 0 ? 8 : 0, (count / max) * 100);
+  protected barHeight(count: number, buckets = this.activityBuckets): number {
+    const max = Math.max(1, ...buckets.map((bucket) => bucket.count));
+    return Math.max(5, (count / max) * 100);
+  }
+
+  protected formatInr(amount: number): string {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount || 0);
+  }
+
+  protected productMark(product: any): string {
+    const name = String(product?.name || 'P').trim();
+    return name.slice(0, 1).toUpperCase();
+  }
+
+  private isActiveProduct(product: any): boolean {
+    const status = product?.status ?? product?.form_status;
+    return status === 1 || status === '1' || status === 'active';
   }
 
   protected share(count: number): number {

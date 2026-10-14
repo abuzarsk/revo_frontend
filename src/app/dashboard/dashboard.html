@@ -32,9 +32,9 @@
         @for (item of group.items; track item.key) {
           <a
             class="sidebar-link"
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: item.route === '' }"
+            [class.sidebar-link--current]="isSidebarActive(item.route, currentPath())"
+            [attr.aria-current]="isSidebarActive(item.route, currentPath()) ? 'page' : null"
+            [routerLink]="item.route ? '/' + item.route : '/'"
             [attr.title]="sidebarCollapsed && !mobileSidebarOpen ? item.label : null"
             (click)="closeMobileSidebar()"
           >
@@ -46,17 +46,6 @@
     </nav>
 
     <div class="sidebar-footer">
-      @if (role !== 4) {
-        <p class="sidebar-section">Workspace</p>
-        <button
-          type="button"
-          class="sidebar-link sidebar-link--muted"
-          [attr.title]="sidebarCollapsed && !mobileSidebarOpen ? 'Settings' : null"
-        >
-          <i class="fa fa-cog" aria-hidden="true"></i>
-          <span class="sidebar-link__label">Settings</span>
-        </button>
-      }
       <button
         type="button"
         class="sidebar-link"

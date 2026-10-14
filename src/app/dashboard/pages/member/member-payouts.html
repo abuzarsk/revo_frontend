@@ -1,30 +1,36 @@
-<div class="mp-page">
+<div class="mp-page pay-page">
   <header class="mp-intro">
     <div>
       <p class="mp-crumbs">
-        <span>Member Portal</span>
+        <span>Workspace</span>
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         <span class="is-current">Payouts</span>
       </p>
       <h1 class="mp-title">Payouts</h1>
-      <p class="mp-lede">Paid orders on your account.</p>
+      <p class="mp-lede">{{ lede }}</p>
     </div>
     <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
   </header>
 
   <div class="mp-metrics">
     <article class="mp-panel mp-metric">
-      <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-money"></i></span>
+      <span class="mp-metric__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+      </span>
       <p>Available balance</p>
       <strong>{{ inr(available) }}</strong>
     </article>
     <article class="mp-panel mp-metric">
-      <span class="mp-metric__icon mp-metric__icon--warn" aria-hidden="true"><i class="fa fa-clock-o"></i></span>
+      <span class="mp-metric__icon mp-metric__icon--warn" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M17.5 17.5 16 16.25V14"/></svg>
+      </span>
       <p>Pending earnings</p>
       <strong>{{ inr(pending) }}</strong>
     </article>
     <article class="mp-panel mp-metric">
-      <span class="mp-metric__icon mp-metric__icon--ok" aria-hidden="true"><i class="fa fa-arrow-up"></i></span>
+      <span class="mp-metric__icon mp-metric__icon--ok" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </span>
       <p>Lifetime earnings</p>
       <strong>{{ inr(lifetime) }}</strong>
     </article>
@@ -36,7 +42,7 @@
       <p class="mp-hint">
         Next payout: <strong>{{ nextPayout }}</strong> · {{ cadenceLabel[cadence] }}
       </p>
-      <div class="mp-segment" style="margin-top: 0.85rem" role="radiogroup" aria-label="Payout frequency">
+      <div class="mp-segment pay-cadence" role="radiogroup" aria-label="Payout frequency">
         @for (option of cadenceOptions; track option) {
           <button type="button" role="radio" [attr.aria-checked]="cadence === option" [class.is-active]="cadence === option" (click)="setCadence(option)">
             {{ option }}
@@ -44,50 +50,64 @@
         }
       </div>
     </div>
-    <button type="button" class="mp-btn mp-btn--brand" (click)="requestPayout()">Request payout</button>
+    <button type="button" class="mp-btn mp-btn--brand pay-request" (click)="requestPayout()">Request payout</button>
   </section>
 
   @if (notice) {
     <p class="mp-note">{{ notice }}</p>
   }
 
-  <section class="mp-panel">
-    <div class="mp-toolbar">
-      <h2 style="margin-right: auto">Transaction ledger</h2>
-      <label class="mp-search" style="flex: 0 1 14rem">
-        <i class="fa fa-search" aria-hidden="true"></i>
+  <section class="mp-panel pay-ledger">
+    <div class="mp-toolbar pay-toolbar">
+      <h2>Transaction ledger</h2>
+      <label class="mp-search pay-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input [(ngModel)]="query" type="search" placeholder="Search ledger" aria-label="Search ledger" />
       </label>
-      <div class="mp-segment">
+      <div class="mp-segment pay-types">
         @for (option of ['all', 'credit', 'debit']; track option) {
           <button type="button" [class.is-active]="type === option" (click)="type = $any(option)">{{ option }}</button>
         }
       </div>
-      <button type="button" class="mp-btn" (click)="exportCsv()">
-        <i class="fa fa-download" aria-hidden="true"></i> Export CSV
+      <button type="button" class="mp-btn pay-export" (click)="exportCsv()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+        Export CSV
       </button>
     </div>
 
     @if (loading) {
-      <p class="mp-hint" style="margin-top: 1rem">Loading payouts…</p>
+      <p class="mp-hint pay-state">Loading payouts…</p>
     } @else if (error) {
-      <div class="mp-empty" style="margin-top: 1rem"><strong>Could not load payouts</strong>{{ error }}</div>
+      <div class="pay-empty"><strong>Could not load payouts</strong><p>{{ error }}</p></div>
     } @else if (!filtered.length) {
-      <div class="mp-empty" style="margin-top: 1rem">
+      <div class="pay-empty">
+        <span class="pay-empty__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
         <strong>No transactions found</strong>
-        Paid orders will appear in this ledger.
+        <p>Try a different search or filter.</p>
+        <button type="button" class="mp-btn" (click)="clearFilters()">Clear filters</button>
       </div>
     } @else {
       <div class="mp-list">
         @for (row of filtered; track row.id + row.at) {
           <div class="mp-row">
-            <span class="mp-metric__icon mp-metric__icon--ok" aria-hidden="true"><i class="fa fa-arrow-down"></i></span>
+            <span class="pay-row__icon" [class.pay-row__icon--debit]="row.type === 'debit'" aria-hidden="true">
+              @if (row.type === 'credit') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7 7 17"/><path d="M17 17H7V7"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+              }
+            </span>
             <div class="mp-row__copy">
               <p class="mp-row__title">{{ row.description }}</p>
-              <p class="mp-row__meta">{{ row.counterparty }}@if (row.at) { · {{ row.at | date: 'd MMM' }} }</p>
+              <p class="mp-row__meta">{{ row.id }} · {{ row.counterparty }}@if (row.at) { · {{ row.at | date: 'd MMM' }} }</p>
             </div>
-            <span class="mp-badge mp-badge--paid">{{ row.status }}</span>
-            <span class="mp-amount mp-amount--credit">+{{ inr(row.amount) }}</span>
+            <span class="mp-badge" [ngClass]="badgeClass(row.status)">{{ row.status }}</span>
+            <span class="mp-amount" [class.mp-amount--credit]="row.type === 'credit'">{{ row.type === 'credit' ? '+' : '−' }}{{ inr(row.amount) }}</span>
+            <button type="button" class="pay-invoice" [attr.aria-label]="'Download invoice ' + row.id" title="Download invoice" (click)="downloadInvoice(row)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </button>
           </div>
         }
       </div>

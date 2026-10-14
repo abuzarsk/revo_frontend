@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ensureMemberRole, readStoredJson, writeStoredJson } from './member-role';
+import { ensureWorkspaceRole, readRoleId, readStoredJson, workspaceLabel, writeStoredJson } from './member-role';
+import { ENTITY_TYPE_IDS } from '../../../../constants';
 
 interface MemberSettingsData {
   emailNotices: boolean;
@@ -26,26 +27,35 @@ export class MemberSettings implements OnInit {
     compactView: false,
     language: 'English',
   };
-  message = '';
+
+  readonly lede = `Settings in ${workspaceLabel()}`;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    if (!ensureMemberRole(this.router)) {
+    if (!ensureWorkspaceRole(this.router)) {
       return;
     }
-    this.settings = readStoredJson(SETTINGS_KEY, this.settings);
+    this.settings = readStoredJson(this.storageKey(), this.settings);
   }
 
   update(key: 'emailNotices' | 'productUpdates' | 'compactView', value: boolean): void {
     this.settings = { ...this.settings, [key]: value };
-    writeStoredJson(SETTINGS_KEY, this.settings);
-    this.message = 'Preferences saved in this browser.';
+    writeStoredJson(this.storageKey(), this.settings);
   }
 
   setLanguage(value: string): void {
     this.settings = { ...this.settings, language: value };
-    writeStoredJson(SETTINGS_KEY, this.settings);
-    this.message = 'Preferences saved in this browser.';
+    writeStoredJson(this.storageKey(), this.settings);
+  }
+
+  private storageKey(): string {
+    if (readRoleId() === ENTITY_TYPE_IDS.COMPANY) {
+      return 'revo-preferences-company-v1';
+    }
+    if (readRoleId() === ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'revo-preferences-mediator-v1';
+    }
+    return SETTINGS_KEY;
   }
 }

@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { getTokenFromLocalStorage, STORAGE_KEYS } from '../../../../constants';
-import { ensureMemberRole, readStoredJson, writeStoredJson } from './member-role';
+import { ENTITY_TYPE_IDS, getTokenFromLocalStorage, STORAGE_KEYS } from '../../../../constants';
+import { ensureProfileRole, readRoleId, readStoredJson, writeStoredJson } from './member-role';
 
 interface MemberProfileData {
   name: string;
@@ -11,7 +11,7 @@ interface MemberProfileData {
   phone: string;
   organization: string;
   location: string;
-  interests: string;
+  interests: string[];
   bio: string;
   avatar: string;
 }
@@ -29,15 +29,16 @@ export class MemberProfile implements OnInit {
   saved = '';
   message = '';
   error = '';
+  readonly interestOptions = ['Audio', 'Wearables', 'Accessories', 'Beauty', 'Fashion', 'Home'];
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    if (!ensureMemberRole(this.router)) {
+    if (!ensureProfileRole(this.router)) {
       return;
     }
     const user = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ)?.user ?? {};
-    const stored = readStoredJson(PROFILE_KEY, this.blank());
+    const stored = readStoredJson(this.storageKey(), this.blank());
     this.profile = {
       ...this.blank(),
       name: stored.name || user.name || '',
@@ -45,7 +46,7 @@ export class MemberProfile implements OnInit {
       phone: stored.phone || user.mobile || user.phone || '',
       organization: stored.organization || '',
       location: stored.location || '',
-      interests: stored.interests || '',
+      interests: this.readInterests(stored.interests),
       bio: stored.bio || '',
       avatar: stored.avatar || '',
     };
@@ -57,22 +58,22 @@ export class MemberProfile implements OnInit {
   }
 
   get completion(): number {
-    const checks = [
-      this.profile.name.trim().length >= 2,
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.profile.email),
-      this.profile.phone.trim().length > 0,
-      this.profile.location.trim().length > 0,
-      this.profile.interests.trim().length > 0,
-    ];
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+    const filled = [this.profile.name, this.profile.email, this.profile.phone, this.profile.location].filter(
+      (value) => value.trim().length > 0,
+    ).length;
+    const interests = this.profile.interests.length > 0 ? 1 : 0;
+    return Math.round(((filled + interests) / 5) * 100);
   }
 
-  get initials(): string {
-    const parts = this.profile.name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return (this.profile.name || 'M').slice(0, 2).toUpperCase();
+  hasInterest(category: string): boolean {
+    return this.profile.interests.includes(category);
+  }
+
+  toggleInterest(category: string, checked: boolean): void {
+    const interests = checked
+      ? [...this.profile.interests, category]
+      : this.profile.interests.filter((item) => item !== category);
+    this.profile = { ...this.profile, interests };
   }
 
   onPhoto(event: Event): void {
@@ -122,13 +123,28 @@ export class MemberProfile implements OnInit {
       phone: this.profile.phone.trim(),
       organization: this.profile.organization.trim(),
       location: this.profile.location.trim(),
-      interests: this.profile.interests.trim(),
+      interests: this.profile.interests.filter((item) => this.interestOptions.includes(item)),
       bio: this.profile.bio.trim(),
     };
-    writeStoredJson(PROFILE_KEY, this.profile);
+    writeStoredJson(this.storageKey(), this.profile);
     this.saved = JSON.stringify(this.profile);
     this.error = '';
     this.message = 'Profile saved in this browser.';
+  }
+
+  private readInterests(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is string => typeof item === 'string' && this.interestOptions.includes(item));
+    }
+    if (typeof value === 'string') {
+      const text = value.toLowerCase();
+      return this.interestOptions.filter((item) => text.includes(item.toLowerCase()));
+    }
+    return [];
+  }
+
+  private storageKey(): string {
+    return readRoleId() === ENTITY_TYPE_IDS.MEDIATOR ? 'revo-profile-mediator-v1' : PROFILE_KEY;
   }
 
   private blank(): MemberProfileData {
@@ -138,7 +154,7 @@ export class MemberProfile implements OnInit {
       phone: '',
       organization: '',
       location: '',
-      interests: '',
+      interests: [],
       bio: '',
       avatar: '',
     };

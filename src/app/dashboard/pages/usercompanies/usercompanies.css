@@ -1,5 +1,16 @@
+.usercompanies-page,
+.usercompanies-page *,
+.usercompanies-page *::before,
+.usercompanies-page *::after {
+  box-sizing: border-box;
+}
+
 .usercompanies-page {
   padding: 0;
+  width: 100%;
+  min-width: 0;
+  color: var(--foreground);
+  font-family: Inter, system-ui, sans-serif;
 }
 
 .usercompanies-header {
@@ -333,163 +344,168 @@
 }
 
 .empty {
-  padding: 2rem 1rem;
+  padding: 2.5rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 1.125rem;
+  background: var(--card);
   text-align: center;
-  color: #8b93a7;
+  color: var(--muted-foreground);
+  font-size: 14px;
 }
 
 .ucnet-intro {
-  margin-bottom: 1.35rem;
+  margin-bottom: 1.75rem;
 }
 
 .ucnet-crumbs {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0 0 0.35rem;
-  font-size: 0.8125rem;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 12px;
   font-weight: 500;
-  color: #9aa1b2;
+  color: var(--muted-foreground);
 }
 
 .ucnet-crumbs .is-current {
-  color: #6d45f3;
-  font-weight: 600;
+  color: var(--primary);
+  font-weight: 500;
 }
 
 .ucnet-crumbs .fa {
-  font-size: 0.75rem;
+  font-size: 14px;
 }
 
 .ucnet-header,
 .ucnet-toolbar {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
 }
 
 .ucnet-title {
   margin: 0;
-  font-size: 1.85rem;
+  font-size: 27px;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  color: #151821;
-  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--foreground);
+  line-height: 1.25;
 }
 
 .ucnet-lede {
-  margin: 0.3rem 0 0;
-  color: #8b93a7;
-  font-size: 0.95rem;
+  margin: 0.375rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .ucnet-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   flex-shrink: 0;
-  margin-top: 0.35rem;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid #c9efd8;
+  height: 2rem;
+  margin-top: 0;
+  padding: 0 0.75rem;
+  border: 1px solid color-mix(in oklch, var(--success) 20%, transparent);
   border-radius: 999px;
-  background: #f3fbf6;
-  color: #1f9d57;
-  font-size: 0.8125rem;
+  background: color-mix(in oklch, var(--success) 10%, #fff);
+  color: var(--success);
+  font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .ucnet-status__dot {
-  width: 0.45rem;
-  height: 0.45rem;
+  width: 0.375rem;
+  height: 0.375rem;
   border-radius: 999px;
-  background: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+  background: var(--success);
+  box-shadow: none;
 }
 
 .ucnet-toolbar {
   align-items: center;
-  margin-bottom: 1.15rem;
+  margin-bottom: 1.5rem;
 }
 
 .ucnet-toolbar__label {
   margin: 0;
-  color: #8b93a7;
-  font-size: 0.95rem;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .ucnet-connect {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 1rem;
   border: 0;
-  border-radius: 999px;
-  padding: 0.55rem 1rem;
-  background: #6d45f3;
+  border-radius: calc(1.125rem - 2px);
+  background-color: #6d4aff;
+  background-image: var(--brand-gradient);
   color: #fff;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ucnet-connect .fa {
+  font-size: 16px;
 }
 
 .ucnet-tabs {
   display: flex;
-  gap: 1.75rem;
-  border-bottom: 1px solid #e6e8ef;
-  margin: 0 0 1rem;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 1.5rem;
 }
 
 .ucnet-tab {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  margin: 0;
-  padding: 0.75rem 0.15rem 0.85rem;
+  height: 2.75rem;
+  margin: 0 0 -1px;
+  padding: 0 1rem;
   border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
-  color: #6b7280;
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .ucnet-tab.is-active {
-  color: #6d45f3;
-}
-
-.ucnet-tab.is-active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: #6d45f3;
+  border-bottom-color: var(--primary);
+  color: var(--primary);
 }
 
 .ucnet-tab__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.35rem;
-  height: 1.35rem;
-  padding: 0 0.35rem;
-  border-radius: 999px;
-  background: #eef0f4;
-  color: #6b7280;
-  font-size: 0.75rem;
-  font-weight: 700;
+  display: inline;
+  margin-left: 0.375rem;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
 }
 
 .ucnet-tab.is-active .ucnet-tab__count {
-  background: #efeaff;
-  color: #6d45f3;
+  background: transparent;
+  color: inherit;
 }
 
 .ucnet-list {
@@ -500,33 +516,34 @@
 
 .ucnet-card {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid #eef0f4;
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 8px 22px rgba(18, 20, 28, 0.04);
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.125rem;
+  background: var(--card);
+  box-shadow: none;
 }
 
 .ucnet-card__identity {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
   min-width: 0;
+  flex: 1 1 150px;
 }
 
 .ucnet-card__avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.7rem;
-  height: 2.7rem;
-  border-radius: 999px;
-  background: #f3eeff;
-  color: #7c6cf0;
-  font-size: 0.82rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: calc(1.125rem - 2px);
+  background: var(--secondary);
+  color: var(--primary);
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
   overflow: hidden;
@@ -538,49 +555,67 @@
   object-fit: cover;
 }
 
-.ucnet-card__avatar[data-tone="1"] { background: #e7f8f1; color: #3aa56a; }
-.ucnet-card__avatar[data-tone="2"] { background: #fff4e5; color: #d9891b; }
-.ucnet-card__avatar[data-tone="3"] { background: #e7f6fb; color: #4aa8c4; }
-.ucnet-card__avatar[data-tone="4"] { background: #fdeff6; color: #d36a9a; }
-.ucnet-card__avatar[data-tone="5"] { background: #eef2ff; color: #6d45f3; }
+.ucnet-card__avatar[data-tone="1"] {
+  background: color-mix(in oklch, var(--cyan) 10%, #fff);
+  color: var(--cyan);
+}
 
-.ucnet-card__copy { min-width: 0; }
+.ucnet-card__avatar[data-tone="2"] {
+  background: color-mix(in oklch, var(--warning) 10%, #fff);
+  color: var(--warning);
+}
+
+.ucnet-card__avatar[data-tone="3"] {
+  background: color-mix(in oklch, var(--success) 10%, #fff);
+  color: var(--success);
+}
+
+.ucnet-card__copy {
+  min-width: 0;
+  flex: 1;
+}
 
 .ucnet-card__name {
   margin: 0;
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: #151821;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .ucnet-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.85rem;
-  margin: 0.2rem 0 0;
-  color: #8b93a7;
-  font-size: 0.8rem;
+  column-gap: 1rem;
+  row-gap: 0.25rem;
+  margin: 0.25rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
 }
 
 .ucnet-card__meta span {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
+}
+
+.ucnet-card__meta .fa {
+  font-size: 14px;
 }
 
 .ucnet-card__actions {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .ucnet-pill {
-  padding: 0.28rem 0.7rem;
+  padding: 0.25rem 0.625rem;
   border-radius: 999px;
-  background: #e8f8ee;
-  color: #1f9d57;
-  font-size: 0.78rem;
+  background: color-mix(in oklch, var(--success) 10%, #fff);
+  color: var(--success);
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -589,29 +624,38 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 4.2rem;
-  height: 2.1rem;
-  padding: 0 0.9rem;
-  border: 1px solid #e6e8ef;
-  border-radius: 999px;
-  background: #fff;
-  color: #151821;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
+  min-width: 0;
+  height: 2rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: calc(1.125rem - 2px);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .ucnet-open:disabled {
-  color: #b0b6c4;
+  color: var(--muted-foreground);
   cursor: default;
 }
 
 .ucnet-disconnect {
-  color: #e11d48;
-  border-color: #ffd5de;
-  background: #fff5f7;
+  color: var(--destructive);
+  background: var(--background);
+}
+
+@media (min-width: 640px) {
+  .ucnet-title {
+    font-size: 30px;
+  }
+
+  .ucnet-card {
+    padding: 1.25rem;
+  }
 }
 
 @media (max-width: 720px) {

@@ -1,0 +1,254 @@
+.mtask,
+.mtask * {
+  box-sizing: border-box;
+}
+
+.mtask {
+  --mtask-quiet: oklch(0.58 0.035 260);
+  --mtask-line: oklch(0.93 0.012 270);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  color: var(--foreground);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.mtask-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mtask-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--mtask-quiet);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mtask-crumbs .is-current {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.mtask-intro h1 {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.mtask-lede {
+  margin: 6px 0 0;
+  color: var(--mtask-quiet);
+  font-size: 13px;
+}
+
+.mtask-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-left: auto;
+  padding: 0 12px;
+  border: 1px solid color-mix(in oklab, var(--success) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--success) 10%, #fff);
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mtask-status span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.mtask-panel {
+  padding: 20px;
+  border: 1px solid var(--mtask-line);
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.mtask-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mtask-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mtask-title__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: calc(1.125rem - 4px);
+  background: color-mix(in oklab, var(--warning) 10%, #fff);
+  color: var(--warning);
+  flex-shrink: 0;
+}
+
+.mtask-title__icon svg,
+.mtask-empty svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mtask-title h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mtask-title p {
+  margin: 2px 0 0;
+  color: var(--mtask-quiet);
+  font-size: 12px;
+}
+
+.mtask-queue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--mtask-line);
+  border-radius: calc(1.125rem - 2px);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.mtask-stats {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mtask-stats article {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--mtask-line);
+  border-radius: calc(1.125rem - 4px);
+  background: #fff;
+}
+
+.mtask-stats p {
+  margin: 0;
+  color: var(--mtask-quiet);
+  font-size: 12px;
+}
+
+.mtask-stats strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mtask-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mtask-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--mtask-line);
+}
+
+.mtask-row__copy {
+  flex: 1 1 140px;
+  min-width: 140px;
+}
+
+.mtask-row__copy p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mtask-row__copy span,
+.mtask-when {
+  color: var(--mtask-quiet);
+  font-size: 12px;
+}
+
+.mtask-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--warning) 10%, #fff);
+  color: var(--warning);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.mtask-empty {
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.mtask-empty span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  border-radius: calc(1.125rem - 4px);
+  background: color-mix(in oklab, var(--success) 10%, #fff);
+  color: var(--success);
+}
+
+.mtask-empty h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mtask-empty p {
+  margin: 6px 0 0;
+  color: var(--mtask-quiet);
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  .mtask-intro h1 {
+    font-size: 30px;
+  }
+
+  .mtask-panel {
+    padding: 24px;
+  }
+
+  .mtask-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

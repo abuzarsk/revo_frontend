@@ -1,8 +1,8 @@
-<div class="brands-page">
+<div class="brands-page bd-page">
   <ng-template #brandsPaginationNav let-p="p">
     <nav
       class="brands-pagination-bar"
-      *ngIf="!p.loading && p.total > 0"
+      *ngIf="!p.loading && p.total > 0 && p.lastPage > 1"
       aria-label="Brands pagination"
     >
       <div class="pagination-summary">
@@ -89,46 +89,39 @@
     </nav>
   </ng-template>
 
-  <section class="brands-hero">
-    <div class="brands-hero__glow" aria-hidden="true"></div>
-    <div class="brands-hero__content">
-      <span class="brands-hero__badge">BRAND MANAGEMENT</span>
-      <h1 class="brands-hero__title">Brands</h1>
-      <p class="brands-hero__subtitle">Organize your product catalog under clear, recognizable brand identities.</p>
+  <header class="bd-intro">
+    <div>
+      <p class="bd-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Brands</span>
+      </p>
+      <h1>Brands</h1>
+      <p class="bd-lede">Brands in Brand Center</p>
     </div>
-    <button type="button" class="brands-hero__cta" (click)="addBrand()">
-      <i class="fa fa-plus" aria-hidden="true"></i>
+    <span class="bd-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="bd-toolbar">
+    <p>{{ totalBrands }} brand identities in your workspace</p>
+    <button type="button" class="bd-add" (click)="addBrand()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       Add brand
     </button>
-  </section>
+  </div>
 
-  <section class="brands-stats" aria-label="Brand statistics">
-    <article class="brands-stat">
-      <span class="brands-stat__icon brands-stat__icon--blue">
-        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-      </span>
-      <div>
-        <p class="brands-stat__label">Total brands</p>
-        <p class="brands-stat__value">{{ totalBrands }}</p>
-      </div>
+  <section class="bd-stats" aria-label="Brand statistics">
+    <article>
+      <p>Total brands</p>
+      <strong>{{ totalBrands }}</strong>
     </article>
-    <article class="brands-stat">
-      <span class="brands-stat__icon brands-stat__icon--purple">
-        <i class="fa fa-list" aria-hidden="true"></i>
-      </span>
-      <div>
-        <p class="brands-stat__label">On this page</p>
-        <p class="brands-stat__value">{{ brands.length }}</p>
-      </div>
+    <article>
+      <p>Active brands</p>
+      <strong>{{ activeBrands }}</strong>
     </article>
-    <article class="brands-stat">
-      <span class="brands-stat__icon brands-stat__icon--green">
-        <i class="fa fa-file-text-o" aria-hidden="true"></i>
-      </span>
-      <div>
-        <p class="brands-stat__label">Current page</p>
-        <p class="brands-stat__value">{{ currentPage }} / {{ lastPage || 1 }}</p>
-      </div>
+    <article>
+      <p>Current page</p>
+      <strong>{{ pageLabel }}</strong>
     </article>
   </section>
 
@@ -136,80 +129,73 @@
     <div class="brands-panel__header">
       <h2 class="brands-panel__title">All brands</h2>
       <div class="brands-panel__actions">
-        <div class="brands-view-toggle" role="group" aria-label="Brands view">
+        <div class="brands-view-toggle bd-toggle" role="group" aria-label="Brand view">
           <button
             type="button"
             class="view-toggle-btn"
             [class.view-toggle-btn--active]="viewMode === 'cards'"
             (click)="setViewMode('cards')"
-            aria-label="Cards"
+            aria-label="Cards view"
+            title="Cards view"
+            [attr.aria-pressed]="viewMode === 'cards'"
           >
-            <i class="fa fa-th-large" aria-hidden="true"></i>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
           </button>
           <button
             type="button"
             class="view-toggle-btn"
             [class.view-toggle-btn--active]="viewMode === 'list'"
             (click)="setViewMode('list')"
-            aria-label="List"
+            aria-label="List view"
+            title="List view"
+            [attr.aria-pressed]="viewMode === 'list'"
           >
-            <i class="fa fa-list" aria-hidden="true"></i>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg>
           </button>
         </div>
       </div>
     </div>
 
+    <div #brandStage class="bd-stage">
     <div class="brands-loading" *ngIf="brandsLoading">
       <span class="brands-loading__spinner" aria-hidden="true"></span>
       Loading brands…
     </div>
 
-    <div class="brands-grid" *ngIf="!brandsLoading && brands.length && viewMode === 'cards'">
-      <article class="brand-card" *ngFor="let brand of brands">
-        <div class="brand-card__top">
-          <div class="brand-card__avatar">
-            <span>{{ brand.brand_name?.charAt(0) | uppercase }}</span>
-          </div>
-          <div class="brand-card__info">
-            <h3 class="brand-card__name">{{ brand.brand_name }}</h3>
-            <p class="brand-card__meta">
-              <i class="fa fa-calendar-o" aria-hidden="true"></i>
-              Created {{ brand.created_on || '—' }}
-            </p>
-          </div>
+    <div class="bd-grid" *ngIf="!brandsLoading && brands.length && viewMode === 'cards'">
+      <article class="bd-card" *ngFor="let brand of brands; let i = index">
+        <span class="bd-avatar" [attr.data-tone]="i % 4">{{ initials(brand.brand_name) }}</span>
+        <div class="bd-copy">
+          <h3>{{ brand.brand_name }}</h3>
+          <p>{{ brandMeta(brand) }}</p>
         </div>
-        <div class="brand-card__actions">
-          <button type="button" class="btn btn--ghost" (click)="editBrand(brand.id)">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
+        <div class="bd-actions">
+          <button type="button" (click)="editBrand(brand.id)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             Edit
           </button>
-          <button type="button" class="btn btn--danger" (click)="deleteBrand(brand.id)">
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
+          <button type="button" class="is-danger" (click)="deleteBrand(brand.id)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
             Delete
           </button>
         </div>
       </article>
     </div>
 
-    <div class="brands-list" *ngIf="!brandsLoading && brands.length && viewMode === 'list'">
-      <article class="brand-row" *ngFor="let brand of brands; let i = index">
-        <div class="brand-row__avatar" [attr.data-tone]="i % 6">
-          <span>{{ brand.brand_name?.charAt(0) | uppercase }}</span>
+    <div class="bd-list" *ngIf="!brandsLoading && brands.length && viewMode === 'list'">
+      <article class="bd-row" *ngFor="let brand of brands; let i = index">
+        <span class="bd-avatar" [attr.data-tone]="i % 4">{{ initials(brand.brand_name) }}</span>
+        <div class="bd-copy">
+          <h3>{{ brand.brand_name }}</h3>
+          <p>{{ brandMeta(brand) }}</p>
         </div>
-        <div class="brand-row__info">
-          <h3 class="brand-row__name">{{ brand.brand_name }}</h3>
-          <p class="brand-row__meta">
-            <i class="fa fa-calendar-o" aria-hidden="true"></i>
-            Created {{ brand.created_on || '—' }}
-          </p>
-        </div>
-        <div class="brand-row__actions">
-          <button type="button" class="btn btn--ghost btn--sm" (click)="editBrand(brand.id)">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
+        <div class="bd-actions">
+          <button type="button" (click)="editBrand(brand.id)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             Edit
           </button>
-          <button type="button" class="btn btn--danger btn--sm" (click)="deleteBrand(brand.id)">
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
+          <button type="button" class="is-danger" (click)="deleteBrand(brand.id)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
             Delete
           </button>
         </div>
@@ -220,16 +206,9 @@
       *ngTemplateOutlet="brandsPaginationNav; context: { p: brandPaginator }"
     ></ng-container>
 
-    <div class="brands-empty" *ngIf="!brandsLoading && !brands.length">
-      <span class="brands-empty__icon">
-        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-      </span>
-      <h3 class="brands-empty__title">No brands yet</h3>
-      <p class="brands-empty__text">Create your first brand to start organizing products.</p>
-      <button type="button" class="btn btn--primary" (click)="addBrand()">
-        <i class="fa fa-plus" aria-hidden="true"></i>
-        Add brand
-      </button>
+    <div class="bd-empty" *ngIf="!brandsLoading && !allBrands.length">
+      No brands yet. Add a brand to get started.
+    </div>
     </div>
   </section>
 
@@ -238,8 +217,8 @@
     <div class="brands-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
       <div class="brands-modal-header">
         <div>
-          <span class="brands-modal-badge">{{ editBrandId ? 'EDIT' : 'NEW' }}</span>
           <h2 class="brands-modal-title">{{ editBrandId ? 'Edit brand' : 'Add brand' }}</h2>
+          <p class="bd-dialog-copy">Organize products under a recognizable identity.</p>
         </div>
         <button type="button" class="brands-modal-close" (click)="closeForm()" aria-label="Close">&times;</button>
       </div>
@@ -252,7 +231,8 @@
               type="text"
               formControlName="name"
               class="form-control"
-              placeholder="Enter brand name"
+              maxlength="80"
+              placeholder="e.g. boAt"
             />
             <span class="form-error" *ngIf="brandForm.get('name')?.invalid && brandForm.get('name')?.touched">
               Brand name is required.
@@ -263,7 +243,7 @@
       <div class="brands-modal-footer">
         <button type="button" class="btn btn--ghost" (click)="closeForm()">Cancel</button>
         <button type="button" class="btn btn--primary" (click)="saveBrand()">
-          {{ editBrandId ? 'Save changes' : 'Create brand' }}
+          Save brand
         </button>
       </div>
     </div>

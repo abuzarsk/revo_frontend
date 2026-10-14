@@ -61,6 +61,6 @@ export class MemberSupport implements OnInit {
     this.subject = '';
     this.details = '';
     this.error = '';
-    this.message = 'Request saved in this browser. It has not been sent to support.';
+    this.message = 'Preview support request created.';
   }
 }

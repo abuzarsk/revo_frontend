@@ -1,55 +1,65 @@
-<div class="mp-page">
+<div class="mp-page sc-page">
   <header class="mp-intro">
     <div>
       <p class="mp-crumbs">
-        <span>Member Portal</span>
+        <span>Workspace</span>
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         <span class="is-current">Security</span>
       </p>
       <h1 class="mp-title">Security</h1>
-      <p class="mp-lede">Sign-in preferences for this browser.</p>
+      <p class="mp-lede">{{ lede }}</p>
     </div>
     <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
   </header>
 
-  <div class="mp-split">
+  <div class="mp-split sc-grid">
     <section class="mp-panel">
-      <div class="mp-profile-head" style="margin-bottom: 0.5rem">
-        <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-shield"></i></span>
+      <div class="sc-head">
+        <span class="sc-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
         <div>
           <h2>Account protection</h2>
-          <p class="mp-hint">Controls stored on this device.</p>
+          <p class="mp-hint">Preview security controls</p>
         </div>
       </div>
-      <label class="mp-switch">
+      <label class="sc-row">
         <span>
-          <strong style="display: block; font-size: 0.875rem">Two-step verification</strong>
-          <span class="mp-hint">Ask for an extra step when signing in. This preference is saved here only.</span>
+          <strong>Two-step verification</strong>
+          <span class="mp-hint">Require an extra verification step when signing in.</span>
         </span>
         <input type="checkbox" [checked]="twoStep" aria-label="Two-step verification" (change)="toggleTwoStep($any($event.target).checked)" />
       </label>
-      <div class="mp-switch">
+      <div class="sc-row">
         <span>
-          <strong style="display: block; font-size: 0.875rem">Password</strong>
-          <span class="mp-hint">Password changes are not available from this screen.</span>
+          <strong>Password</strong>
+          <span class="mp-hint">Password management requires a connected identity provider.</span>
         </span>
-        <i class="fa fa-lock" aria-hidden="true"></i>
+        <svg class="sc-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
       </div>
-      @if (message) {
-        <p class="mp-note">{{ message }}</p>
-      }
+      <p class="sc-warn">This client-side prototype does not authenticate users. These controls are previews and do not secure an account.</p>
     </section>
 
     <section class="mp-panel">
       <h2>Active sessions</h2>
-      <p class="mp-hint">The browser you are using now.</p>
-      <div class="mp-row">
-        <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-laptop"></i></span>
-        <div class="mp-row__copy">
-          <p class="mp-row__title">This device</p>
-          <p class="mp-row__meta">Current browser · Active now</p>
-        </div>
-        <span class="mp-badge mp-badge--paid">Current</span>
+      <p class="mp-hint">Browser sessions shown for demonstration.</p>
+      <div class="sc-sessions">
+        @for (session of sessions; track session.id) {
+          <div class="mp-row sc-session">
+            <span class="sc-icon sc-icon--sm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+            </span>
+            <div class="mp-row__copy">
+              <p class="mp-row__title">{{ session.device }}</p>
+              <p class="mp-row__meta">{{ session.location }} · {{ session.last }}</p>
+            </div>
+            @if (session.current) {
+              <span class="sc-current">Current</span>
+            } @else {
+              <button type="button" class="mp-btn sc-revoke" (click)="revoke(session.id)">Revoke</button>
+            }
+          </div>
+        }
       </div>
     </section>
   </div>

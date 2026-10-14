@@ -1,75 +1,145 @@
-<div class="mp-page">
-  <header class="mp-intro">
+<div class="mp-page ms-page">
+  <header class="ms-intro">
     <div>
       <p class="mp-crumbs">
-        <span>Member Portal</span>
+        <span>Workspace</span>
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         <span class="is-current">My Submissions</span>
       </p>
       <h1 class="mp-title">My Submissions</h1>
-      <p class="mp-lede">Forms you have sent to brands.</p>
+      <p class="mp-lede">My Submissions in Member Portal</p>
     </div>
     <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
   </header>
 
-  <section class="mp-panel">
-    <div class="mp-toolbar">
-      <label class="mp-search">
-        <i class="fa fa-search" aria-hidden="true"></i>
-        <input [(ngModel)]="query" type="search" placeholder="Search submissions" aria-label="Search submissions" />
-      </label>
-    </div>
-    <div class="mp-pills" style="margin-top: 0.85rem">
-      @for (item of statuses; track item) {
-        <button type="button" class="mp-pill" [class.is-active]="status === item" (click)="status = item">
-          {{ item === 'all' ? 'All' : item }}
-        </button>
-      }
+  <section class="ms-card">
+    <div class="ms-tracker-head">
+      <div>
+        <h2>Application tracker</h2>
+        <p>Follow each application from submission through refund.</p>
+      </div>
+      <span class="ms-count">{{ tracked.length }} applications</span>
     </div>
 
     @if (loading) {
-      <p class="mp-hint" style="margin-top: 1rem">Loading submissions…</p>
+      <p class="ms-empty">Loading submissions…</p>
     } @else if (error) {
-      <div class="mp-empty" style="margin-top: 1rem">
-        <strong>Could not load submissions</strong>
-        {{ error }}
-      </div>
-    } @else if (!visible.length) {
-      <div class="mp-empty" style="margin-top: 1rem">
-        <strong>No submissions yet</strong>
-        Forms you complete will show up here.
-      </div>
+      <p class="ms-empty">{{ error }}</p>
+    } @else if (!tracked.length) {
+      <p class="ms-empty ms-empty--dashed">Your application progress will appear here after you apply to a product.</p>
     } @else {
-      <div class="mp-list">
-        @for (row of visible; track row.id + row.product) {
-          @if (row.id) {
-          <a class="mp-row" [routerLink]="['/submission', row.id]">
-            <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
-            <span class="mp-row__copy">
-              <p>{{ row.product }}</p>
-              <p class="mp-row__meta">{{ row.company }}@if (row.when) { · {{ row.when }} }</p>
-            </span>
-            <span [class]="badgeClass(row.status)">{{ row.status }}</span>
-          </a>
-          } @else {
-          <div class="mp-row">
-            <span class="mp-metric__icon" aria-hidden="true"><i class="fa fa-file-text-o"></i></span>
-            <span class="mp-row__copy">
-              <p>{{ row.product }}</p>
-              <p class="mp-row__meta">{{ row.company }}@if (row.when) { · {{ row.when }} }</p>
-            </span>
-            <span [class]="badgeClass(row.status)">{{ row.status }}</span>
-          </div>
-          }
+      <div class="ms-tracker">
+        @for (row of tracked; track row.id + row.product) {
+          <article class="ms-track">
+            <div class="ms-track__top">
+              <div>
+                <p class="ms-track__name">{{ row.product }}</p>
+                <p class="ms-track__meta">{{ row.id || 'Submission' }}@if (row.when) { · Updated {{ row.when }} }</p>
+              </div>
+              <span class="ms-badge ms-badge--{{ row.statusKey }}">{{ statusLabel(row) }}</span>
+            </div>
+
+            @if (row.statusKey === 'rejected') {
+              <p class="ms-note ms-note--bad">Review the feedback and update your submission to try again.</p>
+            } @else if (row.statusKey === 'draft') {
+              <p class="ms-note">Draft saved. Complete the form to submit it for review.</p>
+            } @else {
+              <div class="ms-steps">
+                @for (step of steps; track step.key; let i = $index) {
+                  <div class="ms-step" [class.is-reached]="i < progress(row)" [class.is-current]="i === progress(row) - 1">
+                    <div class="ms-step__label">
+                      <i class="fa" [class.fa-check]="i < progress(row)" [class.fa-circle-o]="i >= progress(row)" aria-hidden="true"></i>
+                      <span>{{ step.label }}</span>
+                    </div>
+                    <div class="ms-step__bar"></div>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="ms-track__foot">
+              <p>Company: {{ row.company }}</p>
+              @if (row.id) {
+                <a class="ms-view" [routerLink]="['/submission', row.id]">Track details</a>
+              }
+            </div>
+          </article>
         }
       </div>
     }
+  </section>
+
+  <div class="ms-counts">
+    @for (item of statusOptions; track item.key) {
+      <button type="button" class="ms-stat" [class.is-active]="status === item.key" (click)="toggleStatus(item.key)">
+        <span class="ms-badge ms-badge--{{ item.key }}">{{ item.label }}</span>
+        <strong>{{ countFor(item.key) }}</strong>
+      </button>
+    }
+  </div>
+
+  <div class="ms-filters">
+    <label class="ms-search">
+      <i class="fa fa-search" aria-hidden="true"></i>
+      <input [(ngModel)]="query" type="search" maxlength="80" placeholder="Search by ID, product, member or company" aria-label="Search submissions" />
+    </label>
+    <select aria-label="Filter status" [(ngModel)]="status">
+      <option value="all">All statuses</option>
+      @for (item of statusOptions; track item.key) {
+        <option [value]="item.key">{{ item.label }}</option>
+      }
+    </select>
+    <select aria-label="Filter product" [(ngModel)]="product">
+      <option value="all">All products</option>
+      @for (name of productOptions; track name) {
+        <option [value]="name">{{ name }}</option>
+      }
+    </select>
+  </div>
+
+  <section class="ms-card ms-card--table">
+    @if (!loading && !error && visible.length) {
+      <div class="ms-table-wrap">
+        <table class="ms-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>Company</th>
+              <th>Status</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of visible; track row.id + row.product) {
+              <tr>
+                <td class="ms-id">{{ row.id || '—' }}</td>
+                <td>{{ row.product }}</td>
+                <td>{{ row.company }}</td>
+                <td><span class="ms-badge ms-badge--{{ row.statusKey }}">{{ statusLabel(row) }}</span></td>
+                <td class="ms-when">{{ row.when || '—' }}</td>
+                <td class="ms-action">
+                  @if (row.id) {
+                    <a class="ms-view" [class.ms-view--brand]="needsAction(row)" [routerLink]="['/submission', row.id]">
+                      {{ needsAction(row) ? 'Take action' : 'View' }}
+                    </a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else if (!loading && !error) {
+      <p class="ms-empty">No submissions match.</p>
+    }
 
     @if (lastPage > 1) {
-      <div class="mp-actions">
-        <button type="button" class="mp-btn" [disabled]="page <= 1 || loading" (click)="load(page - 1)">Previous</button>
-        <span class="mp-hint">Page {{ page }} of {{ lastPage }}</span>
-        <button type="button" class="mp-btn" [disabled]="page >= lastPage || loading" (click)="load(page + 1)">Next</button>
+      <div class="ms-pager">
+        <button type="button" class="ms-view" [disabled]="page <= 1 || loading" (click)="load(page - 1)">Previous</button>
+        <span>Page {{ page }} of {{ lastPage }}</span>
+        <button type="button" class="ms-view" [disabled]="page >= lastPage || loading" (click)="load(page + 1)">Next</button>
       </div>
     }
   </section>

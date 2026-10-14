@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import {
   getTokenFromLocalStorage,
@@ -37,7 +37,7 @@ const SIDEBAR_MENU_LOOKUP = [
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [CommonModule, RouterLink, RouterOutlet],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -53,6 +53,7 @@ export class Dashboard implements OnInit, OnDestroy {
   workspaceMenuOpen = false;
   dashboardData: any = null;
   sidebarMenu: SidebarMenuItem[] = [];
+  protected readonly currentPath = signal('/');
 
   token: any = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ)?.token || null;
 
@@ -67,6 +68,7 @@ export class Dashboard implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
       this.sidebarMenu = this.getRoleFallbackMenu();
+      this.syncCurrentPath();
       return;
     }
 
@@ -83,10 +85,14 @@ export class Dashboard implements OnInit, OnDestroy {
 
     this.sidebarCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
     this.sidebarMenu = this.getRoleFallbackMenu();
+    this.syncCurrentPath();
 
     this.routerSub = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => this.closeMobileSidebar());
+      .subscribe(() => {
+        this.syncCurrentPath();
+        this.closeMobileSidebar();
+      });
 
 
   }
@@ -260,6 +266,19 @@ export class Dashboard implements OnInit, OnDestroy {
     this.mobileSidebarOpen = false;
   }
 
+  private syncCurrentPath(): void {
+    const path = (this.router.url.split(/[?#]/)[0] || '/').replace(/\/+$/, '') || '/';
+    this.currentPath.set(path);
+  }
+
+  protected isSidebarActive(route: string, path = this.currentPath()): boolean {
+    if (!route) {
+      return path === '/';
+    }
+    const target = `/${String(route).replace(/^\/+/, '')}`;
+    return path === target || path.startsWith(`${target}/`);
+  }
+
   protected get workspaceOptions(): number[] {
     if (this.roles.length) {
       return this.roles;
@@ -338,6 +357,9 @@ export class Dashboard implements OnInit, OnDestroy {
       campaigns: 'fa-bullhorn',
       analytics: 'fa-bar-chart',
       settings: 'fa-cog',
+      requests: 'fa-clock-o',
+      tasks: 'fa-check-square-o',
+      performance: 'fa-line-chart',
     };
     return map[icon] ?? 'fa-circle';
   }

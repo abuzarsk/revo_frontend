@@ -1,0 +1,39 @@
+<div class="cp-page">
+  <header class="cp-intro">
+    <div>
+      <p class="cp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Company Profile</span>
+      </p>
+      <h1>Company Profile</h1>
+      <p class="cp-lede">{{ lede }}</p>
+    </div>
+    <span class="cp-operational"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <form class="cp-panel" (ngSubmit)="save()">
+    <div class="cp-head">
+      <span class="cp-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+      </span>
+      <div>
+        <h2>Company profile</h2>
+        <p>Details displayed in the preview workspace.</p>
+      </div>
+    </div>
+
+    <div class="cp-grid">
+      <label>Company name<input [(ngModel)]="profile.name" name="name" maxlength="255" required /></label>
+      <label>Website<input [(ngModel)]="profile.website" name="website" maxlength="255" /></label>
+      <label>Industry<input [(ngModel)]="profile.industry" name="industry" maxlength="255" /></label>
+      <label>Support email<input [(ngModel)]="profile.supportEmail" name="supportEmail" type="email" maxlength="255" required /></label>
+    </div>
+    <label class="cp-about">Description
+      <textarea [(ngModel)]="profile.description" name="description" rows="4" maxlength="500"></textarea>
+    </label>
+    <button type="submit" [disabled]="!dirty">Save company profile</button>
+    @if (error) { <p class="cp-error">{{ error }}</p> }
+    @if (message) { <p class="cp-note">{{ message }}</p> }
+  </form>
+</div>

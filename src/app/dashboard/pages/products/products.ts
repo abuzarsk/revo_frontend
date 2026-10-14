@@ -532,6 +532,48 @@ export class Products {
     return product?.max_submission_by_one ?? '—';
   }
 
+  get catalogScope(): string {
+    if (this.role == ENTITY_TYPE_IDS.COMPANY) {
+      return 'Products owned by your company';
+    }
+    if (this.role == ENTITY_TYPE_IDS.MEDIATOR) {
+      return 'Products from your connected companies';
+    }
+    if (this.role == ENTITY_TYPE_IDS.USER) {
+      return 'Live products open for submission';
+    }
+    return 'All products on the platform';
+  }
+
+  productStatusLabel(product: any, kind: string): string {
+    if (kind === 'mediator') {
+      return this.mediatorPromotionLabel(product?.promote_status);
+    }
+    return this.companyPromotionLabel(product?.status);
+  }
+
+  productStatusTone(product: any, kind: string): 'success' | 'warning' | 'muted' {
+    if (kind === 'mediator') {
+      return product?.promote_status == 1 ? 'success' : 'warning';
+    }
+    if (product?.status === 1) {
+      return 'success';
+    }
+    if (product?.status === 2) {
+      return 'muted';
+    }
+    return 'warning';
+  }
+
+  productPrice(product: any): string {
+    const value = product?.price ?? product?.mrp ?? product?.amount;
+    if (value == null || value === '') {
+      return '—';
+    }
+    const text = String(value);
+    return text.startsWith('₹') ? text : `₹${text}`;
+  }
+
   productSubtitle(product: any): string {
     const brand = product?.brand_name || (product?.brand_id != null ? '#' + product.brand_id : '');
     const company = product?.company_name || product?.company || '';
@@ -542,12 +584,12 @@ export class Products {
   }
 
   productRefund(product: any): string {
-    const value = product?.refund_percent ?? product?.refund_percentage;
-    if (value != null && value !== '') {
-      const text = String(value);
-      return text.includes('%') ? text : `${text}%`;
+    const value = product?.refund_percent ?? product?.refund_percentage ?? product?.refund;
+    if (value == null || value === '') {
+      return '—';
     }
-    return String(product?.refund_submission_count || 0);
+    const text = String(value);
+    return text.includes('%') ? text : `${text}%`;
   }
 
   submissionLimit(product: any): string {

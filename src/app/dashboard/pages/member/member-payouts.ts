@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { Apiservice } from '../../../../services/apiservice';
 import { getTokenFromLocalStorage, STORAGE_KEYS } from '../../../../constants';
 import { parsePaginatedResponse } from '../products/products-pagination.model';
-import { ensureMemberRole, readStoredJson, writeStoredJson } from './member-role';
+import { ensureWorkspaceRole, readRoleId, readStoredJson, workspaceLabel, writeStoredJson } from './member-role';
+import { ENTITY_TYPE_IDS } from '../../../../constants';
 
 type Cadence = 'weekly' | 'biweekly' | 'monthly';
 type LedgerType = 'all' | 'credit' | 'debit';
@@ -50,12 +51,19 @@ export class MemberPayouts implements OnInit {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  get lede(): string {
+    return `Payouts in ${workspaceLabel()}`;
+  }
+
   ngOnInit(): void {
-    if (!ensureMemberRole(this.router)) {
+    if (!ensureWorkspaceRole(this.router)) {
       return;
     }
-    const stored = readStoredJson(CADENCE_KEY, { cadence: 'monthly' as Cadence });
+    const stored = readStoredJson(this.cadenceKey(), { cadence: 'monthly' as Cadence });
     this.cadence = stored.cadence || 'monthly';
+    if (readRoleId() === ENTITY_TYPE_IDS.COMPANY) {
+      return;
+    }
     const token = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ)?.token ?? null;
     this.loading = true;
     this.api.getUserOrderHistory(token, 1, 50, { status: 'paid' }).subscribe({
@@ -125,12 +133,43 @@ export class MemberPayouts implements OnInit {
 
   setCadence(value: Cadence): void {
     this.cadence = value;
-    writeStoredJson(CADENCE_KEY, { cadence: value });
+    writeStoredJson(this.cadenceKey(), { cadence: value });
     this.notice = `Payout schedule saved in this browser. ${CADENCE_LABEL[value]}.`;
   }
 
   requestPayout(): void {
     this.notice = 'Payout requests are not connected yet. Your paid orders stay listed below.';
+  }
+
+  clearFilters(): void {
+    this.query = '';
+    this.type = 'all';
+  }
+
+  badgeClass(status: string): string {
+    const key = status.toLowerCase();
+    if (key.includes('fail') || key.includes('reject') || key.includes('cancel')) {
+      return 'pay-badge--failed';
+    }
+    if (key.includes('pend') || key.includes('review') || key.includes('process')) {
+      return 'pay-badge--pending';
+    }
+    if (key.includes('paid') || key.includes('complete') || key.includes('approv')) {
+      return 'pay-badge--done';
+    }
+    return '';
+  }
+
+  downloadInvoice(row: LedgerRow): void {
+    const when = row.at ? new Date(row.at).toLocaleDateString('en-IN') : '';
+    const html = `<!doctype html><meta charset="utf-8"><title>${row.id}</title><body style="font-family:sans-serif;max-width:560px;margin:40px auto"><h1>Revo invoice ${row.id}</h1><p>Date: ${when}</p><p>Description: ${row.description}</p><p>Counterparty: ${row.counterparty}</p><p>Type: ${row.type}</p><h2>Amount: ${this.inr(row.amount)}</h2><p>Status: ${row.status}</p></body>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${row.id}.html`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    this.notice = `Invoice ${row.id} downloaded.`;
   }
 
   exportCsv(): void {
@@ -157,6 +196,10 @@ export class MemberPayouts implements OnInit {
     link.download = 'member-payouts.csv';
     link.click();
     URL.revokeObjectURL(link.href);
+  }
+
+  private cadenceKey(): string {
+    return readRoleId() === ENTITY_TYPE_IDS.COMPANY ? 'revo-payout-cadence-company-v1' : CADENCE_KEY;
   }
 
   private isDone(status: string): boolean {

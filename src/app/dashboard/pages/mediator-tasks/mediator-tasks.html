@@ -1,0 +1,67 @@
+<div class="mtask">
+  <header class="mtask-intro">
+    <div>
+      <p class="mtask-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">My Tasks</span>
+      </p>
+      <h1>My Tasks</h1>
+      <p class="mtask-lede">My Tasks in Partner Hub</p>
+    </div>
+    <span class="mtask-status"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <section class="mtask-panel">
+    <div class="mtask-head">
+      <div class="mtask-title">
+        <span class="mtask-title__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+        </span>
+        <div>
+          <h2>My review tasks</h2>
+          <p>Submissions assigned to the mediator workspace.</p>
+        </div>
+      </div>
+      <button type="button" class="mtask-queue" (click)="openQueue()">Open submission queue</button>
+    </div>
+
+    <div class="mtask-stats">
+      <article>
+        <p>Needs verification</p>
+        <strong>{{ needsVerification }}</strong>
+      </article>
+      <article>
+        <p>In review</p>
+        <strong>{{ inReview }}</strong>
+      </article>
+      <article>
+        <p>Needs follow-up</p>
+        <strong>{{ needsFollowUp }}</strong>
+      </article>
+    </div>
+
+    @if (tasks.length) {
+      <div class="mtask-list">
+        @for (task of tasks; track task.id) {
+          <div class="mtask-row">
+            <div class="mtask-row__copy">
+              <p>{{ task.id }}</p>
+              <span>{{ task.member }} · {{ task.company }}</span>
+            </div>
+            <span class="mtask-pill">{{ statusLabel(task.status) }}</span>
+            <span class="mtask-when">{{ task.updatedAt | date:'d MMM' }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="mtask-empty">
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h3>All caught up</h3>
+        <p>No submissions currently need mediator review.</p>
+      </div>
+    }
+  </section>
+</div>

@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Apiservice } from '../../../../services/apiservice';
 import { getTokenFromLocalStorage, STORAGE_KEYS, STATUS_LABELS, ENTITY_TYPE_IDS } from '../../../../constants';
 import { environment } from '../../../../environments/environment';
@@ -31,9 +32,13 @@ export class Companies {
   mediatorConnectedCompanies: any[] = [];
   mediatorRequestedCompanies: any[] = [];
   mediatorRejectedCompanies: any[] = [];
+  mediatorListsReady = false;
+  private mediatorLoadsPending = 0;
+  requestFilter: 'all' | 'pending' | 'approved' | 'rejected' = 'pending';
+  requestQuery = '';
   ENTITY_TYPE_IDS: any = ENTITY_TYPE_IDS;
 
-  constructor(private apiService: Apiservice, private cdr: ChangeDetectorRef) {
+  constructor(private apiService: Apiservice, private cdr: ChangeDetectorRef, private router: Router) {
     this.tokenObj = getTokenFromLocalStorage(STORAGE_KEYS.TOKEN_OBJ);
     const storedRole = getTokenFromLocalStorage(STORAGE_KEYS.CURRENT_ROLE);
     this.role = Number(storedRole ?? this.tokenObj?.user?.default_role ?? null) || null;
@@ -52,7 +57,9 @@ export class Companies {
       this.getCompanyRequests(this.token);
       this.setTab('companies');
     }else if(this.role == ENTITY_TYPE_IDS.MEDIATOR){
-      this.setTab('companies');
+      this.setTab(this.router.url.includes('company-requests') ? 'requests' : 'companies');
+      this.mediatorListsReady = false;
+      this.mediatorLoadsPending = 3;
       this.getMediatorConnectedCompanies();
       this.getMediatorRequestedCompanies();
       this.getMediatorRejectedCompanies();
@@ -352,18 +359,46 @@ export class Companies {
     return Number.isFinite(count) ? count : null;
   }
 
+  openedCompany: any = null;
+
   companyDatePrefix(): string {
     if (this.activeTab === 'requests') {
       return 'Requested';
     }
     if (this.activeTab === 'rejected') {
-      return 'Rejected';
+      return 'Updated';
     }
     return 'Connected';
   }
 
   companyStatusLabel(): string {
-    return this.companyDatePrefix();
+    if (this.activeTab === 'requests') {
+      return 'Request pending';
+    }
+    if (this.activeTab === 'rejected') {
+      return 'rejected';
+    }
+    return 'connected';
+  }
+
+  emptyCompaniesLabel(): string {
+    if (this.activeTab === 'requests') {
+      return 'No requests companies.';
+    }
+    if (this.activeTab === 'rejected') {
+      return 'No rejected companies.';
+    }
+    return 'No connected companies.';
+  }
+
+  openCompany(company: any): void {
+    this.openedCompany = company;
+    this.cdr.detectChanges();
+  }
+
+  closeCompany(): void {
+    this.openedCompany = null;
+    this.cdr.detectChanges();
   }
 
   private asList(data: any): any[] {
@@ -375,10 +410,11 @@ export class Companies {
       (res: any) => {
         console.log(res);
         this.mediatorConnectedCompanies = this.asList(res?.data);
-        this.cdr.detectChanges();
+        this.finishMediatorLoad();
       },
       (error: any) => {
         console.log(error);
+        this.finishMediatorLoad();
       }
     );
   }
@@ -387,10 +423,11 @@ export class Companies {
       (res: any) => {
         console.log(res);
         this.mediatorRequestedCompanies = this.asList(res?.data);
-        this.cdr.detectChanges();
+        this.finishMediatorLoad();
       },
       (error: any) => {
         console.log(error);
+        this.finishMediatorLoad();
       }
     );
   }
@@ -400,11 +437,113 @@ export class Companies {
       (res: any) => {
         console.log(res);
         this.mediatorRejectedCompanies = this.asList(res?.data);
-        this.cdr.detectChanges();
+        this.finishMediatorLoad();
       },
       (error: any) => {
         console.log(error);
+        this.finishMediatorLoad();
       }
     );
+  }
+
+  get isCompanyRequestPage(): boolean {
+    return this.router.url.includes('company-requests');
+  }
+
+  get requestItems(): { company: any; status: 'pending' | 'approved' | 'rejected' }[] {
+    const pending = this.asList(this.mediatorRequestedCompanies).map((company) => ({ company, status: 'pending' as const }));
+    const approved = this.asList(this.mediatorConnectedCompanies).map((company) => ({ company, status: 'approved' as const }));
+    const rejected = this.asList(this.mediatorRejectedCompanies).map((company) => ({ company, status: 'rejected' as const }));
+    return [...pending, ...approved, ...rejected];
+  }
+
+  get requestSummary(): { total: number; pending: number; approved: number; rejected: number } {
+    const items = this.requestItems;
+    return {
+      total: items.length,
+      pending: items.filter((item) => item.status === 'pending').length,
+      approved: items.filter((item) => item.status === 'approved').length,
+      rejected: items.filter((item) => item.status === 'rejected').length,
+    };
+  }
+
+  get filteredRequests(): { company: any; status: 'pending' | 'approved' | 'rejected' }[] {
+    const query = this.requestQuery.trim().toLowerCase();
+    return this.requestItems.filter((item) => {
+      if (this.requestFilter !== 'all' && item.status !== this.requestFilter) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
+      const blob = `${this.companyName(item.company)} ${this.requestOrg(item.company)} ${this.requestNote(item.company)}`.toLowerCase();
+      return blob.includes(query);
+    });
+  }
+
+  setRequestFilter(filter: 'all' | 'pending' | 'approved' | 'rejected'): void {
+    this.requestFilter = filter;
+  }
+
+  requestOrg(company: any): string {
+    const value = company?.company_description || company?.description || company?.category;
+    return value ? String(value) : '—';
+  }
+
+  requestLocation(company: any): string {
+    const value = company?.location || company?.city || company?.address || company?.state;
+    return value ? String(value) : '—';
+  }
+
+  requestType(company: any): string {
+    const value = company?.type || company?.request_type;
+    return value ? String(value) : 'Connection request';
+  }
+
+  requestPriority(company: any): string {
+    const value = company?.priority;
+    return value ? String(value) : '—';
+  }
+
+  requestDate(company: any): string | null {
+    const value = company?.created_on || company?.requested_on || company?.updated_on;
+    return value ? String(value) : null;
+  }
+
+  requestNote(company: any): string {
+    const value = company?.summary || company?.company_description || company?.description;
+    return value ? String(value) : '';
+  }
+
+  exportRequests(): void {
+    const header = 'Name,Organization,Type,Location,Priority,Status,Requested At,Summary';
+    const rows = this.requestItems.map((item) => {
+      const cells = [
+        this.companyName(item.company),
+        this.requestOrg(item.company),
+        this.requestType(item.company),
+        this.requestLocation(item.company),
+        this.requestPriority(item.company),
+        item.status,
+        this.requestDate(item.company) ?? '',
+        this.requestNote(item.company),
+      ];
+      return cells.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',');
+    });
+    const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'company-requests.csv';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private finishMediatorLoad(): void {
+    this.mediatorLoadsPending -= 1;
+    if (this.mediatorLoadsPending <= 0) {
+      this.mediatorListsReady = true;
+    }
+    this.cdr.detectChanges();
   }
 }

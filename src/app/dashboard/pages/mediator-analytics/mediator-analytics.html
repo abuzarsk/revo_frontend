@@ -1,0 +1,95 @@
+<div class="man">
+  <header class="man-intro">
+    <div>
+      <p class="man-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Analytics</span>
+      </p>
+      <h1>Analytics</h1>
+      <p class="man-lede">Analytics in Partner Hub</p>
+    </div>
+    <span class="man-status"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <section class="man-card">
+    <div class="man-chart-head">
+      <div>
+        <h2>Partner performance</h2>
+        <p>Monthly performance · January–December</p>
+      </div>
+      <div class="man-toggle" role="group" aria-label="Chart metric">
+        <button type="button" [class.is-active]="metric === 'earnings'" [attr.aria-pressed]="metric === 'earnings'" (click)="setMetric('earnings')">earnings</button>
+        <button type="button" [class.is-active]="metric === 'submissions'" [attr.aria-pressed]="metric === 'submissions'" (click)="setMetric('submissions')">submissions</button>
+      </div>
+    </div>
+    <div class="man-readout">
+      <div>
+        <p>{{ months[selected] }} · {{ metric === 'earnings' ? 'Earnings' : 'Submissions' }}</p>
+        <strong>{{ display }}</strong>
+      </div>
+      <span class="man-delta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+        +8.4%
+      </span>
+    </div>
+    <div class="man-bars" role="group" [attr.aria-label]="metric + ' by month'">
+      @for (value of values; track months[$index]; let i = $index) {
+        <button type="button" [attr.aria-label]="barLabel(i)" [attr.aria-pressed]="selected === i" [title]="barLabel(i)" (click)="selectMonth(i)">
+          <span [class.is-selected]="selected === i" [style.height]="barHeight(value)"></span>
+        </button>
+      }
+    </div>
+    <div class="man-axis">
+      <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
+    </div>
+  </section>
+
+  <div class="man-split">
+    <section class="man-card">
+      <div class="man-block-head">
+        <div>
+          <h2>Earnings by company</h2>
+          <p>Share of this year's commission</p>
+        </div>
+        <span class="man-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        </span>
+      </div>
+      <div class="man-rows">
+        @for (row of companies; track row.label) {
+          <div>
+            <div class="man-row-label">
+              <span>{{ row.label }}</span>
+              <b>{{ row.value }}%</b>
+            </div>
+            <div class="man-track"><span [style.width.%]="row.value"></span></div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="man-card">
+      <div class="man-block-head">
+        <div>
+          <h2>Top promoted products</h2>
+          <p>By approved submissions</p>
+        </div>
+        <span class="man-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </span>
+      </div>
+      <div class="man-rows">
+        @for (row of products; track row.label; let i = $index) {
+          <div>
+            <div class="man-row-label">
+              <span><em>0{{ i + 1 }}</em>{{ row.label }}</span>
+              <b>{{ row.value }}</b>
+            </div>
+            <div class="man-track"><span [style.width.%]="row.value"></span></div>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>

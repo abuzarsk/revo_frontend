@@ -173,9 +173,16 @@
     <div class="pcard__top">
       <div class="pcard__media">
         <img *ngIf="p.photo" [src]="imageBaseUrl + 'products/' + p.photo" [alt]="p.name" />
-        <i *ngIf="!p.photo" class="fa fa-cube" aria-hidden="true"></i>
+        <svg *ngIf="!p.photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
       </div>
-      <i class="fa fa-heart pcard__heart" aria-hidden="true"></i>
+      <span
+        *ngIf="kind !== 'user'"
+        class="pcard__badge"
+        [class.pcard__badge--success]="productStatusTone(p, kind) === 'success'"
+        [class.pcard__badge--warning]="productStatusTone(p, kind) === 'warning'"
+        [class.pcard__badge--muted]="productStatusTone(p, kind) === 'muted'"
+      >{{ productStatusLabel(p, kind) }}</span>
+      <svg *ngIf="kind === 'user'" class="pcard__heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
     </div>
 
     <h2 class="pcard__name">{{ p.name }}</h2>
@@ -183,6 +190,10 @@
     <p class="pcard__desc" *ngIf="p.description">{{ p.description }}</p>
 
     <div class="pcard__stats">
+      <div class="pcard__stat">
+        <span>Price</span>
+        <strong>{{ productPrice(p) }}</strong>
+      </div>
       <div class="pcard__stat pcard__stat--refund">
         <span>Refund</span>
         <strong>{{ productRefund(p) }}</strong>
@@ -192,20 +203,20 @@
         <strong>{{ submissionLimit(p) }}</strong>
         <em *ngIf="submissionRemaining(p)">{{ submissionRemaining(p) }}</em>
       </div>
-      <div class="pcard__stat">
-        <span>Refund count</span>
-        <strong>{{ p.refund_submission_count || 0 }}</strong>
-      </div>
+    </div>
+
+    <div class="pcard__received" *ngIf="kind !== 'user'">
+      <span>Submissions</span>
+      <strong>{{ p.submission_count || 0 }} received</strong>
     </div>
 
     <p class="pcard__note" *ngIf="p.is_multiple_submission_by_one == 1 || p.is_multiple_submission_by_one === true">
       Multiple submissions allowed (max {{ p.max_submission_by_one || '∞' }})
     </p>
-    <p class="pcard__note" *ngIf="kind === 'company'">{{ companyPromotionLabel(p.status) }}</p>
-    <p class="pcard__note" *ngIf="kind === 'mediator'">{{ p.promote_status == 1 ? 'Promoted' : 'Not promoted' }}</p>
-
     <div class="pcard__actions" (click)="$event.stopPropagation()">
-      <ng-container *ngIf="kind === 'company'">
+      <button type="button" class="pcard__details" *ngIf="kind !== 'user'" (click)="viewProductDetails(p)">View details</button>
+      <button type="button" class="pcard__ghost" *ngIf="kind !== 'user'" (click)="viewSubmissions(p)">Review this product’s submissions</button>
+      <div class="pcard__tools" *ngIf="kind === 'company'">
         <button type="button" class="pcard__action" *ngIf="p.status !== 2" aria-label="Edit" (click)="editProduct(p.id)">
           <i class="fa fa-pencil" aria-hidden="true"></i>
           <span class="pcard__tip">Edit</span>
@@ -226,17 +237,12 @@
           <i class="fa fa-file-text-o" aria-hidden="true"></i>
           <span class="pcard__tip">Refund Form Builder</span>
         </button>
-        <button type="button" class="pcard__action" aria-label="Product Form submissions" (click)="viewSubmissions(p)">
-          <i class="fa fa-list-alt" aria-hidden="true"></i>
-          <span class="pcard__tip">Product Form submissions</span>
-        </button>
         <button type="button" class="pcard__action" *ngIf="p.refund_form_status == 1 || p.refund_submission_count > 0" aria-label="Refund Form submissions" (click)="viewRefundSubmissions(p)">
           <i class="fa fa-reply" aria-hidden="true"></i>
           <span class="pcard__tip">Refund Form submissions</span>
         </button>
-      </ng-container>
-
-      <ng-container *ngIf="kind === 'mediator'">
+      </div>
+      <div class="pcard__tools" *ngIf="kind === 'mediator'">
         <button type="button" class="pcard__action" *ngIf="p.promote_status != 1" aria-label="Promote" (click)="promotedemoteMediatorProduct(p, 1)">
           <i class="fa fa-level-up" aria-hidden="true"></i>
           <span class="pcard__tip">Promote</span>
@@ -245,20 +251,18 @@
           <i class="fa fa-level-down" aria-hidden="true"></i>
           <span class="pcard__tip">Demote</span>
         </button>
-        <button type="button" class="pcard__action" *ngIf="p.submission_count > 0" aria-label="View submissions" (click)="viewSubmissions(p)">
-          <i class="fa fa-eye" aria-hidden="true"></i>
-          <span class="pcard__tip">View submissions</span>
-        </button>
-      </ng-container>
+      </div>
 
       <ng-container *ngIf="kind === 'user'">
-        <button type="button" class="pcard__action" *ngIf="p.max_submission_by_one > 0 && p.max_submission_by_one > p.submission_count" aria-label="Form" (click)="form(p)">
-          <i class="fa fa-file-text-o" aria-hidden="true"></i>
-          <span class="pcard__tip">Form</span>
+        <button type="button" class="pcard__apply" (click)="viewProductDetails(p)">
+          View product &amp; apply
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </button>
-        <button type="button" class="pcard__action" *ngIf="p.submission_count > 0" aria-label="View submissions" (click)="viewSubmissions(p)">
-          <i class="fa fa-eye" aria-hidden="true"></i>
-          <span class="pcard__tip">View submissions</span>
+        <button type="button" class="pcard__ghost" *ngIf="p.max_submission_by_one > 0 && p.max_submission_by_one > p.submission_count" (click)="form(p)">
+          Open form
+        </button>
+        <button type="button" class="pcard__ghost" *ngIf="p.submission_count > 0" (click)="viewSubmissions(p)">
+          View submissions
         </button>
       </ng-container>
     </div>
@@ -277,16 +281,20 @@
       <div class="products-heading">
         <h1 class="products-title">Products</h1>
         <p class="products-lede">Products in {{ productsPortalLabel }}</p>
-      </div>
-      <div class="products-header-actions">
+        </div>
+        <div class="products-header-actions">
       <ng-container *ngTemplateOutlet="productsViewToggle"></ng-container>
-      <button type="button" class="button button--primary" (click)="openForm()">Add product</button>
+      <button type="button" class="products-add" (click)="openForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Add product
+      </button>
     </div>
+        <span class="products-status"><span class="products-status__dot" aria-hidden="true"></span>All systems operational</span>
     </div>
   </header>
 
   <ng-container *ngTemplateOutlet="productsFilters"></ng-container>
-  <p class="products-result" *ngIf="!productsLoading && totalProducts">{{ products.length }} of {{ totalProducts }} products</p>
+  <p class="products-result" *ngIf="!productsLoading && totalProducts">{{ products.length }} of {{ totalProducts }} products · {{ catalogScope }}</p>
 
   <!-- Overlay product form -->
   <div class="products-overlay" *ngIf="showForm">
@@ -355,7 +363,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <div class="products-loading" *ngIf="productsLoading">
   Loading products…
@@ -466,7 +473,8 @@
 ></ng-container>
 
 <div class="brands-empty" *ngIf="!productsLoading && !products.length">
-  No products yet. Click “Add product” to create one.
+  No products match your search.
+</div>
 </div>
 </div>
 
@@ -484,12 +492,12 @@
           <p class="products-lede">Products in {{ productsPortalLabel }}</p>
         </div>
         <ng-container *ngTemplateOutlet="productsViewToggle"></ng-container>
+        <span class="products-status"><span class="products-status__dot" aria-hidden="true"></span>All systems operational</span>
       </div>
     </header>
 
     <ng-container *ngTemplateOutlet="productsFilters"></ng-container>
-    <p class="products-result" *ngIf="!mediatorProductsLoading && mediatorTotalProducts">{{ mediatorProducts.length }} of {{ mediatorTotalProducts }} products</p>
-  </div>
+    <p class="products-result" *ngIf="!mediatorProductsLoading && mediatorTotalProducts">{{ mediatorProducts.length }} of {{ mediatorTotalProducts }} products · {{ catalogScope }}</p>
 
   <div class="products-loading" *ngIf="mediatorProductsLoading">
     Loading products…
@@ -565,7 +573,8 @@
   ></ng-container>
 
   <div class="brands-empty" *ngIf="!mediatorProductsLoading && !mediatorProducts.length">
-    No products available to promote right now.
+    No products match your search.
+  </div>
   </div>
 </div>
 
@@ -583,11 +592,12 @@
           <p class="products-lede">Products in {{ productsPortalLabel }}</p>
         </div>
         <ng-container *ngTemplateOutlet="productsViewToggle"></ng-container>
+        <span class="products-status"><span class="products-status__dot" aria-hidden="true"></span>All systems operational</span>
       </div>
     </header>
 
     <ng-container *ngTemplateOutlet="productsFilters"></ng-container>
-    <p class="products-result" *ngIf="!userProductsLoading && userTotalProducts">{{ userProducts.length }} of {{ userTotalProducts }} products</p>
+    <p class="products-result" *ngIf="!userProductsLoading && userTotalProducts">{{ userProducts.length }} of {{ userTotalProducts }} products · {{ catalogScope }}</p>
 
     <div class="products-loading" *ngIf="userProductsLoading">
       Loading products…
@@ -657,7 +667,7 @@
     ></ng-container>
 
     <div class="brands-empty" *ngIf="!userProductsLoading && !userProducts.length">
-      No products available right now.
+      No products match your search.
     </div>
   </div>
 </div>

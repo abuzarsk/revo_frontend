@@ -1,23 +1,24 @@
+import { googleClientIds } from './google-client';
+
 export const environment = {
   production: false,
   /**
    * Base URL for all API calls made from the Angular application while developing locally.
    * Update this to match the host/port where your backend runs during development.
    */
-  apiBaseUrl: 'http://localhost/www/revo2/public/',//'http://localhost:4000/api',
-  imageBaseUrl: 'http://localhost/www/revo2/public/uploads/',
+  // apiBaseUrl: 'http://localhost/www/revo2/public/',//'http://localhost:4000/api',
+  // imageBaseUrl: 'http://localhost/www/revo2/public/uploads/',
+  apiBaseUrl: 'https://revo.pinnaci.com/apis/public/',//'https://api.revo.app',
+  imageBaseUrl: 'https://revo.pinnaci.com/apis/public/uploads/',
   appUrl: 'http://localhost:4200',
   
-  googleClientId: '',
-  googleSecret: '',
-  // apiBaseUrl: 'https://revo.pinnaci.com/apis/public/',//'https://api.revo.app',
-  // imageBaseUrl: 'https://revo.pinnaci.com/apis/public/uploads/',
+  googleClientId: googleClientIds.development,
+  
   
   /**
    * Centralized list of REST endpoints that the UI can reference.
    * Keep paths relative so they can be composed with apiBaseUrl.
    */
- 
   apis: {
     signup: 'auth/signup',
     login: 'auth/login',

@@ -1,47 +1,47 @@
-<div class="mp-page">
+<div class="mp-page hs-page">
   <header class="mp-intro">
     <div>
       <p class="mp-crumbs">
-        <span>Member Portal</span>
+        <span>Workspace</span>
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         <span class="is-current">Help &amp; Support</span>
       </p>
       <h1 class="mp-title">Help &amp; Support</h1>
-      <p class="mp-lede">Keep a note of what you need help with.</p>
+      <p class="mp-lede">Help &amp; Support in Member Portal</p>
     </div>
     <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
   </header>
 
-  <div class="mp-split mp-split--support">
+  <div class="mp-split hs-grid">
     <form class="mp-panel" (ngSubmit)="submit()">
       <h2>Contact support</h2>
-      <p class="mp-hint">Saved on this device until a support inbox is connected.</p>
-      <label class="mp-field" style="margin-top: 1rem">Subject
-        <input [(ngModel)]="subject" name="subject" maxlength="100" required />
+      <p class="mp-hint">Create a local demo ticket; no message is sent externally.</p>
+      <label class="mp-field hs-field">Subject
+        <input [(ngModel)]="subject" name="subject" minlength="4" maxlength="100" required />
       </label>
-      <label class="mp-field" style="margin-top: 0.85rem">How can we help?
-        <textarea [(ngModel)]="details" name="details" rows="5" maxlength="1500" required></textarea>
+      <label class="mp-field hs-field hs-field--next">How can we help?
+        <textarea [(ngModel)]="details" name="details" rows="5" minlength="10" maxlength="1500" required></textarea>
       </label>
-      <button type="submit" class="mp-btn mp-btn--brand" style="margin-top: 1rem">Create support request</button>
+      <button type="submit" class="mp-btn mp-btn--brand hs-submit">Create support request</button>
       @if (error) { <p class="mp-note mp-note--warn">{{ error }}</p> }
       @if (message) { <p class="mp-note">{{ message }}</p> }
     </form>
 
     <section class="mp-panel">
       <h2>Your requests</h2>
-      <p class="mp-hint">{{ tickets.length }} {{ tickets.length === 1 ? 'request' : 'requests' }}</p>
+      <p class="mp-hint">{{ tickets.length }} demo ticket{{ tickets.length === 1 ? '' : 's' }}</p>
       @if (!tickets.length) {
-        <div class="mp-empty" style="margin-top: 1rem">No support requests yet.</div>
+        <div class="hs-empty">No support requests yet.</div>
       } @else {
-        <div class="mp-list">
+        <div class="hs-list">
           @for (ticket of tickets; track ticket.id) {
-            <article class="mp-row" style="align-items: flex-start">
-              <div class="mp-row__copy">
-                <p class="mp-row__title">{{ ticket.subject }}</p>
-                <p class="mp-row__meta">{{ ticket.id }} · {{ ticket.at | date: 'd MMM y' }}</p>
-                <p class="mp-hint" style="white-space: normal">{{ ticket.details }}</p>
+            <article class="hs-ticket">
+              <div class="hs-ticket__top">
+                <h3>{{ ticket.subject }}</h3>
+                <span class="hs-status">{{ ticket.status }}</span>
               </div>
-              <span class="mp-badge mp-badge--open">{{ ticket.status }}</span>
+              <p class="hs-meta">{{ ticket.id }} · {{ ticket.at | date: 'dd/MM/yyyy' }}</p>
+              <p class="hs-details">{{ ticket.details }}</p>
             </article>
           }
         </div>

@@ -29,6 +29,12 @@ import { MemberProfile } from './dashboard/pages/member/member-profile';
 import { MemberSecurity } from './dashboard/pages/member/member-security';
 import { MemberSupport } from './dashboard/pages/member/member-support';
 import { MemberSettings } from './dashboard/pages/member/member-settings';
+import { CompanyProfile } from './dashboard/pages/company-profile/company-profile';
+import { MediatorSubmissions } from './dashboard/pages/mediator-submissions/mediator-submissions';
+import { MediatorTasks } from './dashboard/pages/mediator-tasks/mediator-tasks';
+import { MediatorAnalytics } from './dashboard/pages/mediator-analytics/mediator-analytics';
+import { MediatorPerformance } from './dashboard/pages/mediator-performance/mediator-performance';
+import { MediatorCampaigns } from './dashboard/pages/mediator-campaigns/mediator-campaigns';
 
 export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [guestGuard] },
@@ -42,6 +48,12 @@ export const routes: Routes = [
     children: [
       { path: '', component: DashboardWelcome },
       { path: 'companies', component: Companies },
+      { path: 'company-requests', component: Companies },
+      { path: 'partner-submissions', component: MediatorSubmissions },
+      { path: 'my-tasks', component: MediatorTasks },
+      { path: 'partner-campaigns', component: MediatorCampaigns },
+      { path: 'partner-analytics', component: MediatorAnalytics },
+      { path: 'performance', component: MediatorPerformance },
       { path: 'mediators', component: Mediators },
       { path: 'users', component: Users },
       { path: 'brands', component: Brands },
@@ -66,6 +78,7 @@ export const routes: Routes = [
       { path: 'security', component: MemberSecurity },
       { path: 'help', component: MemberSupport },
       { path: 'settings', component: MemberSettings },
+      { path: 'company-profile', component: CompanyProfile },
     ],
   },
   { path: 'preview/:id', component: PreviewPageComponent },

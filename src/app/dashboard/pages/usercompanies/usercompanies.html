@@ -61,7 +61,7 @@
   <div class="ucnet-list" *ngIf="visibleConnections.length">
     <article class="ucnet-card" *ngFor="let c of visibleConnections; let i = index">
       <div class="ucnet-card__identity">
-        <div class="ucnet-card__avatar" [attr.data-tone]="i % 6">
+        <div class="ucnet-card__avatar" [attr.data-tone]="i % 4">
           <img *ngIf="getCompanyLogoSrc(c)" [src]="getCompanyLogoSrc(c)" alt="" />
           <span *ngIf="!getCompanyLogoSrc(c)">{{ connectionInitials(c) }}</span>
         </div>

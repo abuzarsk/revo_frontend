@@ -41,7 +41,7 @@
       <h2 class="oh-orders-panel__title">Your orders</h2>
       <div class="oh-toolbar__actions">
       <label class="oh-search">
-        <i class="fa fa-search" aria-hidden="true"></i>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input
           type="search"
           placeholder="Search orders"
@@ -63,7 +63,7 @@
         }
       </div>
       <button type="button" class="oh-export" (click)="exportCsv()">
-        <i class="fa fa-download" aria-hidden="true"></i>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
         Export CSV
       </button>
       </div>
@@ -79,9 +79,9 @@
 
     @if (!loading && !loadError && !orders.length) {
       <div class="oh-empty">
-        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <h3>No orders found</h3>
-        <p>Your submitted orders will appear here.</p>
+        <p>Try a different search or status filter.</p>
       </div>
     }
 
@@ -93,7 +93,7 @@
               <span class="oh-row__icon" [ngClass]="'oh-row__icon--' + orderTone(order)" aria-hidden="true">
                 @switch (orderTone(order)) {
                   @case ('delivered') {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 2 2 4-4"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
                   }
                   @case ('shipped') {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
@@ -120,8 +120,10 @@
               </div>
             </div>
             <div class="oh-row__side">
+              @if (orderAmount(order) !== null) {
+                <span class="oh-row__amount">{{ formatCurrency(orderAmount(order)!) }}</span>
+              }
               <span class="oh-status-text" [ngClass]="'oh-status-text--' + orderTone(order)">{{ orderStatusText(order) }}</span>
-              <span class="oh-row__amount">{{ orderAmount(order) !== null ? formatCurrency(orderAmount(order)!) : '' }}</span>
               <button type="button" class="oh-view" (click)="openOrder(order)">View</button>
             </div>
           </article>

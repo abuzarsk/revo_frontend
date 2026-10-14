@@ -49,10 +49,17 @@ export const ROUTES = {
   SECURITY: 'security',
   HELP: 'help',
   SETTINGS: 'settings',
+  COMPANY_PROFILE: 'company-profile',
   SUBMISSIONS: 'submissions',
   REFUNDS: 'refunds',
   CAMPAIGNS: 'campaigns',
   ANALYTICS: 'analytics',
+  COMPANY_REQUESTS: 'company-requests',
+  MY_TASKS: 'my-tasks',
+  PERFORMANCE: 'performance',
+  PARTNER_SUBMISSIONS: 'partner-submissions',
+  PARTNER_CAMPAIGNS: 'partner-campaigns',
+  PARTNER_ANALYTICS: 'partner-analytics',
 } as const;
 
 /**
@@ -90,9 +97,13 @@ export const MENU_KEYS = {
   SECURITY: 'security',
   HELP: 'help',
   SETTINGS: 'settings',
+  COMPANY_PROFILE: 'company_profile',
   REFUNDS: 'refunds',
   CAMPAIGNS: 'campaigns',
   ANALYTICS: 'analytics',
+  COMPANY_REQUESTS: 'company_requests',
+  MY_TASKS: 'my_tasks',
+  PERFORMANCE: 'performance',
 } as const;
 
 /**
@@ -414,6 +425,48 @@ export const COMPANY_SIDEBAR_MENU = [
     route: ROUTES.ANALYTICS,
     icon: 'analytics',
   },
+  {
+    key: MENU_KEYS.MESSAGES,
+    label: 'Messages',
+    route: ROUTES.MESSAGES,
+    icon: 'messages',
+    section: 'Workspace',
+  },
+  {
+    key: MENU_KEYS.NOTIFICATIONS,
+    label: 'Notifications',
+    route: ROUTES.NOTIFICATIONS,
+    icon: 'notifications',
+    section: 'Workspace',
+  },
+  {
+    key: MENU_KEYS.PAYOUTS,
+    label: 'Payouts',
+    route: ROUTES.PAYOUTS,
+    icon: 'payouts',
+    section: 'Account',
+  },
+  {
+    key: MENU_KEYS.COMPANY_PROFILE,
+    label: 'Company Profile',
+    route: ROUTES.COMPANY_PROFILE,
+    icon: 'business',
+    section: 'Account',
+  },
+  {
+    key: MENU_KEYS.SECURITY,
+    label: 'Security',
+    route: ROUTES.SECURITY,
+    icon: 'security',
+    section: 'Account',
+  },
+  {
+    key: MENU_KEYS.SETTINGS,
+    label: 'Settings',
+    route: ROUTES.SETTINGS,
+    icon: 'settings',
+    section: 'Account',
+  },
 ];
 
 
@@ -432,11 +485,89 @@ export const MEDIATOR_SIDEBAR_MENU = [
     icon: 'business',
   },
   {
+    key: MENU_KEYS.COMPANY_REQUESTS,
+    label: 'Company Requests',
+    route: ROUTES.COMPANY_REQUESTS,
+    icon: 'requests',
+  },
+  {
     key: MENU_KEYS.PRODUCTS,
     label: 'Products',
     route: ROUTES.PRODUCTS,
     icon: 'product',
-  }
+  },
+  {
+    key: MENU_KEYS.SUBMISSIONS,
+    label: 'Submissions',
+    route: ROUTES.PARTNER_SUBMISSIONS,
+    icon: 'submissions',
+  },
+  {
+    key: MENU_KEYS.MY_TASKS,
+    label: 'My Tasks',
+    route: ROUTES.MY_TASKS,
+    icon: 'tasks',
+  },
+  {
+    key: MENU_KEYS.CAMPAIGNS,
+    label: 'Campaigns',
+    route: ROUTES.PARTNER_CAMPAIGNS,
+    icon: 'campaigns',
+  },
+  {
+    key: MENU_KEYS.ANALYTICS,
+    label: 'Analytics',
+    route: ROUTES.PARTNER_ANALYTICS,
+    icon: 'analytics',
+  },
+  {
+    key: MENU_KEYS.PERFORMANCE,
+    label: 'Performance',
+    route: ROUTES.PERFORMANCE,
+    icon: 'performance',
+  },
+  {
+    key: MENU_KEYS.MESSAGES,
+    label: 'Messages',
+    route: ROUTES.MESSAGES,
+    icon: 'messages',
+    section: 'Workspace',
+  },
+  {
+    key: MENU_KEYS.NOTIFICATIONS,
+    label: 'Notifications',
+    route: ROUTES.NOTIFICATIONS,
+    icon: 'notifications',
+    section: 'Workspace',
+  },
+  {
+    key: MENU_KEYS.BANK_UPI,
+    label: 'Bank & UPI',
+    route: ROUTES.BANK_UPI,
+    icon: 'bank',
+    section: 'Account',
+  },
+  {
+    key: MENU_KEYS.PROFILE,
+    label: 'Profile',
+    route: ROUTES.PROFILE,
+    icon: 'profile',
+    section: 'Account',
+  },
+  {
+    key: MENU_KEYS.SECURITY,
+    label: 'Security',
+    route: ROUTES.SECURITY,
+    icon: 'security',
+    section: 'Account',
+  },
+  {
+    key: MENU_KEYS.SETTINGS,
+    label: 'Settings',
+    route: ROUTES.SETTINGS,
+    icon: 'settings',
+    section: 'Account',
+  },
 ];
 
 export const USER_SIDEBAR_MENU = [

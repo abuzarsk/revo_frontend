@@ -1,0 +1,95 @@
+<div class="mcmp">
+  <header class="mcmp-intro">
+    <div>
+      <p class="mcmp-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Campaigns</span>
+      </p>
+      <h1>Campaigns</h1>
+      <p class="mcmp-lede">Campaigns in Partner Hub</p>
+    </div>
+    <span class="mcmp-status"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="mcmp-stats">
+    <article><p>Active campaigns</p><strong>{{ activeCount }}</strong></article>
+    <article><p>Slots filled</p><strong>{{ fillRate }}%</strong></article>
+    <article><p>Open commission</p><strong>{{ openCommission }}</strong></article>
+    <article><p>Companies</p><strong>{{ companyCount }}</strong></article>
+  </div>
+
+  <section class="mcmp-panel">
+    <div class="mcmp-tools">
+      <h2>Your campaigns</h2>
+      <label class="mcmp-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" [(ngModel)]="query" placeholder="Search campaigns" aria-label="Search campaigns" />
+      </label>
+      <div class="mcmp-filters" role="group" aria-label="Campaign status">
+        @for (filter of filters; track filter) {
+          <button type="button" [class.is-active]="status === filter" (click)="setStatus(filter)">{{ filter }}</button>
+        }
+      </div>
+      <button type="button" class="mcmp-new" (click)="create()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        New campaign
+      </button>
+    </div>
+    @if (notice) {
+      <p class="mcmp-notice">{{ notice }}</p>
+    }
+
+    @if (filtered.length) {
+      <div class="mcmp-grid">
+        @for (campaign of filtered; track campaign.id) {
+          <article class="mcmp-card">
+            <div class="mcmp-card__top">
+              <div class="mcmp-card__identity">
+                <span aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+                </span>
+                <div>
+                  <p>{{ campaign.name }}</p>
+                  <small>{{ campaign.id }} · {{ campaign.company }} · {{ campaign.startDate }} – {{ campaign.endDate }}</small>
+                </div>
+              </div>
+              <span class="mcmp-pill" [attr.data-status]="campaign.effectiveStatus">{{ campaign.effectiveStatus }}</span>
+            </div>
+            <div class="mcmp-dates">
+              <label>
+                Start date
+                <input type="date" [ngModel]="campaign.startDate" (ngModelChange)="updateDate(campaign.id, 'startDate', $event)" />
+              </label>
+              <label>
+                End date
+                <input type="date" [ngModel]="campaign.endDate" (ngModelChange)="updateDate(campaign.id, 'endDate', $event)" />
+              </label>
+            </div>
+            <div class="mcmp-fill">
+              <div class="mcmp-track"><span [style.width.%]="fillWidth(campaign)"></span></div>
+              <small>{{ campaign.filled }}/{{ campaign.slots }} slots</small>
+            </div>
+            <div class="mcmp-card__foot">
+              <p>{{ campaign.products }} products · <b>{{ money(campaign.commission) }}</b> commission</p>
+              <button type="button" class="mcmp-action" (click)="toggle(campaign)">
+                @if (campaign.effectiveStatus === 'active' || campaign.effectiveStatus === 'scheduled') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                } @else if (campaign.effectiveStatus === 'paused') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                }
+                {{ actionLabel(campaign.effectiveStatus) }}
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="mcmp-empty">
+        <h3>No campaigns found</h3>
+        <p>Try a different search or status filter.</p>
+        <button type="button" class="mcmp-action" (click)="clearFilters()">Clear filters</button>
+      </div>
+    }
+  </section>
+</div>

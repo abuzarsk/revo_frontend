@@ -1,48 +1,53 @@
-<div class="mp-page">
+<div class="mp-page st-page">
   <header class="mp-intro">
     <div>
       <p class="mp-crumbs">
-        <span>Member Portal</span>
+        <span>Workspace</span>
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         <span class="is-current">Settings</span>
       </p>
       <h1 class="mp-title">Settings</h1>
-      <p class="mp-lede">How this member workspace behaves on this device.</p>
+      <p class="mp-lede">{{ lede }}</p>
     </div>
     <span class="mp-operational"><span aria-hidden="true"></span>All systems operational</span>
   </header>
 
-  <section class="mp-panel" style="max-width: 42rem">
-    <h2>Notifications</h2>
-    <label class="mp-switch">
+  <section class="mp-panel st-panel">
+    <div class="st-head">
+      <span class="st-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+      </span>
+      <div>
+        <h2>Workspace preferences</h2>
+        <p class="mp-hint">Saved locally for this preview workspace.</p>
+      </div>
+    </div>
+    <label class="st-row">
       <span>
-        <strong style="display: block; font-size: 0.875rem">Email notices</strong>
-        <span class="mp-hint">Order and payout updates by email.</span>
+        <strong>Email notifications</strong>
+        <span class="mp-hint">Receive activity and account notifications.</span>
       </span>
       <input type="checkbox" [checked]="settings.emailNotices" (change)="update('emailNotices', $any($event.target).checked)" />
     </label>
-    <label class="mp-switch">
+    <label class="st-row">
       <span>
-        <strong style="display: block; font-size: 0.875rem">Product announcements</strong>
-        <span class="mp-hint">New products and workspace changes.</span>
+        <strong>Product announcements</strong>
+        <span class="mp-hint">Hear about new workspace features and updates.</span>
       </span>
       <input type="checkbox" [checked]="settings.productUpdates" (change)="update('productUpdates', $any($event.target).checked)" />
     </label>
-    <label class="mp-switch">
+    <label class="st-row">
       <span>
-        <strong style="display: block; font-size: 0.875rem">Compact layout</strong>
-        <span class="mp-hint">Tighter spacing on lists.</span>
+        <strong>Compact layout</strong>
+        <span class="mp-hint">Use tighter spacing where supported.</span>
       </span>
       <input type="checkbox" [checked]="settings.compactView" (change)="update('compactView', $any($event.target).checked)" />
     </label>
-    <label class="mp-field" style="margin-top: 1rem">Language
+    <label class="mp-field st-language">Language
       <select [ngModel]="settings.language" (ngModelChange)="setLanguage($event)" name="language">
         <option>English</option>
         <option>हिन्दी</option>
       </select>
     </label>
-    @if (message) {
-      <p class="mp-note">{{ message }}</p>
-    }
   </section>
 </div>

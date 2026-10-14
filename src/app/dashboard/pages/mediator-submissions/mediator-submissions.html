@@ -1,0 +1,182 @@
+<div class="msub">
+  <header class="msub-intro">
+    <div>
+      <p class="msub-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Submissions</span>
+      </p>
+      <h1>Submissions</h1>
+      <p class="msub-lede">Submissions in Partner Hub</p>
+    </div>
+    <span class="msub-status"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  @if (open) {
+    <button type="button" class="msub-back" (click)="closeDetail()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Back to submissions
+    </button>
+
+    <div class="msub-detail">
+      <section class="msub-card msub-detail__main">
+        <div class="msub-detail__head">
+          <div>
+            <h2>{{ open.id }}</h2>
+            <p>{{ productIcon(open.productId) }} {{ productName(open.productId) }} · {{ open.company }} · by {{ open.member }}</p>
+          </div>
+          <span class="msub-badge" [attr.data-status]="open.status">{{ labelFor(open.status) }}</span>
+        </div>
+        <div class="msub-form">
+          @for (field of fieldsFor(open); track field.id) {
+            @if (field.type === 'checkbox') {
+              <label class="msub-check">
+                <input type="checkbox" [checked]="fieldChecked(open, field)" disabled />
+                <span>{{ field.label }}@if (field.required) {<span class="msub-req"> *</span>}</span>
+              </label>
+            } @else {
+              <label class="msub-field">
+                <span>{{ field.label }}@if (field.required) {<span class="msub-req"> *</span>}</span>
+                @if (field.type === 'textarea') {
+                  <textarea rows="4" [value]="fieldValue(open, field)" readonly></textarea>
+                } @else if (field.type === 'select') {
+                  <select disabled>
+                    <option>{{ fieldValue(open, field) || 'Select…' }}</option>
+                  </select>
+                } @else {
+                  <input [type]="field.type === 'number' ? 'number' : 'text'" [value]="fieldValue(open, field)" readonly />
+                }
+              </label>
+            }
+          }
+        </div>
+      </section>
+
+      <aside class="msub-detail__side">
+        <section class="msub-card">
+          <h3>Actions</h3>
+          <p class="msub-role">As Mediator</p>
+          @if (actionsFor(open).length) {
+            <div class="msub-actions">
+              @for (action of actionsFor(open); track action.to) {
+                <button type="button" class="msub-btn" [class.msub-btn--brand]="!action.danger" [class.msub-btn--danger]="action.danger" (click)="begin(action)">{{ action.label }}</button>
+              }
+            </div>
+          } @else {
+            <p class="msub-quiet">No actions available for you at this stage.</p>
+          }
+          @if (pending) {
+            <label class="msub-field">
+              <span>Reason</span>
+              <textarea rows="3" maxlength="500" [(ngModel)]="note"></textarea>
+            </label>
+            <div class="msub-actions">
+              <button type="button" class="msub-btn" [class.msub-btn--brand]="!pending.danger" [class.msub-btn--danger]="pending.danger" (click)="confirm()">Confirm {{ pending.label.toLowerCase() }}</button>
+              <button type="button" class="msub-btn msub-btn--ghost" (click)="cancelPending()">Cancel</button>
+            </div>
+          }
+          @if (feedback) {
+            <p class="msub-feedback">{{ feedback }}</p>
+          }
+        </section>
+
+        <section class="msub-card">
+          <h3>History</h3>
+          <ol class="msub-history">
+            @for (entry of historyFor(open); track entry.at + entry.to) {
+              <li>
+                <div>
+                  <span class="msub-badge" [attr.data-status]="entry.to">{{ labelFor(entry.to) }}</span>
+                  <span>{{ formatWhen(entry.at) }}</span>
+                </div>
+                <p>{{ historyLine(entry) }}</p>
+                @if (entry.note) {
+                  <p class="msub-note">{{ entry.note }}</p>
+                }
+              </li>
+            }
+          </ol>
+        </section>
+      </aside>
+    </div>
+  } @else {
+    @if (hasSamples) {
+      <p class="msub-sample">This preview includes generated sample submissions for product demonstrations. Records with IDs starting with SAMPLE are example data, not real member activity.</p>
+    }
+
+    <div class="msub-counts">
+      @for (status of statuses; track status.key) {
+        <button type="button" class="msub-count" [class.is-active]="statusFilter === status.key" (click)="setStatus(status.key)">
+          <span class="msub-badge" [attr.data-status]="status.key">{{ status.label }}</span>
+          <strong>{{ countFor(status.key) }}</strong>
+        </button>
+      }
+    </div>
+
+    <div class="msub-card msub-filters">
+      <label class="msub-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" [ngModel]="query" (ngModelChange)="onQuery($event)" placeholder="Search by ID, product, member or company" aria-label="Search submissions" />
+      </label>
+      <select class="msub-select" [(ngModel)]="statusFilter" aria-label="Filter status">
+        <option value="all">All statuses</option>
+        <option value="action">Needs my action</option>
+        @for (status of statuses; track status.key) {
+          <option [value]="status.key">{{ status.label }}</option>
+        }
+      </select>
+      <select class="msub-select" [(ngModel)]="productFilter" aria-label="Filter product">
+        <option value="all">All products</option>
+        @for (product of productOptions; track product.id) {
+          <option [value]="product.id">{{ product.icon }} {{ product.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (productFilter !== 'all') {
+      <div class="msub-scope">
+        <p>Showing submissions for <span>{{ selectedProductName }}</span></p>
+        <button type="button" class="msub-btn msub-btn--ghost" (click)="clearProduct()">Clear product filter</button>
+      </div>
+    }
+
+    <section class="msub-card msub-table-card">
+      @if (rows.length) {
+        <div class="msub-table-wrap">
+          <table class="msub-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Product</th>
+                <th>Member</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows; track row.id) {
+                <tr>
+                  <td class="is-strong">{{ row.id }}</td>
+                  <td>{{ productIcon(row.productId) }} {{ productName(row.productId) }}</td>
+                  <td>{{ row.member }}</td>
+                  <td>{{ row.company }}</td>
+                  <td><span class="msub-badge" [attr.data-status]="row.status">{{ labelFor(row.status) }}</span></td>
+                  <td class="is-when">{{ formatWhen(row.updatedAt) }}</td>
+                  <td class="is-right">
+                    <button type="button" class="msub-btn" [class.msub-btn--brand]="needsAction(row)" [class.msub-btn--outline]="!needsAction(row)" (click)="openRow(row)">
+                      {{ needsAction(row) ? 'Take action' : 'View' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="msub-empty">No submissions match.</p>
+      }
+    </section>
+  }
+</div>

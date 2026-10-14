@@ -145,7 +145,125 @@
 </div>
 
 
-<div class="companies-page companies-page--network" *ngIf="role == ENTITY_TYPE_IDS.MEDIATOR">
+<div class="companies-page companies-page--requests" *ngIf="role == ENTITY_TYPE_IDS.MEDIATOR && isCompanyRequestPage">
+  <header class="creq-intro">
+    <p class="creq-crumbs">
+      <span>Workspace</span>
+      <i class="fa fa-angle-right" aria-hidden="true"></i>
+      <span class="is-current">Company Requests</span>
+    </p>
+    <div class="creq-header">
+      <div>
+        <p class="creq-eyebrow">Business onboarding</p>
+        <h1 class="creq-title">Company requests</h1>
+      </div>
+      <div class="creq-header__actions">
+        <span class="creq-status">
+          <span class="creq-status__dot" aria-hidden="true"></span>
+          All systems operational
+        </span>
+        <button type="button" class="creq-export" (click)="exportRequests()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="creq-stats">
+    <article class="creq-stat">
+      <p>Total requests</p>
+      <div>
+        <strong>{{ requestSummary.total }}</strong>
+        <span class="creq-stat__icon creq-stat__icon--total" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+        </span>
+      </div>
+    </article>
+    <article class="creq-stat">
+      <p>Pending</p>
+      <div>
+        <strong>{{ requestSummary.pending }}</strong>
+        <span class="creq-stat__icon creq-stat__icon--pending" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/><path d="M16 2v4"/><path d="M8 2v4"/></svg>
+        </span>
+      </div>
+    </article>
+    <article class="creq-stat">
+      <p>Approved</p>
+      <div>
+        <strong>{{ requestSummary.approved }}</strong>
+        <span class="creq-stat__icon creq-stat__icon--approved" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+      </div>
+    </article>
+    <article class="creq-stat">
+      <p>Rejected</p>
+      <div>
+        <strong>{{ requestSummary.rejected }}</strong>
+        <span class="creq-stat__icon creq-stat__icon--rejected" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </span>
+      </div>
+    </article>
+  </div>
+
+  <section class="creq-board">
+    <div class="creq-tools">
+      <div class="creq-filters" role="tablist" aria-label="Request status">
+        <button type="button" class="creq-filter" [class.is-active]="requestFilter === 'all'" (click)="setRequestFilter('all')">All</button>
+        <button type="button" class="creq-filter" [class.is-active]="requestFilter === 'pending'" (click)="setRequestFilter('pending')">pending</button>
+        <button type="button" class="creq-filter" [class.is-active]="requestFilter === 'approved'" (click)="setRequestFilter('approved')">approved</button>
+        <button type="button" class="creq-filter" [class.is-active]="requestFilter === 'rejected'" (click)="setRequestFilter('rejected')">rejected</button>
+      </div>
+      <label class="creq-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" [(ngModel)]="requestQuery" placeholder="Search request or org" aria-label="Search requests" />
+      </label>
+    </div>
+
+    <div class="creq-list" *ngIf="mediatorListsReady && filteredRequests.length">
+      <article class="creq-card" *ngFor="let item of filteredRequests">
+        <div class="creq-card__identity">
+          <span class="creq-card__avatar">{{ companyInitials(item.company) }}</span>
+          <div>
+            <p class="creq-card__name">{{ companyName(item.company) }}</p>
+            <p class="creq-card__org">{{ requestOrg(item.company) }}</p>
+          </div>
+        </div>
+        <div class="creq-card__facts">
+          <div>
+            <p>Location</p>
+            <strong>{{ requestLocation(item.company) }}</strong>
+          </div>
+          <div>
+            <p>Type</p>
+            <strong>{{ requestType(item.company) }}</strong>
+          </div>
+          <div>
+            <p>Requested</p>
+            <strong>{{ requestDate(item.company) ? (requestDate(item.company) | date:'d MMM y') : '—' }}</strong>
+          </div>
+          <div>
+            <p>Priority</p>
+            <strong>{{ requestPriority(item.company) }}</strong>
+          </div>
+        </div>
+        <div class="creq-card__actions">
+          <span class="creq-pill" [class.creq-pill--pending]="item.status === 'pending'" [class.creq-pill--approved]="item.status === 'approved'" [class.creq-pill--rejected]="item.status === 'rejected'">{{ item.status }}</span>
+          <button type="button" class="creq-action" [class.is-approved]="item.status === 'approved'">Approve</button>
+          <button type="button" class="creq-action" [class.is-rejected]="item.status === 'rejected'">Reject</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="creq-empty" *ngIf="mediatorListsReady && !filteredRequests.length">No requests match the active filter.</div>
+    <div class="creq-empty" *ngIf="!mediatorListsReady">Loading requests…</div>
+  </section>
+</div>
+
+<div class="companies-page companies-page--network" *ngIf="role == ENTITY_TYPE_IDS.MEDIATOR && !isCompanyRequestPage">
   <header class="cnet-intro">
     <p class="cnet-crumbs">
       <span>Workspace</span>
@@ -155,7 +273,7 @@
     <div class="cnet-header">
       <div>
         <h1 class="cnet-title">Companies</h1>
-        <p class="cnet-lede">Manage connected companies and partner relationships.</p>
+        <p class="cnet-lede">Companies in Partner Hub</p>
       </div>
       <span class="cnet-status">
         <span class="cnet-status__dot" aria-hidden="true"></span>
@@ -167,7 +285,7 @@
   <div class="cnet-toolbar">
     <p class="cnet-toolbar__label">Your company network</p>
     <button type="button" class="cnet-connect" (click)="openConnectOverlay()">
-      <i class="fa fa-plus" aria-hidden="true"></i>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       Connect
     </button>
   </div>
@@ -211,7 +329,7 @@
   <div class="cnet-list" *ngIf="visibleCompanies.length">
     <article class="cnet-card" *ngFor="let c of visibleCompanies; let i = index">
       <div class="cnet-card__identity">
-        <div class="cnet-card__avatar" [attr.data-tone]="i % 6">
+        <div class="cnet-card__avatar" [attr.data-tone]="i % 4">
           <img *ngIf="companyLogo(c)" [src]="companyLogo(c)" alt="" />
           <span *ngIf="!companyLogo(c)">{{ companyInitials(c) }}</span>
         </div>
@@ -219,12 +337,12 @@
           <h2 class="cnet-card__name">{{ companyName(c) }}</h2>
           <p class="cnet-card__meta">
             <span>
-              <i class="fa fa-calendar-o" aria-hidden="true"></i>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
               {{ companyDatePrefix() }}
               {{ (c.updated_on || c.created_on) ? ((c.updated_on || c.created_on) | date:'d MMM y') : '—' }}
             </span>
             <span *ngIf="companyProductCount(c) !== null">
-              <i class="fa fa-cube" aria-hidden="true"></i>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
               {{ companyProductCount(c) }} active {{ companyProductCount(c) === 1 ? 'product' : 'products' }}
             </span>
             <span *ngIf="companyProductCount(c) === null && (c.company_description || c.description)">
@@ -242,22 +360,55 @@
         >
           {{ companyStatusLabel() }}
         </span>
-        <a
-          *ngIf="companyGroupLink(c)"
-          class="cnet-open"
-          [href]="companyGroupLink(c)"
-          target="_blank"
-          rel="noopener"
-        >
-          Open
-        </a>
-        <button *ngIf="!companyGroupLink(c)" type="button" class="cnet-open" disabled>Open</button>
+        <button type="button" class="cnet-open" (click)="openCompany(c)">Open</button>
       </div>
     </article>
   </div>
 
-  <div class="empty" *ngIf="!visibleCompanies.length">
-    No companies in this list yet.
+  <div class="cnet-empty" *ngIf="!visibleCompanies.length">
+    {{ emptyCompaniesLabel() }}
+  </div>
+
+  <div class="connect-overlay" *ngIf="openedCompany">
+    <div class="connect-overlay-backdrop" (click)="closeCompany()"></div>
+    <div class="connect-modal cnet-detail" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="connect-modal-header">
+        <div>
+          <h2>{{ companyName(openedCompany) }}</h2>
+          <p class="cnet-dialog-copy">Company relationship</p>
+        </div>
+        <button type="button" class="connect-modal-close" (click)="closeCompany()" aria-label="Close">&times;</button>
+      </div>
+      <div class="cnet-detail__body">
+        <div class="cnet-detail__identity">
+          <span class="cnet-detail__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+          </span>
+          <div>
+            <p class="cnet-detail__name">{{ companyName(openedCompany) }}</p>
+            <span
+              class="cnet-pill"
+              [class.cnet-pill--connected]="activeTab === 'companies'"
+              [class.cnet-pill--requested]="activeTab === 'requests'"
+              [class.cnet-pill--rejected]="activeTab === 'rejected'"
+            >{{ companyStatusLabel() }}</span>
+          </div>
+        </div>
+        <div class="cnet-detail__facts">
+          <div>
+            <p>Connection date</p>
+            <strong>{{ (openedCompany.updated_on || openedCompany.created_on) ? ((openedCompany.updated_on || openedCompany.created_on) | date:'d MMM y') : '—' }}</strong>
+          </div>
+          <div>
+            <p>Active products</p>
+            <strong>{{ companyProductCount(openedCompany) ?? '—' }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="cnet-detail__footer">
+        <button type="button" class="cnet-open" (click)="closeCompany()">Close</button>
+      </div>
+    </div>
   </div>
 
   <!-- Connect overlay -->
@@ -265,7 +416,10 @@
     <div class="connect-overlay-backdrop" (click)="closeConnectOverlay()"></div>
     <div class="connect-modal" (click)="$event.stopPropagation()">
       <div class="connect-modal-header">
-        <h2>Connect to Company</h2>
+        <div>
+          <h2>Connect a company</h2>
+          <p class="cnet-dialog-copy">Add a company to your connection requests.</p>
+        </div>
         <button type="button" class="connect-modal-close" (click)="closeConnectOverlay()">&times;</button>
       </div>
       <div class="connect-modal-body">

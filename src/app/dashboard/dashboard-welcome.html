@@ -7,17 +7,21 @@
         <span class="is-current">Dashboard</span>
       </p>
       <h1>Dashboard</h1>
-      <p>{{ pageWelcome }}</p>
+      <p class="dash-lede">{{ pageWelcome }}</p>
     </div>
     <span class="ops-pill"><span class="ops-pill__dot" aria-hidden="true"></span>All systems operational</span>
   </header>
 
   <section class="hero-card">
-    <svg class="hero-card__rings" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <circle cx="280" cy="80" r="158" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="48" />
-    </svg>
     <div class="hero-card__content">
-      <span class="hero-card__badge"><i class="fa fa-magic" aria-hidden="true"></i> {{ portalBadge }}</span>
+      <span class="hero-card__badge">
+        @if (isCompany) {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16h8"/><path d="M7 11h12"/><path d="M7 6h3"/></svg>
+        } @else {
+          <i class="fa fa-magic" aria-hidden="true"></i>
+        }
+        {{ portalBadge }}
+      </span>
       <h2 class="hero-card__title">
         {{ heroTitle }}@if (isUser) { <span aria-hidden="true">👋</span> }
       </h2>
@@ -26,7 +30,7 @@
         @if (isCompany) {
           <a class="hero-btn hero-btn--solid" routerLink="/submissions">
             Review submissions
-            <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
           </a>
           <a class="hero-btn hero-btn--ghost" routerLink="/products">
             <i class="fa fa-plus" aria-hidden="true"></i>
@@ -35,7 +39,7 @@
         } @else {
           <a class="hero-btn hero-btn--solid" routerLink="/products">
             Find a product
-            <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
           </a>
         }
       </div>
@@ -49,13 +53,13 @@
         </article>
         <article class="hero-stat">
           <p class="hero-stat__label">Review queue</p>
-          <p class="hero-stat__value">{{ statusCount('pending_refunds') }}</p>
+          <p class="hero-stat__value">{{ reviewQueue }}</p>
         </article>
       } @else {
         <article class="hero-stat hero-stat--wide">
           <p class="hero-stat__label">My activity</p>
           <p class="hero-stat__value">{{ activityCount }}</p>
-          <p class="hero-stat__note">Submissions in your account</p>
+          <p class="hero-stat__note">Visible records in this browser preview</p>
         </article>
       }
     </div>
@@ -65,13 +69,32 @@
     <p class="welcome-loading">Loading dashboard...</p>
   }
 
-  <section class="status-grid" aria-label="Dashboard metrics">
+  <section class="status-grid" [class.status-grid--company]="isCompany" aria-label="Dashboard metrics">
     @for (metric of homeMetrics; track metric.label) {
       <a class="status-card" [routerLink]="metric.route">
         <div class="status-card__top">
           <p class="status-card__label">{{ metric.label }}</p>
           <span class="status-card__icon" aria-hidden="true">
-            <i class="fa {{ metric.icon }}"></i>
+            @switch (metric.icon) {
+              @case ('package') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.29 7 8.71 5L20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>
+              }
+              @case ('clipboard-check') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+              }
+              @case ('check') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              }
+              @case ('wallet') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15v-7"/></svg>
+              }
+              @case ('trending-up') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>
+              }
+              @default {
+                <i class="fa {{ metric.icon }}"></i>
+              }
+            }
           </span>
         </div>
         <p class="status-card__count">{{ metric.value }}</p>
@@ -80,15 +103,110 @@
     }
   </section>
 
+  @if (isCompany) {
+    <div class="home-split">
+      <section class="home-panel">
+        <div class="home-panel__head">
+          <div>
+            <h3>Submission activity</h3>
+            <p>Submissions grouped into recent 14-day periods</p>
+          </div>
+          <a class="home-link" routerLink="/analytics">Full analytics <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <div class="home-bars" role="img" aria-label="Submission activity over six recent 14-day periods">
+          @for (bucket of companyBuckets; track $index) {
+            <div class="home-bar">
+              <span>{{ bucket.count }}</span>
+              <div class="home-bar__track">
+                <div class="home-bar__fill" [class.is-last]="$last" [style.height.%]="barHeight(bucket.count, companyBuckets)"></div>
+              </div>
+              <span class="home-bar__label">{{ bucket.label }}</span>
+            </div>
+          }
+        </div>
+        <p class="home-caption">Based on submission dates in this workspace.</p>
+      </section>
+
+      <section class="home-panel">
+        <div class="home-panel__head">
+          <div>
+            <h3>Product portfolio</h3>
+            <p>{{ homeProducts.length }} products across all listing statuses</p>
+          </div>
+          <a class="home-link" routerLink="/products">All products <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        @if (portfolio.length) {
+          <div class="home-portfolio">
+            @for (item of portfolio; track item.product.id) {
+              <a class="home-portfolio__row" routerLink="/submissions">
+                <span class="home-portfolio__mark">{{ productMark(item.product) }}</span>
+                <span class="home-portfolio__copy">
+                  <span>{{ item.product.name }}</span>
+                  <span>{{ item.total }} submissions · {{ item.pending }} need review</span>
+                </span>
+                <span class="home-portfolio__rate">
+                  <strong>{{ item.approval }}%</strong>
+                  <span>approval</span>
+                </span>
+              </a>
+            }
+          </div>
+        } @else {
+          <p class="home-empty home-empty--dashed">No products are listed yet.</p>
+        }
+      </section>
+    </div>
+
+    <section class="home-panel home-panel--table">
+      <div class="home-panel__head">
+        <div>
+          <h3>Recent submissions</h3>
+          <p>Latest product applications and their status</p>
+        </div>
+        <a class="hero-btn hero-btn--outline" routerLink="/submissions">View all <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      @if (homeSubmissions.length) {
+        <div class="home-table-wrap">
+          <table class="home-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Member</th>
+                <th>Status</th>
+                <th>Last updated</th>
+                <th class="is-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of homeSubmissions.slice(0, 6); track row.id) {
+                <tr>
+                  <td>
+                    <strong>{{ row.product_name || 'Product' }}</strong>
+                    <span class="home-id">{{ row.id }}</span>
+                  </td>
+                  <td>{{ row.revo_user_name || '—' }}</td>
+                  <td><span class="home-status" [ngClass]="'home-status--' + row.status">{{ statusLabel(row.status) }}</span></td>
+                  <td>{{ formatWhen(row.updated_on || row.created_on) }}</td>
+                  <td class="is-right"><a routerLink="/submissions">Review</a></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="home-empty">Product submissions will appear here.</p>
+      }
+    </section>
+  } @else {
   <div class="home-split">
     <section class="home-panel">
       <div class="home-panel__head">
         <div>
           <h3>Submission pipeline</h3>
-          <p>{{ pipelineTotal }} product submissions by status</p>
+          <p>{{ pipelineTotal }} visible product-linked records by status</p>
         </div>
-        <a class="home-link" [routerLink]="isCompany ? '/submissions' : '/order-history'">
-          Open submissions <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+        <a class="home-link" [routerLink]="isCompany ? '/submissions' : '/my-submissions'">
+          Open submissions <i class="fa fa-arrow-right" aria-hidden="true"></i>
         </a>
       </div>
       @if (pipelineTotal) {
@@ -113,7 +231,7 @@
           <p class="home-queue__title">{{ awaitingReview || statusCount('pending_refunds') }} awaiting review</p>
           <p>Applications in submitted or review status</p>
         </div>
-        <a class="hero-btn hero-btn--outline" [routerLink]="isCompany ? '/submissions' : '/order-history'">Open queue</a>
+        <a class="hero-btn hero-btn--outline" [routerLink]="isCompany ? '/submissions' : '/my-submissions'">Open queue</a>
       </div>
     </section>
 
@@ -123,7 +241,9 @@
           <h3>Submission activity</h3>
           <p>Recent six weekly periods</p>
         </div>
-        <span class="status-card__icon" aria-hidden="true"><i class="fa fa-bar-chart"></i></span>
+        <span class="status-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        </span>
       </div>
       <div class="home-bars" role="img" aria-label="Submission activity over six recent weeks">
         @for (bucket of activityBuckets; track $index) {
@@ -144,22 +264,24 @@
       <div class="home-panel__head">
         <div>
           <h3>{{ isUser ? 'Products to explore' : 'Products' }}</h3>
-          <p>{{ isUser ? 'Listings with open order slots' : 'Your latest product listings' }}</p>
+          <p>{{ isUser ? 'Active sample listings with open slots' : 'Your latest product listings' }}</p>
         </div>
-        <a class="home-link" routerLink="/products">View all <i class="fa fa-long-arrow-right" aria-hidden="true"></i></a>
+        <a class="home-link" routerLink="/products">View all <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
       </div>
       @if (homeProducts.length) {
         <div class="home-list">
           @for (product of homeProducts.slice(0, 4); track product.id) {
             <article class="home-row">
-              <span class="status-card__icon" aria-hidden="true"><i class="fa fa-cube"></i></span>
+              <span class="status-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.29 7 8.71 5L20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>
+              </span>
               <div>
                 <p class="home-row__title">{{ product.name }}</p>
                 <p class="home-row__meta">
-                  {{ product.brand_name || 'Product' }} · {{ slotsLeft(product) }} orders open
+                  {{ product.brand_name || 'Product' }} · {{ slotsLeft(product) }} submissions open
                 </p>
               </div>
-              <a class="hero-btn hero-btn--outline" [routerLink]="['/products', product.product_id || product.id]">View</a>
+              <a class="hero-btn hero-btn--outline" [routerLink]="['/products', product.product_id || product.id]">{{ isUser ? 'Explore' : 'View' }}</a>
             </article>
           }
         </div>
@@ -174,60 +296,20 @@
           <h3>Quick actions</h3>
           <p>Jump to a task in your workspace</p>
         </div>
-        <span class="status-card__icon" aria-hidden="true"><i class="fa fa-magic"></i></span>
+        <span class="status-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+        </span>
       </div>
       <div class="home-actions">
         @for (link of quickLinks; track link.route) {
           <a class="home-action" [routerLink]="link.route">
             {{ link.label }}
-            <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
           </a>
         }
       </div>
     </section>
   </div>
 
-  @if (isCompany) {
-    <section class="home-panel home-panel--table">
-      <div class="home-panel__head">
-        <div>
-          <h3>Recent submissions</h3>
-          <p>Latest product submissions in this workspace</p>
-        </div>
-        <a class="hero-btn hero-btn--outline" routerLink="/submissions">All submissions</a>
-      </div>
-      @if (homeSubmissions.length) {
-        <div class="home-table-wrap">
-          <table class="home-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Member</th>
-                <th>Company</th>
-                <th>Status</th>
-                <th>Updated</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of homeSubmissions.slice(0, 6); track row.id) {
-                <tr>
-                  <td>
-                    <strong>{{ row.product_name || 'Product' }}</strong>
-                  </td>
-                  <td>{{ row.revo_user_name || '—' }}</td>
-                  <td>{{ row.company_name || '—' }}</td>
-                  <td><span class="home-status" [ngClass]="'home-status--' + row.status">{{ statusLabel(row.status) }}</span></td>
-                  <td>{{ formatWhen(row.updated_on || row.created_on) }}</td>
-                  <td class="is-right"><a routerLink="/submissions">View</a></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <p class="home-empty">No submissions to show yet.</p>
-      }
-    </section>
   }
 </div>

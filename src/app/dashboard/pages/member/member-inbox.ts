@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ensureMemberRole } from './member-role';
+import { ensureWorkspaceRole, workspaceLabel } from './member-role';
 
 type NoticeKind = 'payout' | 'submission' | 'message' | 'system';
 
@@ -156,7 +156,7 @@ export class MemberInbox implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (!ensureMemberRole(this.router)) {
+    if (!ensureWorkspaceRole(this.router)) {
       return;
     }
     this.sub = this.route.data.subscribe((data) => {
@@ -182,13 +182,10 @@ export class MemberInbox implements OnInit, OnDestroy {
   }
 
   get lede(): string {
-    if (this.kind === 'messages') {
-      return 'Conversations with brands and partners.';
-    }
     if (this.kind === 'announcements') {
       return 'Updates published for members.';
     }
-    return 'Payout, submission, and message updates.';
+    return `${this.title} in ${workspaceLabel()}`;
   }
 
   get unreadCount(): number {
@@ -217,19 +214,6 @@ export class MemberInbox implements OnInit, OnDestroy {
 
   get activeThread(): Thread | null {
     return this.threads.find((thread) => thread.id === this.activeThreadId) ?? null;
-  }
-
-  noticeIcon(kind: NoticeKind): string {
-    if (kind === 'payout') {
-      return 'fa-credit-card';
-    }
-    if (kind === 'submission') {
-      return 'fa-file-text-o';
-    }
-    if (kind === 'message') {
-      return 'fa-comments-o';
-    }
-    return 'fa-cog';
   }
 
   ago(iso: string): string {

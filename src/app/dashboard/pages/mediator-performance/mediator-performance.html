@@ -1,0 +1,46 @@
+<div class="mperf">
+  <header class="mperf-intro">
+    <div>
+      <p class="mperf-crumbs">
+        <span>Workspace</span>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <span class="is-current">Performance</span>
+      </p>
+      <h1>Performance</h1>
+      <p class="mperf-lede">Performance in Partner Hub</p>
+    </div>
+    <span class="mperf-status"><span aria-hidden="true"></span>All systems operational</span>
+  </header>
+
+  <div class="mperf-stats">
+    @for (stat of stats; track stat.label) {
+      <article>
+        <p>{{ stat.label }}</p>
+        <strong>{{ stat.value }}</strong>
+      </article>
+    }
+  </div>
+
+  <section class="mperf-card">
+    <div class="mperf-head">
+      <span aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+      </span>
+      <div>
+        <h2>Product performance</h2>
+        <p>Current sample product slots and member submissions.</p>
+      </div>
+    </div>
+    <div class="mperf-rows">
+      @for (product of products; track product.name) {
+        <div>
+          <div class="mperf-row">
+            <span>{{ product.name }}</span>
+            <span>{{ product.detail }}</span>
+          </div>
+          <div class="mperf-track"><span [style.width.%]="product.percent"></span></div>
+        </div>
+      }
+    </div>
+  </section>
+</div>
